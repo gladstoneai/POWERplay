@@ -54,7 +54,7 @@ def plot_power_distributions(power_distributions, state_list, states_to_plot=Non
         axs[i].hist(np.transpose(power_distributions)[state_indices[i]], bins=number_of_bins)
         axs[i].title.set_text(states_to_plot[i])
     
-    fig.text(0.5, 0.01, 'POWER (reward units)')
+    fig.text(0.5, 0.01, 'POWER sample (reward units)')
 
     plt.show()
 
@@ -73,8 +73,8 @@ def plot_power_correlations(power_distributions, state_list, state_x, state_list
             np.transpose(power_distributions)[state_y_indices[i]],
             bins=number_of_bins
         )
-        axs[i].set_ylabel('POWER of state {} (reward units)'.format(state_list_y[i]))
+        axs[i].set_ylabel('POWER sample of state {} (reward units)'.format(state_list_y[i]))
 
-    fig.text(0.5, 0.01, 'POWER of state {} (reward units)'.format(state_x))
+    fig.text(0.5, 0.01, 'POWER sample of state {} (reward units)'.format(state_x))
 
     plt.show()

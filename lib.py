@@ -4,28 +4,6 @@ import sys
 
 import utils
 
-def policy_rollout(policy, reward_function, state_list, starting_state, number_of_steps):
-    if len(policy) != len(reward_function):
-        raise Exception('The policy must have the same number of rows as the reward_function has entries.')
-    
-    if len(reward_function) != len(state_list):
-        raise Exception('The reward_function and state_list must have the same length.')   
-
-    state_index = state_list.index(starting_state)
-
-    state_history = [starting_state]
-    reward_history = [reward_function[state_index]]
-
-    for _ in range(number_of_steps):
-        state_index = np.where(policy[state_index] == 1)[0][0]
-
-        state_history += [state_list[state_index]]
-        reward_history += [reward_function[state_index]]
-    
-    return (
-        state_history, reward_history
-    )
-
 def policy_evaluation(
     policy,
     reward_function,
@@ -145,7 +123,9 @@ def calculate_power(
     adjacency_matrix,
     discount_rate,
     num_reward_samples=1000,
+    reward_distribution=lambda x: 1,
     reward_range=(0, 1),
+    reward_sample_resolution=100,
     convergence_threshold=1e-4,
     random_seed=None
 ):
@@ -161,7 +141,14 @@ def calculate_power(
         sys.stdout.write('\r')
         sys.stdout.flush()
 
-        all_reward_functions += [utils.generate_random_reward(len(adjacency_matrix), interval=reward_range)]
+        all_reward_functions += [
+            utils.generate_random_reward(
+                len(adjacency_matrix),
+                target_distributions=reward_distribution,
+                intervals=reward_range,
+                resolution=reward_sample_resolution
+            )
+        ]
         all_optimal_values += [
             value_iteration(
                 all_reward_functions[-1],

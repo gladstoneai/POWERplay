@@ -40,6 +40,8 @@ Reference paper: _[Optimal policies tend to seek power](https://arxiv.org/pdf/19
     Running samples 123 / 1000
   ```
 
-  The test function should then show a plot that looks like this:
+  The test function should then show 3 plots that looks like this:
 
-  ![test-preview](img/test-preview.png)
+  ![test-preview-1](img/test-preview-1.png)
+  ![test-preview-2](img/test-preview-2.png)
+  ![test-preview-3](img/test-preview-3.png)
