@@ -7,7 +7,7 @@ def test():
     power, power_distributions = lib.calculate_power(
         data.ADJACENCY_MATRIX,
         discount_rate,
-        reward_distribution=[
+        reward_distributions=[
             lambda x: x,
             lambda x: 1,
             lambda x: x**2,

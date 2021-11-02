@@ -123,8 +123,8 @@ def calculate_power(
     adjacency_matrix,
     discount_rate,
     num_reward_samples=1000,
-    reward_distribution=lambda x: 1,
-    reward_range=(0, 1),
+    reward_distributions=lambda x: 1,
+    reward_ranges=(0, 1),
     reward_sample_resolution=100,
     convergence_threshold=1e-4,
     random_seed=None
@@ -144,8 +144,8 @@ def calculate_power(
         all_reward_functions += [
             utils.generate_random_reward(
                 len(adjacency_matrix),
-                target_distributions=reward_distribution,
-                intervals=reward_range,
+                target_distributions=reward_distributions,
+                intervals=reward_ranges,
                 resolution=reward_sample_resolution
             )
         ]
