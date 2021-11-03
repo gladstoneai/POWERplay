@@ -4,6 +4,10 @@
 
 Reference paper: _[Optimal policies tend to seek power](https://arxiv.org/pdf/1912.01683v7.pdf)_.
 
+Investigation of the following MDP (Figure 1 from the paper):
+
+![power-example-mdp](img/power-example-mdp.png)
+
 ## Installation, setup, and testing
 
 👉 _This repo will only work with Python 3._
@@ -40,8 +44,15 @@ Reference paper: _[Optimal policies tend to seek power](https://arxiv.org/pdf/19
     Running samples 123 / 1000
   ```
 
-  The test function should then show 3 plots that looks like this:
+  The test function should then show 10 plots that looks like this:
 
-  ![test-preview-1](img/test-preview-1.png)
-  ![test-preview-2](img/test-preview-2.png)
-  ![test-preview-3](img/test-preview-3.png)
+  ![test-power-means](img/power_means.png)
+  ![test-power-distributions](img/power_distributions.png)
+  ![test-power-correlations-★](img/power_correlations_★.png)
+  ![test-power-correlations-∅](img/power_correlations_∅.png)
+  ![test-power-correlations-ℓ_◁](img/power_correlations_ℓ_◁.png)
+  ![test-power-correlations-ℓ_↖](img/power_correlations_ℓ_↖.png)
+  ![test-power-correlations-ℓ_↙](img/power_correlations_ℓ_↙.png)
+  ![test-power-correlations-r_▷](img/power_correlations_r_▷.png)
+  ![test-power-correlations-r_↗](img/power_correlations_r_↗.png)
+  ![test-power-correlations-r_↘](img/power_correlations_r_↘.png)
