@@ -7,96 +7,12 @@ import utils
 import data
 import viz
 
-def policy_evaluation(
-    policy,
-    reward_function,
-    discount_rate,
-    value_initialization=None,
-    convergence_threshold=1e-4,
-    tiny_number=utils.TINY_NUMBER
-):
-
-    value_function = np.zeros(len(reward_function)) if (
-        value_initialization is None
-    ) else cp.deepcopy(value_initialization)
-
-    is_first_iteration = True
-
-    while is_first_iteration or (max_value_change > convergence_threshold):
-
-        is_first_iteration = False
-        max_value_change = 0
-        old_values = cp.deepcopy(value_function)
-
-        for state in range(len(reward_function)):
-            value_function[state] = reward_function[state] + np.dot(
-                policy[state], discount_rate * value_function
-            )
-            
-        max_value_change = utils.calculate_value_convergence(
-            old_values,
-            value_function,
-            tiny_number=tiny_number
-        )
-
-    return value_function
-
 def get_greedy_policy(value_function, adjacency_matrix):
     policy_actions = np.argmax(utils.mask_adjacency_matrix(adjacency_matrix) * value_function, axis=1)
     policy = np.zeros((len(value_function), len(value_function)))
     policy[np.arange(len(policy)), policy_actions] = 1
 
     return policy
-
-def policy_iteration(
-    reward_function,
-    discount_rate,
-    adjacency_matrix,
-    policy_initialization=None,
-    value_initialization=None,
-    convergence_threshold=1e-4,
-    seed=None,
-    tiny_number=utils.TINY_NUMBER
-):
-    utils.check_policy(policy_initialization)
-
-    policy = utils.generate_random_policy(len(reward_function), seed=seed) if (
-        policy_initialization is None
-    ) else cp.deepcopy(policy_initialization)
-    value_function = np.zeros(len(reward_function)) if (
-        value_initialization is None
-    ) else cp.deepcopy(value_initialization)
-
-    is_first_iteration = True
-
-    while is_first_iteration or (
-        max_value_change > convergence_threshold and not (policy == old_policy).all()
-    ):
-        is_first_iteration = False
-
-        old_policy = cp.deepcopy(policy)
-        old_values = cp.deepcopy(value_function)
-
-        value_function = policy_evaluation(
-            policy,
-            reward_function,
-            discount_rate,
-            value_initialization=value_function,
-            convergence_threshold=convergence_threshold,
-            tiny_number=tiny_number
-        )
-        policy = get_greedy_policy(value_function, adjacency_matrix)
-
-        max_value_change = utils.calculate_value_convergence(
-            old_values,
-            value_function,
-            tiny_number=tiny_number
-        )
-    
-    return (
-        policy,
-        value_function
-    )
 
 def value_iteration(
     reward_function,
