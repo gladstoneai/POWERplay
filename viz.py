@@ -26,7 +26,7 @@ def policy_rollout(policy, reward_function, state_list, starting_state, number_o
     )
 
 def plot_power_means(
-    power_distributions,
+    power_samples,
     state_list,
     show=True,
     save_fig=False,
@@ -37,8 +37,8 @@ def plot_power_means(
 
     ax.bar(
         range(len(state_list)),
-        np.mean(power_distributions, axis=0),
-        yerr=np.std(power_distributions, axis=0) / np.sqrt(len(power_distributions)),
+        np.mean(power_samples, axis=0),
+        yerr=np.std(power_samples, axis=0) / np.sqrt(len(power_samples)),
         align='center',
         ecolor='black',
         capsize=10
@@ -56,8 +56,8 @@ def plot_power_means(
     if show:
         plt.show()
 
-def plot_power_distributions(
-    power_distributions,
+def plot_power_samples(
+    power_samples,
     state_list,
     states_to_plot=None,
     number_of_bins=30,
@@ -81,19 +81,19 @@ def plot_power_distributions(
     )
 
     for i in range(len(state_indices)):
-        axs[i].hist(np.transpose(power_distributions)[state_indices[i]], bins=number_of_bins)
+        axs[i].hist(np.transpose(power_samples)[state_indices[i]], bins=number_of_bins)
         axs[i].title.set_text(plotted_states[i])
     
     fig.text(0.5, 0.01, 'POWER sample (reward units)')
 
     if save_fig:
-        data.save_figure(fig, '{}-power_distributions'.format(save_handle), folder=save_folder)
+        data.save_figure(fig, '{}-power_samples'.format(save_handle), folder=save_folder)
     
     if show:
         plt.show()
 
 def plot_power_correlations(
-    power_distributions,
+    power_samples,
     state_list,
     state_x,
     state_list_y=None,
@@ -120,8 +120,8 @@ def plot_power_correlations(
 
     for i in range(len(state_y_indices)):
         axs[i].hist2d(
-            np.transpose(power_distributions)[state_x_index],
-            np.transpose(power_distributions)[state_y_indices[i]],
+            np.transpose(power_samples)[state_x_index],
+            np.transpose(power_samples)[state_y_indices[i]],
             bins=number_of_bins
         )
         axs[i].set_ylabel('POWER sample of state {} (reward units)'.format(state_y_list[i]))

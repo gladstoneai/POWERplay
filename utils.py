@@ -1,4 +1,5 @@
 import numpy as np
+import pathos.multiprocessing as mps
 
 ################################################################################
 
@@ -24,10 +25,16 @@ def check_experiment_inputs(
     reward_sample_resolution=None,
     state_list=None,
     plot_when_done=None,
-    save_figs=None
+    save_figs=None,
+    num_workers=None
 ):
     if (plot_when_done or save_figs) and state_list is None:
         raise Exception('If plotting or saving figures, you need to input the state_list.')
+
+    if num_workers > mps.cpu_count():
+        raise Exception(
+            'You can\'t assign more than {} workers on this machine.'.format(mps.cpu_count())
+        )
 
     if (not (adjacency_matrix[-1][:-1] == 0).all()) or (not adjacency_matrix[-1][-1] == 1):
         raise Exception(

@@ -2,6 +2,7 @@ import numpy as np
 import copy as cp
 import sys
 import uuid
+import pathos.multiprocessing as mps
 
 import utils
 import data
@@ -45,7 +46,7 @@ def value_iteration(
         value_function
     )
 
-def calculate_power(
+def power_calculation_factory(
     adjacency_matrix,
     discount_rate,
     num_reward_samples=1000,
@@ -54,54 +55,64 @@ def calculate_power(
     reward_sample_resolution=100,
     convergence_threshold=1e-4,
     value_initializations=None,
-    random_seed=None
+    random_seed=None,
+    worker_pool_size=1
 ):
-    if random_seed is not None:
-        np.random.seed(random_seed)
+
+    def power_sample_calculator(worker_id):
+        if random_seed is None:
+            np.random.seed()
+        else:
+            np.random.seed(random_seed + worker_id) # Force a different seed for each worker
+        
+        all_value_initializations = [None] * num_reward_samples if (
+            value_initializations is None
+        ) else value_initializations
+
+        all_optimal_values = []
+        all_reward_functions = []
+
+        for i in range(num_reward_samples):
+            if worker_id == 0: # Only the first worker prints so the pool isn't slowed
+                sys.stdout.write('Running samples {0} / {1}'.format(
+                    worker_pool_size * (i + 1), worker_pool_size * num_reward_samples
+                ))
+                sys.stdout.flush()
+                sys.stdout.write('\r')
+                sys.stdout.flush()
+
+            all_reward_functions += [
+                utils.generate_random_reward(
+                    len(adjacency_matrix),
+                    target_distributions=reward_distributions,
+                    intervals=reward_ranges,
+                    resolution=reward_sample_resolution,
+                    seed=None
+                )
+            ]
+            all_optimal_values += [
+                value_iteration(
+                    all_reward_functions[-1],
+                    discount_rate,
+                    adjacency_matrix,
+                    value_initialization=all_value_initializations[i],
+                    convergence_threshold=convergence_threshold,
+                )[1]
+            ]
+        
+        if worker_id == 0:
+            print() # Jump to newline after stdout.flush()
+
+        power_samples = ((1 - discount_rate) / discount_rate) * (
+            np.stack(all_optimal_values) - np.stack(all_reward_functions)
+        )
+
+        return power_samples
     
-    all_value_initializations = [None] * num_reward_samples if (
-        value_initializations is None
-    ) else value_initializations
+    return power_sample_calculator
 
-    all_optimal_values = []
-    all_reward_functions = []
-
-    for i in range(num_reward_samples):
-        sys.stdout.write('Running samples {0} / {1}'.format(i + 1, num_reward_samples))
-        sys.stdout.flush()
-        sys.stdout.write('\r')
-        sys.stdout.flush()
-
-        all_reward_functions += [
-            utils.generate_random_reward(
-                len(adjacency_matrix),
-                target_distributions=reward_distributions,
-                intervals=reward_ranges,
-                resolution=reward_sample_resolution,
-                seed=None
-            )
-        ]
-        all_optimal_values += [
-            value_iteration(
-                all_reward_functions[-1],
-                discount_rate,
-                adjacency_matrix,
-                value_initialization=all_value_initializations[i],
-                convergence_threshold=convergence_threshold,
-            )[1]
-        ]
-    
-    print() # Jump to newline after stdout.flush()
-
-    power_distributions = ((1 - discount_rate) / discount_rate) * (
-        np.stack(all_optimal_values) - np.stack(all_reward_functions)
-    )
-    powers = np.mean(power_distributions, axis=0)
-
-    return (
-        powers,
-        power_distributions
-    )
+def calculate_power_samples(*args, **kwargs):
+    return power_calculation_factory(*args, **kwargs)(0)
 
 def run_one_experiment(
     adjacency_matrix=None,
@@ -112,6 +123,7 @@ def run_one_experiment(
     reward_sample_resolution=100,
     convergence_threshold=1e-4,
     value_initializations=None,
+    num_workers=1,
     random_seed=None,
     save_experiment=True,
     experiment_handle='',
@@ -130,20 +142,29 @@ def run_one_experiment(
         reward_sample_resolution=reward_sample_resolution,
         state_list=state_list,
         plot_when_done=plot_when_done,
-        save_figs=save_figs
+        save_figs=save_figs,
+        num_workers=num_workers
     )
 
-    powers, power_distributions = calculate_power(
+    samples_per_worker = num_reward_samples // num_workers
+
+    st_power_calculator = power_calculation_factory(
         adjacency_matrix,
         discount_rate,
-        num_reward_samples=num_reward_samples,
+        num_reward_samples=samples_per_worker,
         reward_distributions=reward_distributions,
         reward_ranges=reward_ranges,
         reward_sample_resolution=reward_sample_resolution,
         convergence_threshold=convergence_threshold,
         value_initializations=value_initializations,
-        random_seed=random_seed
+        random_seed=random_seed,
+        worker_pool_size=num_workers
     )
+
+    with mps.ProcessingPool(num_workers) as pool:
+        power_samples_list = pool.map(st_power_calculator, range(num_workers))
+
+    power_samples = np.concatenate(power_samples_list, axis=0)
 
     experiment = {
         'name': '{0}-{1}'.format(experiment_handle, uuid.uuid4().hex),
@@ -151,6 +172,7 @@ def run_one_experiment(
             'adjacency_matrix': adjacency_matrix,
             'discount_rate': discount_rate,
             'num_reward_samples': num_reward_samples,
+            'num_reward_samples_actual': num_workers * samples_per_worker,
             'reward_distributions': reward_distributions,
             'reward_ranges': reward_ranges,
             'reward_sample_resolution': reward_sample_resolution,
@@ -159,8 +181,8 @@ def run_one_experiment(
             'random_seed': random_seed
         },
         'outputs': {
-            'powers': powers,
-            'power_distributions': power_distributions
+            'powers': np.mean(power_samples, axis=0),
+            'power_samples': power_samples
         }
     }
 
@@ -178,12 +200,12 @@ def run_one_experiment(
             'save_folder': save_folder
         }
 
-        viz.plot_power_means(experiment['outputs']['power_distributions'], state_list, **kwargs)
-        viz.plot_power_distributions(experiment['outputs']['power_distributions'], state_list, **kwargs)
+        viz.plot_power_means(experiment['outputs']['power_samples'], state_list, **kwargs)
+        viz.plot_power_samples(experiment['outputs']['power_samples'], state_list, **kwargs)
 
         for state in state_list[:-1]: # Don't plot or save terminal state
             viz.plot_power_correlations(
-                experiment['outputs']['power_distributions'], state_list, state, **kwargs
+                experiment['outputs']['power_samples'], state_list, state, **kwargs
             )
     
     return experiment
