@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
+from numpy import sqrt
 
 import data
 
@@ -13,13 +15,13 @@ def policy_rollout(policy, reward_function, state_list, starting_state, number_o
     state_index = state_list.index(starting_state)
 
     state_history = [starting_state]
-    reward_history = [reward_function[state_index]]
+    reward_history = [reward_function[state_index].item()]
 
     for _ in range(number_of_steps):
-        state_index = np.where(policy[state_index] == 1)[0][0]
+        state_index = (policy[state_index] == 1).nonzero()[0].item()
 
         state_history += [state_list[state_index]]
-        reward_history += [reward_function[state_index]]
+        reward_history += [reward_function[state_index].item()]
     
     return (
         state_history, reward_history
@@ -37,8 +39,8 @@ def plot_power_means(
 
     ax.bar(
         range(len(state_list)),
-        np.mean(power_samples, axis=0),
-        yerr=np.std(power_samples, axis=0) / np.sqrt(len(power_samples)),
+        torch.mean(power_samples, axis=0),
+        yerr=torch.std(power_samples, axis=0) / sqrt(len(power_samples)),
         align='center',
         ecolor='black',
         capsize=10
@@ -81,7 +83,10 @@ def plot_power_samples(
     )
 
     for i in range(len(state_indices)):
-        axs[i].hist(np.transpose(power_samples)[state_indices[i]], bins=number_of_bins)
+        # The hist function hangs unless we convert to numpy first
+        axs[i].hist(
+            np.array(torch.transpose(power_samples, 0, 1)[state_indices[i]]), bins=number_of_bins
+        )
         axs[i].title.set_text(plotted_states[i])
     
     fig.text(0.5, 0.01, 'POWER sample (reward units)')
@@ -120,8 +125,8 @@ def plot_power_correlations(
 
     for i in range(len(state_y_indices)):
         axs[i].hist2d(
-            np.transpose(power_samples)[state_x_index],
-            np.transpose(power_samples)[state_y_indices[i]],
+            np.array(torch.transpose(power_samples, 0, 1)[state_x_index]),
+            np.array(torch.transpose(power_samples, 0, 1)[state_y_indices[i]]),
             bins=number_of_bins
         )
         axs[i].set_ylabel('POWER sample of state {} (reward units)'.format(state_y_list[i]))

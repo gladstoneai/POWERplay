@@ -1,19 +1,18 @@
-import numpy as np
 import copy as cp
 import sys
 import uuid
 import pathos.multiprocessing as mps
+import torch
+import torch.nn.functional as tf
 
 import utils
 import data
 import viz
 
 def get_greedy_policy(value_function, adjacency_matrix):
-    policy_actions = np.argmax(utils.mask_adjacency_matrix(adjacency_matrix) * value_function, axis=1)
-    policy = np.zeros((len(value_function), len(value_function)))
-    policy[np.arange(len(policy)), policy_actions] = 1
-
-    return policy
+    return tf.one_hot(torch.argmax(
+        adjacency_matrix * (value_function + torch.min(value_function) + 1), axis=1
+    ), num_classes=len(value_function))
 
 def value_iteration(
     reward_function,
@@ -22,7 +21,7 @@ def value_iteration(
     value_initialization=None,
     convergence_threshold=1e-4
 ):
-    value_function = np.zeros(len(reward_function)) if (
+    value_function = torch.zeros(len(reward_function)) if (
         value_initialization is None
     ) else cp.deepcopy(value_initialization)
 
@@ -35,8 +34,9 @@ def value_iteration(
         old_values = cp.deepcopy(value_function)
         
         for state in range(len(reward_function)):
-            value_function[state] = reward_function[state] + discount_rate * np.max(
-                utils.mask_adjacency_matrix(adjacency_matrix[state]) * value_function
+            value_function[state] = reward_function[state] + discount_rate * torch.max(
+                value_function.masked_select(adjacency_matrix[state].type(torch.ByteTensor).bool()
+                )
             )
 
         max_value_change = utils.calculate_value_convergence(old_values, value_function)
@@ -61,9 +61,10 @@ def power_calculation_factory(
 
     def power_sample_calculator(worker_id):
         if random_seed is None:
-            np.random.seed()
+            torch.seed()
         else:
-            np.random.seed(random_seed + worker_id) # Force a different seed for each worker
+            torch.manual_seed(random_seed + worker_id) # Force a different seed for each worker
+            torch.cuda.manual_seed(random_seed + worker_id)
         
         all_value_initializations = [None] * num_reward_samples if (
             value_initializations is None
@@ -104,7 +105,7 @@ def power_calculation_factory(
             print() # Jump to newline after stdout.flush()
 
         power_samples = ((1 - discount_rate) / discount_rate) * (
-            np.stack(all_optimal_values) - np.stack(all_reward_functions)
+            torch.stack(all_optimal_values) - torch.stack(all_reward_functions)
         )
 
         return power_samples
@@ -164,7 +165,7 @@ def run_one_experiment(
     with mps.ProcessingPool(num_workers) as pool:
         power_samples_list = pool.map(st_power_calculator, range(num_workers))
 
-    power_samples = np.concatenate(power_samples_list, axis=0)
+    power_samples = torch.cat(power_samples_list, axis=0)
 
     experiment = {
         'name': '{0}-{1}'.format(experiment_handle, uuid.uuid4().hex),
@@ -181,7 +182,7 @@ def run_one_experiment(
             'random_seed': random_seed
         },
         'outputs': {
-            'powers': np.mean(power_samples, axis=0),
+            'powers': torch.mean(power_samples, axis=0),
             'power_samples': power_samples
         }
     }

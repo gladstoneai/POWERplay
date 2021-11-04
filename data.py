@@ -1,14 +1,14 @@
-import numpy as np
 import pathlib as path
-import uuid
 import dill
+import torch
 
 ################################################################################
 
 EXPERIMENT_FOLDER = 'expts'
 
 STATE_LIST = ['★', '∅', 'ℓ_◁', 'ℓ_↖', 'ℓ_↙', 'r_▷', 'r_↗', 'r_↘', 'TERMINAL']
-ADJACENCY_MATRIX = np.array([
+
+ADJACENCY_MATRIX = torch.tensor([
 #    ★  ∅ ℓ◁ ℓ↖ ℓ↙ r▷ r↗ r↘  T
     [0, 1, 1, 0, 0, 1, 0, 0, 0], # ★
     [0, 1, 0, 0, 0, 0, 0, 0, 0], # ∅
