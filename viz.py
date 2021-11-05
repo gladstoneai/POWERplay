@@ -1,3 +1,4 @@
+from os import stat
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -66,6 +67,8 @@ def plot_power_samples(
     show=True,
     save_fig=False,
     save_handle=None,
+    common_x_axis='POWER sample (reward units)',
+    save_fig_suffix='power_samples',
     save_folder=data.EXPERIMENT_FOLDER
 ):
     # The terminal state (last in the list) has power 0 in all samples, so we don't plot it by default.
@@ -89,10 +92,10 @@ def plot_power_samples(
         )
         axs[i].title.set_text(plotted_states[i])
     
-    fig.text(0.5, 0.01, 'POWER sample (reward units)')
+    fig.text(0.5, 0.01, common_x_axis)
 
     if save_fig:
-        data.save_figure(fig, '{}-power_samples'.format(save_handle), folder=save_folder)
+        data.save_figure(fig, '{0}-{1}'.format(save_handle, save_fig_suffix), folder=save_folder)
     
     if show:
         plt.show()
@@ -118,7 +121,7 @@ def plot_power_correlations(
         1,
         len(state_y_indices),
         sharex=True,
-        sharey=False,
+        sharey=True,
         tight_layout=True,
         figsize=(4 * len(state_y_list), 4)
     )
@@ -140,3 +143,12 @@ def plot_power_correlations(
     
     if show:
         plt.show()
+
+def plot_reward_samples(reward_samples, state_list, **kwargs):
+    plot_power_samples(
+        reward_samples,
+        state_list,
+        common_x_axis='Reward sample (reward units)',
+        save_fig_suffix='reward_samples',
+        **kwargs
+    )

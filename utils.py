@@ -1,5 +1,6 @@
 import pathos.multiprocessing as mps
 import torch
+import torch.distributions as td
 
 ################################################################################
 
@@ -7,6 +8,35 @@ NEG_INFTY = -1e309
 TINY_NUMBER = 1e-45 # To avoid both divide by 0 and overflow in torch
 
 ################################################################################
+
+class ArbitraryRewardDistribution:
+    def __init__(self, pdf=lambda x: 1, interval=(0, 1), resolution=100):
+        self.pdf = pdf
+        self.interval = interval
+        self.resolution = resolution
+
+    def sample(self, number_of_samples):
+        source_samples = torch.rand(number_of_samples)
+
+        dest_boundary_points = torch.linspace(*(self.interval + (self.resolution,)))
+        sample_widths = dest_boundary_points[1:] - dest_boundary_points[:-1]
+        pdf_at_midpoints = torch.ones(self.resolution - 1) * self.pdf(
+            0.5 * (dest_boundary_points[1:] + dest_boundary_points[:-1])
+        )
+        probability_masses = sample_widths * pdf_at_midpoints / torch.sum(sample_widths * pdf_at_midpoints)
+
+        source_boundary_points = torch.cat((torch.zeros(1), torch.cumsum(probability_masses, 0)))
+        sample_bins = torch.bucketize(source_samples, source_boundary_points)
+        
+        sample_bin_positions = (
+            source_samples - source_boundary_points[sample_bins - 1]
+        ) / (
+            source_boundary_points[sample_bins] - source_boundary_points[sample_bins - 1]
+        )
+
+        return torch.unsqueeze(sample_bin_positions * (
+            dest_boundary_points[sample_bins] - dest_boundary_points[sample_bins - 1]
+        ) + dest_boundary_points[sample_bins - 1], 1)
 
 def check_policy(policy, tolerance=1e-4):
     if policy.shape[0] != policy.shape[1]:
@@ -19,10 +49,8 @@ def check_experiment_inputs(
     adjacency_matrix=None,
     discount_rate=None,
     num_reward_samples=None,
-    reward_distributions=None,
-    reward_ranges=None,
+    reward_distribution=None,
     value_initializations=None,
-    reward_sample_resolution=None,
     state_list=None,
     plot_when_done=None,
     save_figs=None,
@@ -45,47 +73,8 @@ def check_experiment_inputs(
     if discount_rate < 0 or discount_rate > 1:
         raise Exception('The discount rate should be between 0 and 1.')
     
-    if isinstance(reward_ranges, list):
-        if len(reward_ranges) != len(adjacency_matrix) - 1:
-            raise Exception(
-                'The list of reward_ranges must have one entry less than the number of states, '\
-                'since the last state in the adjacency_matrix is always the terminal state.'
-            )
-        
-        for interval in reward_ranges:
-            if interval[0] >= interval[1]:
-                raise Exception(
-                    'Each element of reward_ranges must be a 2-tuple '\
-                     'whose second entry is bigger than its first.'
-                )
-    
-    if isinstance(reward_ranges, tuple) and reward_ranges[0] >= reward_ranges[1]:
-        raise Exception(
-            'The interval reward_ranges must be a 2-tuple whose second entry is bigger than its first.'
-        )
-    
-    if isinstance(reward_distributions, list):
-        if len(reward_distributions) != len(adjacency_matrix) - 1:
-            raise Exception(
-                'The list of reward_distributions must have one entry less than the number of states, '\
-                'since the last state in the adjacency_matrix is always the terminal state.'
-            )
-        
-        for pdf, interval in zip(reward_distributions, reward_ranges):
-            if (torch.ones(reward_sample_resolution) * pdf(
-                torch.linspace(*(interval + (reward_sample_resolution,)))
-            ) < 0).any():
-                raise Exception(
-                    'Every pdf in reward_distributions must be positive '\
-                    'everywhere on its support in reward_ranges.'
-                )
-    
-    if callable(reward_distributions) and (
-            torch.ones(reward_sample_resolution) * reward_distributions(
-                torch.linspace(*(reward_ranges + (reward_sample_resolution,)))
-            ) < 0
-        ).any():
-        raise Exception('The function reward_distributions must be positive everywhere in reward_ranges.')
+    if not callable(reward_distribution):
+        raise Exception('The reward_distribution must be a callable function.')
 
     if isinstance(value_initializations, list) and len(value_initializations) != num_reward_samples:
         raise Exception('The list of value_initializations must have num_reward_samples values.')
@@ -118,52 +107,18 @@ def generate_random_policy(number_of_states, seed=None):
 # Each row of the policy sums to 1, since it represents the probabilities of actions from that state.
     return raw_policy / torch.sum(raw_policy, 1, keepdims=True)
 
-def sample_from_pdf(number_of_samples, pdf=lambda x: 1, interval=(0, 1), resolution=100, seed=None):
-    if seed is not None:
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed(seed)
-        
-    source_samples = torch.rand(number_of_samples)
-
-    dest_boundary_points = torch.linspace(*(interval + (resolution,)))
-    sample_widths = dest_boundary_points[1:] - dest_boundary_points[:-1]
-    pdf_at_midpoints = torch.ones(resolution - 1) * pdf(
-        0.5 * (dest_boundary_points[1:] + dest_boundary_points[:-1])
-    )
-    probability_masses = sample_widths * pdf_at_midpoints / torch.sum(sample_widths * pdf_at_midpoints)
-
-    source_boundary_points = torch.cat((torch.zeros(1), torch.cumsum(probability_masses, 0)))
-    sample_bins = torch.bucketize(source_samples, source_boundary_points)
-    
-    sample_bin_positions = (
-        source_samples - source_boundary_points[sample_bins - 1]
-    ) / (
-        source_boundary_points[sample_bins] - source_boundary_points[sample_bins - 1]
-    )
-
-    return sample_bin_positions * (
-        dest_boundary_points[sample_bins] - dest_boundary_points[sample_bins - 1]
-    ) + dest_boundary_points[sample_bins - 1]
-
-# Random rewards over states, sampled independently over interval according to target_distribution (which
-# can be un-normalized).
-def generate_random_reward(
-    number_of_states,
-    target_distributions=lambda x: 1,
-    intervals=(0, 1),
-    resolution=100,
-    seed=None
+def reward_distribution_constructor(
+    state_list,
+    default_distribution=td.Uniform(torch.tensor([0.]), torch.tensor([1.])),
+    state_specific_distributions={}
 ):
-    pdfs_list = target_distributions if isinstance(
-        target_distributions, list
-    ) else [target_distributions] * (number_of_states - 1)
-    intervals_list = intervals if isinstance(intervals, list) else [intervals] * (number_of_states - 1)
+    def reward_distribution(number_of_samples):
+        state_dist_list = [(state_specific_distributions[state_list[i]] if (
+            state_list[i] in state_specific_distributions.keys()
+        ) else default_distribution) for i in range(len(state_list) - 1)]
 
-# The last state listed is conventionally the terminal state, and always has reward 0.
-# (The same must hold for all value initializations.)
-    return torch.cat((
-        torch.tensor([sample_from_pdf(
-            1, pdf=pdf, interval=interval, resolution=resolution, seed=seed
-        ) for pdf, interval in zip(pdfs_list, intervals_list)]),
-        torch.zeros(1)
-    ))
+        return torch.cat([
+            dist.sample(torch.tensor([number_of_samples])) for dist in state_dist_list
+        ] + [torch.zeros(number_of_samples, 1)], dim=1)
+    
+    return reward_distribution

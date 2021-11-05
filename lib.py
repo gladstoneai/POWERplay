@@ -46,19 +46,16 @@ def value_iteration(
         value_function
     )
 
-def power_calculation_factory(
+def power_calculation_constructor(
     adjacency_matrix,
     discount_rate,
     num_reward_samples=1000,
-    reward_distributions=lambda x: 1,
-    reward_ranges=(0, 1),
-    reward_sample_resolution=100,
+    reward_distribution=None,
     convergence_threshold=1e-4,
     value_initializations=None,
     random_seed=None,
     worker_pool_size=1
 ):
-
     def power_sample_calculator(worker_id):
         if random_seed is None:
             torch.seed()
@@ -82,15 +79,7 @@ def power_calculation_factory(
                 sys.stdout.write('\r')
                 sys.stdout.flush()
 
-            all_reward_functions += [
-                utils.generate_random_reward(
-                    len(adjacency_matrix),
-                    target_distributions=reward_distributions,
-                    intervals=reward_ranges,
-                    resolution=reward_sample_resolution,
-                    seed=None
-                )
-            ]
+            all_reward_functions += [reward_distribution(1)[0]]
             all_optimal_values += [
                 value_iteration(
                     all_reward_functions[-1],
@@ -113,15 +102,14 @@ def power_calculation_factory(
     return power_sample_calculator
 
 def calculate_power_samples(*args, **kwargs):
-    return power_calculation_factory(*args, **kwargs)(0)
+    return power_calculation_constructor(*args, **kwargs)(0)
 
 def run_one_experiment(
     adjacency_matrix=None,
+    state_list=None,
     discount_rate=None,
+    reward_distribution=None,
     num_reward_samples=1000,
-    reward_distributions=lambda x: 1,
-    reward_ranges=(0, 1),
-    reward_sample_resolution=100,
     convergence_threshold=1e-4,
     value_initializations=None,
     num_workers=1,
@@ -130,32 +118,30 @@ def run_one_experiment(
     experiment_handle='',
     save_folder=data.EXPERIMENT_FOLDER,
     plot_when_done=False,
-    save_figs=False,
-    state_list=None
+    save_figs=False
 ):
     utils.check_experiment_inputs(
         adjacency_matrix=adjacency_matrix,
         discount_rate=discount_rate,
         num_reward_samples=num_reward_samples,
-        reward_distributions=reward_distributions,
-        reward_ranges=reward_ranges,
+        reward_distribution=reward_distribution,
         value_initializations=value_initializations,
-        reward_sample_resolution=reward_sample_resolution,
         state_list=state_list,
         plot_when_done=plot_when_done,
         save_figs=save_figs,
         num_workers=num_workers
     )
 
+    reward_sampler = utils.reward_distribution_constructor(state_list) if (
+        reward_distribution is None
+    ) else reward_distribution
     samples_per_worker = num_reward_samples // num_workers
 
-    st_power_calculator = power_calculation_factory(
+    st_power_calculator = power_calculation_constructor(
         adjacency_matrix,
         discount_rate,
         num_reward_samples=samples_per_worker,
-        reward_distributions=reward_distributions,
-        reward_ranges=reward_ranges,
-        reward_sample_resolution=reward_sample_resolution,
+        reward_distribution=reward_sampler,
         convergence_threshold=convergence_threshold,
         value_initializations=value_initializations,
         random_seed=random_seed,
@@ -174,9 +160,7 @@ def run_one_experiment(
             'discount_rate': discount_rate,
             'num_reward_samples': num_reward_samples,
             'num_reward_samples_actual': num_workers * samples_per_worker,
-            'reward_distributions': reward_distributions,
-            'reward_ranges': reward_ranges,
-            'reward_sample_resolution': reward_sample_resolution,
+            'reward_distribution': reward_sampler,
             'convergence_threshold': convergence_threshold,
             'value_initializations': value_initializations,
             'random_seed': random_seed
