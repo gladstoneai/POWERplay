@@ -1,3 +1,4 @@
+import torch
 import lib
 import data
 import torch.distributions as td
@@ -10,9 +11,10 @@ def test():
         discount_rate=0.9,
         reward_distribution=utils.reward_distribution_constructor(
             data.STATE_LIST,
-            default_distribution=utils.ArbitraryRewardDistribution(
-                pdf=lambda x: x, interval=(0, 1), resolution=100
-            )
+            default_reward_sampler=td.Beta(torch.tensor([0.5]), torch.tensor([0.5])).sample,
+            state_reward_samplers={
+                '∅': utils.pdf_sampler_constructor(pdf=lambda x: 1 - x)
+            }
         ),
         save_experiment=False,
         plot_when_done=True,
@@ -28,7 +30,3 @@ def test():
 # TODO: Investigate writing type hints.
 # TODO: Use networkx to construct graph rather than manually writing the adjacency matrix.
 # Refactor this when we start investigating new topologies.
-
-
-# TODO: Rewrite distribution and experiment as classes, subclassing from Immutable.
-

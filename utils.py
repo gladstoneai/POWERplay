@@ -9,35 +9,6 @@ TINY_NUMBER = 1e-45 # To avoid both divide by 0 and overflow in torch
 
 ################################################################################
 
-class ArbitraryRewardDistribution:
-    def __init__(self, pdf=lambda x: 1, interval=(0, 1), resolution=100):
-        self.pdf = pdf
-        self.interval = interval
-        self.resolution = resolution
-
-    def sample(self, number_of_samples):
-        source_samples = torch.rand(number_of_samples)
-
-        dest_boundary_points = torch.linspace(*(self.interval + (self.resolution,)))
-        sample_widths = dest_boundary_points[1:] - dest_boundary_points[:-1]
-        pdf_at_midpoints = torch.ones(self.resolution - 1) * self.pdf(
-            0.5 * (dest_boundary_points[1:] + dest_boundary_points[:-1])
-        )
-        probability_masses = sample_widths * pdf_at_midpoints / torch.sum(sample_widths * pdf_at_midpoints)
-
-        source_boundary_points = torch.cat((torch.zeros(1), torch.cumsum(probability_masses, 0)))
-        sample_bins = torch.bucketize(source_samples, source_boundary_points)
-        
-        sample_bin_positions = (
-            source_samples - source_boundary_points[sample_bins - 1]
-        ) / (
-            source_boundary_points[sample_bins] - source_boundary_points[sample_bins - 1]
-        )
-
-        return torch.unsqueeze(sample_bin_positions * (
-            dest_boundary_points[sample_bins] - dest_boundary_points[sample_bins - 1]
-        ) + dest_boundary_points[sample_bins - 1], 1)
-
 def check_policy(policy, tolerance=1e-4):
     if policy.shape[0] != policy.shape[1]:
         raise Exception('The policy tensor must be n x n.')
@@ -107,18 +78,45 @@ def generate_random_policy(number_of_states, seed=None):
 # Each row of the policy sums to 1, since it represents the probabilities of actions from that state.
     return raw_policy / torch.sum(raw_policy, 1, keepdims=True)
 
+def pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100):
+
+    def pdf_sampler(number_of_samples):
+        source_samples = torch.rand(number_of_samples)
+
+        dest_boundary_points = torch.linspace(*(interval + (resolution,)))
+        sample_widths = dest_boundary_points[1:] - dest_boundary_points[:-1]
+        pdf_at_midpoints = torch.ones(resolution - 1) * pdf(
+            0.5 * (dest_boundary_points[1:] + dest_boundary_points[:-1])
+        )
+        probability_masses = sample_widths * pdf_at_midpoints / torch.sum(sample_widths * pdf_at_midpoints)
+
+        source_boundary_points = torch.cat((torch.zeros(1), torch.cumsum(probability_masses, 0)))
+        sample_bins = torch.bucketize(source_samples, source_boundary_points)
+        
+        sample_bin_positions = (
+            source_samples - source_boundary_points[sample_bins - 1]
+        ) / (
+            source_boundary_points[sample_bins] - source_boundary_points[sample_bins - 1]
+        )
+
+        return torch.unsqueeze(sample_bin_positions * (
+            dest_boundary_points[sample_bins] - dest_boundary_points[sample_bins - 1]
+        ) + dest_boundary_points[sample_bins - 1], 1)
+    
+    return pdf_sampler
+
 def reward_distribution_constructor(
     state_list,
-    default_distribution=td.Uniform(torch.tensor([0.]), torch.tensor([1.])),
-    state_specific_distributions={}
+    default_reward_sampler=td.Uniform(torch.tensor([0.]), torch.tensor([1.])).sample,
+    state_reward_samplers={}
 ):
     def reward_distribution(number_of_samples):
-        state_dist_list = [(state_specific_distributions[state_list[i]] if (
-            state_list[i] in state_specific_distributions.keys()
-        ) else default_distribution) for i in range(len(state_list) - 1)]
+        state_sampler_list = [(state_reward_samplers[state_list[i]] if (
+            state_list[i] in state_reward_samplers.keys()
+        ) else default_reward_sampler) for i in range(len(state_list) - 1)]
 
         return torch.cat([
-            dist.sample(torch.tensor([number_of_samples])) for dist in state_dist_list
+            sample(torch.tensor([number_of_samples])) for sample in state_sampler_list
         ] + [torch.zeros(number_of_samples, 1)], dim=1)
     
     return reward_distribution
