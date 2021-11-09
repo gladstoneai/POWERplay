@@ -17,7 +17,7 @@ def test():
             }
         ),
         save_experiment_local=False,
-        save_experiment_wandb=True,
+        save_experiment_wandb=False,
         wandb_run_params={
             'project': 'test-project',
             'notes': 'These are some notes on this project.',
@@ -45,7 +45,3 @@ def test():
 # TODO: Go through wandb API and add all the other stuff I need.
 # TODO: Refactor experiment wrapper with https://hydra.cc/ when I understand what experiment configs
 # I commonly use.
-
-
-
-test()

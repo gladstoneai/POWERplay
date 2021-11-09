@@ -56,3 +56,13 @@ Investigation of the following MDP (Figure 1 from the paper):
   ![test-power-correlations-r_▷](img/power_correlations_r_▷.png)
   ![test-power-correlations-r_↗](img/power_correlations_r_↗.png)
   ![test-power-correlations-r_↘](img/power_correlations_r_↘.png)
+
+5. **If you want to use Weights & Biases for logging,** create a W&B account if you don't have one already. Then create a file in the main directory called `settings.json` with the following format:
+
+```
+{
+    "private": {
+        "WANDB_API_KEY": $YOUR_WANDB_KEY
+    }
+}
+```
