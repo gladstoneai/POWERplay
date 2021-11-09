@@ -11,22 +11,41 @@ def test():
         discount_rate=0.9,
         reward_distribution=utils.reward_distribution_constructor(
             data.STATE_LIST,
-            default_reward_sampler=td.Beta(torch.tensor([0.5]), torch.tensor([0.5])).sample,
+            default_reward_sampler=utils.pdf_sampler_constructor(pdf=lambda x: 1 - x),
             state_reward_samplers={
-                '∅': utils.pdf_sampler_constructor(pdf=lambda x: 1 - x)
+                '∅': td.Beta(torch.tensor([0.5]), torch.tensor([0.5])).sample
             }
         ),
-        save_experiment=False,
+        save_experiment_local=False,
+        save_experiment_wandb=True,
+        wandb_run_params={
+            'project': 'test-project',
+            'notes': 'These are some notes on this project.',
+            'mode': 'online'
+        },
         plot_when_done=True,
         num_workers=10,
         save_figs=True,
         num_reward_samples=10000
     )
 
-# TODO: Refactor experiment wrapper with https://hydra.cc/
-# TODO: Use https://wandb.ai/ for experiment tracking, will log everything in the cloud.
 # TODO: Begin first experiment series.
 
+# TODO: Add better tracking of reward distribution for reproducibility.
+# TODO: Refactor experiment code so that config is an object (or dict) you pass into it, as opposed to
+# a big list of kwargs.
 # TODO: Investigate writing type hints.
 # TODO: Use networkx to construct graph rather than manually writing the adjacency matrix.
 # Refactor this when we start investigating new topologies.
+# TODO: Add argparse.ArgumentParser().
+# parser = argparse.ArgumentParser()
+# parser.add_argument('-b', '--batch-size', type=int, default=8, metavar='N',
+#                      help='input batch size for training (default: 8)')
+# args = parser.parse_args()
+# TODO: Go through wandb API and add all the other stuff I need.
+# TODO: Refactor experiment wrapper with https://hydra.cc/ when I understand what experiment configs
+# I commonly use.
+
+
+
+test()

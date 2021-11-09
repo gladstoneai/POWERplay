@@ -19,6 +19,8 @@ def check_policy(policy, tolerance=1e-4):
 def check_experiment_inputs(
     adjacency_matrix=None,
     discount_rate=None,
+    save_experiment_wandb=None,
+    wandb_run_params=None,
     num_reward_samples=None,
     reward_distribution=None,
     value_initializations=None,
@@ -34,6 +36,10 @@ def check_experiment_inputs(
         raise Exception(
             'You can\'t assign more than {} workers on this machine.'.format(mps.cpu_count())
         )
+    
+    if save_experiment_wandb:
+        if wandb_run_params.get('project') is None:
+            raise Exception('You need to indicate which W&B project this run belongs to.')
 
     if (not (adjacency_matrix[-1][:-1] == 0).all()) or (not adjacency_matrix[-1][-1] == 1):
         raise Exception(

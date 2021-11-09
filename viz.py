@@ -1,7 +1,7 @@
-from os import stat
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import wandb as wb
 from numpy import sqrt
 
 import data
@@ -34,7 +34,8 @@ def plot_power_means(
     show=True,
     save_fig=False,
     save_handle=None,
-    save_folder=data.EXPERIMENT_FOLDER
+    save_folder=data.EXPERIMENT_FOLDER,
+    wb_tracker=None
 ):
     fig, ax = plt.subplots()
 
@@ -55,6 +56,9 @@ def plot_power_means(
 
     if save_fig:
         data.save_figure(fig, '{}-power_means'.format(save_handle), folder=save_folder)
+
+    if wb_tracker is not None:
+        wb_tracker.log({ 'POWER means': wb.Image(fig) })
     
     if show:
         plt.show()
@@ -69,7 +73,8 @@ def plot_power_samples(
     save_handle=None,
     common_x_axis='POWER sample (reward units)',
     save_fig_suffix='power_samples',
-    save_folder=data.EXPERIMENT_FOLDER
+    save_folder=data.EXPERIMENT_FOLDER,
+    wb_tracker=None
 ):
     # The terminal state (last in the list) has power 0 in all samples, so we don't plot it by default.
     plotted_states = state_list[:-1] if (states_to_plot is None) else states_to_plot
@@ -97,6 +102,9 @@ def plot_power_samples(
     if save_fig:
         data.save_figure(fig, '{0}-{1}'.format(save_handle, save_fig_suffix), folder=save_folder)
     
+    if wb_tracker is not None:
+        wb_tracker.log({ 'Distributions over states': wb.Image(fig) })
+    
     if show:
         plt.show()
 
@@ -109,7 +117,8 @@ def plot_power_correlations(
     show=True,
     save_fig=False,
     save_handle=None,
-    save_folder=data.EXPERIMENT_FOLDER
+    save_folder=data.EXPERIMENT_FOLDER,
+    wb_tracker=None
 ):
     # The terminal state (last in the list) has power 0 in all samples, so we don't plot it by default.
     state_y_list = state_list[:-1] if (state_list_y is None) else state_list_y
@@ -140,6 +149,9 @@ def plot_power_correlations(
         data.save_figure(
             fig, '{0}-power_correlations_{1}'.format(save_handle, state_x), folder=save_folder
         )
+    
+    if wb_tracker is not None:
+        wb_tracker.log({ 'POWER correlations, state {}'.format(state_x): wb.Image(fig) })
     
     if show:
         plt.show()

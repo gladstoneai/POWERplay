@@ -3,3 +3,4 @@ matplotlib==3.4.3
 dill==0.3.4
 pathos==0.2.8
 torch==1.10.0
+wandb==0.12.6

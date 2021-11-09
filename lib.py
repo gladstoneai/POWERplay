@@ -8,6 +8,7 @@ import torch.nn.functional as tf
 import utils
 import data
 import viz
+import wb_api
 
 def get_greedy_policy(value_function, adjacency_matrix):
     return tf.one_hot(torch.argmax(
@@ -40,7 +41,7 @@ def value_iteration(
             )
 
         max_value_change = utils.calculate_value_convergence(old_values, value_function)
-    
+
     return (
         get_greedy_policy(value_function, adjacency_matrix),
         value_function
@@ -86,16 +87,16 @@ def power_calculation_constructor(
                     discount_rate,
                     adjacency_matrix,
                     value_initialization=all_value_initializations[i],
-                    convergence_threshold=convergence_threshold,
+                    convergence_threshold=convergence_threshold
                 )[1]
             ]
-        
-        if worker_id == 0:
-            print() # Jump to newline after stdout.flush()
 
         power_samples = ((1 - discount_rate) / discount_rate) * (
             torch.stack(all_optimal_values) - torch.stack(all_reward_functions)
         )
+
+        if worker_id == 0:
+            print() # Jump to newline after stdout.flush()
 
         return power_samples
     
@@ -114,7 +115,9 @@ def run_one_experiment(
     value_initializations=None,
     num_workers=1,
     random_seed=None,
-    save_experiment=True,
+    save_experiment_local=True,
+    save_experiment_wandb=True,
+    wandb_run_params={},
     experiment_handle='',
     save_folder=data.EXPERIMENT_FOLDER,
     plot_when_done=False,
@@ -129,13 +132,38 @@ def run_one_experiment(
         state_list=state_list,
         plot_when_done=plot_when_done,
         save_figs=save_figs,
-        num_workers=num_workers
+        num_workers=num_workers,
+        save_experiment_wandb=save_experiment_wandb,
+        wandb_run_params=wandb_run_params
     )
+
+    experiment_name = '{0}-{1}'.format(experiment_handle, uuid.uuid4().hex)
 
     reward_sampler = utils.reward_distribution_constructor(state_list) if (
         reward_distribution is None
     ) else reward_distribution
     samples_per_worker = num_reward_samples // num_workers
+    num_reward_samples_actual = num_workers * samples_per_worker
+
+    experiment_config = {
+        'adjacency_matrix': adjacency_matrix,
+        'state_list': state_list,
+        'discount_rate': discount_rate,
+        'num_reward_samples': num_reward_samples,
+        'num_reward_samples_actual': num_reward_samples_actual,
+        'reward_distribution': reward_sampler,
+        'convergence_threshold': convergence_threshold,
+        'value_initializations': value_initializations,
+        'num_workers': num_workers,
+        'random_seed': random_seed
+    }
+
+    if save_experiment_wandb:
+        wb_api.login()
+    
+    wb_tracker = wb_api.initialize_run(
+        experiment_name, wandb_run_params, experiment_config
+    ) if save_experiment_wandb else None
 
     st_power_calculator = power_calculation_constructor(
         adjacency_matrix,
@@ -152,46 +180,40 @@ def run_one_experiment(
         power_samples_list = pool.map(st_power_calculator, range(num_workers))
 
     power_samples = torch.cat(power_samples_list, axis=0)
+    reward_samples = reward_sampler(num_reward_samples_actual)
 
+    print()
+    print(experiment_name)
+
+    viz_kwargs = {
+        'show': plot_when_done,
+        'save_fig': save_figs,
+        'save_handle': experiment_name,
+        'save_folder': save_folder,
+        'wb_tracker': wb_tracker
+    }
+
+    viz.plot_power_means(power_samples, state_list, **viz_kwargs)
+    viz.plot_reward_samples(reward_samples, state_list, **viz_kwargs)
+    viz.plot_power_samples(power_samples, state_list, **viz_kwargs)
+    
+    for state in state_list[:-1]: # Don't plot or save terminal state
+        viz.plot_power_correlations(power_samples, state_list, state, **viz_kwargs)
+    
     experiment = {
-        'name': '{0}-{1}'.format(experiment_handle, uuid.uuid4().hex),
-        'inputs': {
-            'adjacency_matrix': adjacency_matrix,
-            'discount_rate': discount_rate,
-            'num_reward_samples': num_reward_samples,
-            'num_reward_samples_actual': num_workers * samples_per_worker,
-            'reward_distribution': reward_sampler,
-            'convergence_threshold': convergence_threshold,
-            'value_initializations': value_initializations,
-            'random_seed': random_seed
-        },
+        'name': experiment_name,
+        'inputs': experiment_config,
         'outputs': {
-            'powers': torch.mean(power_samples, axis=0),
+            'reward_samples': reward_samples,
             'power_samples': power_samples
         }
     }
 
-    print()
-    print(experiment['name'])
-
-    if save_experiment:
+    if save_experiment_local:
         data.save_experiment(experiment, folder=save_folder)
-
-    if state_list is not None:
-        kwargs = {
-            'show': plot_when_done,
-            'save_fig': save_figs,
-            'save_handle': experiment['name'],
-            'save_folder': save_folder
-        }
-
-        viz.plot_power_means(experiment['outputs']['power_samples'], state_list, **kwargs)
-        viz.plot_power_samples(experiment['outputs']['power_samples'], state_list, **kwargs)
-
-        for state in state_list[:-1]: # Don't plot or save terminal state
-            viz.plot_power_correlations(
-                experiment['outputs']['power_samples'], state_list, state, **kwargs
-            )
+    
+    if wb_tracker is not None:
+        wb_tracker.finish()
     
     return experiment
     
