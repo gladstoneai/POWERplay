@@ -55,7 +55,7 @@ def plot_power_means(
     plt.tight_layout()
 
     if save_fig:
-        data.save_figure(fig, '{}-power_means'.format(save_handle), folder=save_folder)
+        data.save_figure(fig, 'power_means-{}'.format(save_handle), folder=save_folder)
 
     if wb_tracker is not None:
         wb_tracker.log({ 'POWER means': wb.Image(fig) })
@@ -72,35 +72,37 @@ def plot_power_samples(
     save_fig=False,
     save_handle=None,
     common_x_axis='POWER sample (reward units)',
-    save_fig_suffix='power_samples',
+    save_fig_prefix='power_samples',
     save_folder=data.EXPERIMENT_FOLDER,
     wb_tracker=None
 ):
     # The terminal state (last in the list) has power 0 in all samples, so we don't plot it by default.
     plotted_states = state_list[:-1] if (states_to_plot is None) else states_to_plot
-
     state_indices = [state_list.index(state_label) for state_label in plotted_states]
 
+    fig_cols = 4
+    fig_rows = round(len(state_indices) / fig_cols)
+
     fig, axs = plt.subplots(
-        1,
-        len(state_indices),
+        fig_rows,
+        fig_cols,
         sharex=True,
         sharey=True,
         tight_layout=True,
-        figsize=(4 * len(plotted_states), 4)
+        figsize=(4 * fig_cols, 4 * fig_rows)
     )
 
     for i in range(len(state_indices)):
         # The hist function hangs unless we convert to numpy first
-        axs[i].hist(
+        axs[i // fig_cols][i % fig_cols].hist(
             np.array(torch.transpose(power_samples, 0, 1)[state_indices[i]]), bins=number_of_bins
         )
-        axs[i].title.set_text(plotted_states[i])
+        axs[i // fig_cols][i % fig_cols].title.set_text(plotted_states[i])
     
-    fig.text(0.5, 0.01, common_x_axis)
+    fig.text(0.5, 0.01 / fig_rows, common_x_axis)
 
     if save_fig:
-        data.save_figure(fig, '{0}-{1}'.format(save_handle, save_fig_suffix), folder=save_folder)
+        data.save_figure(fig, '{0}-{1}'.format(save_fig_prefix, save_handle), folder=save_folder)
     
     if wb_tracker is not None:
         wb_tracker.log({ 'Distributions over states': wb.Image(fig) })
@@ -122,32 +124,36 @@ def plot_power_correlations(
 ):
     # The terminal state (last in the list) has power 0 in all samples, so we don't plot it by default.
     state_y_list = state_list[:-1] if (state_list_y is None) else state_list_y
-
     state_x_index = state_list.index(state_x)
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
+    fig_cols = 4
+    fig_rows = round(len(state_y_indices) / fig_cols)
+
     fig, axs = plt.subplots(
-        1,
-        len(state_y_indices),
+        fig_rows,
+        fig_cols,
         sharex=True,
         sharey=True,
         tight_layout=True,
-        figsize=(4 * len(state_y_list), 4)
+        figsize=(4 * fig_cols, 4 * fig_rows)
     )
 
     for i in range(len(state_y_indices)):
-        axs[i].hist2d(
+        axs[i // fig_cols][i % fig_cols].hist2d(
             np.array(torch.transpose(power_samples, 0, 1)[state_x_index]),
             np.array(torch.transpose(power_samples, 0, 1)[state_y_indices[i]]),
             bins=number_of_bins
         )
-        axs[i].set_ylabel('POWER sample of state {} (reward units)'.format(state_y_list[i]))
+        axs[i // fig_cols][i % fig_cols].set_ylabel(
+            'POWER sample of state {} (reward units)'.format(state_y_list[i])
+        )
 
-    fig.text(0.5, 0.01, 'POWER sample of state {} (reward units)'.format(state_x))
+    fig.text(0.5, 0.01 / fig_rows, 'POWER sample of state {} (reward units)'.format(state_x))
 
     if save_fig:
         data.save_figure(
-            fig, '{0}-power_correlations_{1}'.format(save_handle, state_x), folder=save_folder
+            fig, 'power_correlations_{0}-{1}'.format(state_x, save_handle), folder=save_folder
         )
     
     if wb_tracker is not None:
@@ -161,6 +167,9 @@ def plot_reward_samples(reward_samples, state_list, **kwargs):
         reward_samples,
         state_list,
         common_x_axis='Reward sample (reward units)',
-        save_fig_suffix='reward_samples',
+        save_fig_prefix='reward_samples',
         **kwargs
     )
+
+def get_mean_values(state_samples, state_list):
+    return { state_list[i]: torch.mean(state_samples, axis=0)[i] for i in range(len(state_list)) }

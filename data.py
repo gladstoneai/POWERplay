@@ -32,7 +32,9 @@ ADJACENCY_MATRIX = torch.tensor([
 def save_experiment(experiment, folder=EXPERIMENT_FOLDER):
     path.Path.mkdir(path.Path()/folder, exist_ok=True)
 
-    with open(path.Path()/folder/'{}.dill'.format(experiment['name']), 'wb') as f:
+    with open(
+        path.Path()/folder/'data-{}.dill'.format(experiment['name']), 'wb'
+    ) as f:
         dill.dump(experiment, f)
 
 def load_experiment(file_name, folder=EXPERIMENT_FOLDER):
@@ -42,6 +44,7 @@ def load_experiment(file_name, folder=EXPERIMENT_FOLDER):
     return experiment
 
 def save_figure(figure, fig_name, folder=EXPERIMENT_FOLDER):
+    path.Path.mkdir(path.Path()/folder, exist_ok=True)
     figure.savefig(path.Path()/folder/'{}.png'.format(fig_name), transparent=True)
 
 def get_settings_value(settings_key_path, settings_filename=SETTINGS_FILENAME):

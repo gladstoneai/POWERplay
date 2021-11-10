@@ -11,19 +11,17 @@ def test():
         discount_rate=0.9,
         reward_distribution=utils.reward_distribution_constructor(
             data.STATE_LIST,
-            default_reward_sampler=utils.pdf_sampler_constructor(pdf=lambda x: 1 - x),
-            state_reward_samplers={
-                '∅': td.Beta(torch.tensor([0.5]), torch.tensor([0.5])).sample
-            }
+            default_reward_sampler=td.Uniform(torch.tensor([0.]), torch.tensor([1.])).sample
         ),
-        save_experiment_local=False,
+        save_experiment_local=True,
         save_experiment_wandb=False,
+        experiment_handle='gamma_0p9-dist_unif0t1_iid-samples_10k',
         wandb_run_params={
             'project': 'test-project',
             'notes': 'These are some notes on this project.',
             'mode': 'online'
         },
-        plot_when_done=True,
+        plot_when_done=False,
         num_workers=10,
         save_figs=True,
         num_reward_samples=10000
@@ -45,3 +43,7 @@ def test():
 # TODO: Go through wandb API and add all the other stuff I need.
 # TODO: Refactor experiment wrapper with https://hydra.cc/ when I understand what experiment configs
 # I commonly use.
+
+import viz
+
+experiment = test()

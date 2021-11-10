@@ -1,9 +1,10 @@
 import copy as cp
 import sys
-import uuid
 import pathos.multiprocessing as mps
 import torch
 import torch.nn.functional as tf
+import pathlib as path
+import time
 
 import utils
 import data
@@ -91,14 +92,18 @@ def power_calculation_constructor(
                 )[1]
             ]
 
+        reward_samples = torch.stack(all_reward_functions)
         power_samples = ((1 - discount_rate) / discount_rate) * (
-            torch.stack(all_optimal_values) - torch.stack(all_reward_functions)
+            torch.stack(all_optimal_values) - reward_samples
         )
 
         if worker_id == 0:
             print() # Jump to newline after stdout.flush()
 
-        return power_samples
+        return (
+            reward_samples,
+            power_samples
+        )
     
     return power_sample_calculator
 
@@ -119,6 +124,7 @@ def run_one_experiment(
     save_experiment_wandb=True,
     wandb_run_params={},
     experiment_handle='',
+    experiment_id=time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())),
     save_folder=data.EXPERIMENT_FOLDER,
     plot_when_done=False,
     save_figs=False
@@ -137,7 +143,7 @@ def run_one_experiment(
         wandb_run_params=wandb_run_params
     )
 
-    experiment_name = '{0}-{1}'.format(experiment_handle, uuid.uuid4().hex)
+    experiment_name = '{0}-{1}'.format(experiment_id, experiment_handle)
 
     reward_sampler = utils.reward_distribution_constructor(state_list) if (
         reward_distribution is None
@@ -177,19 +183,19 @@ def run_one_experiment(
     )
 
     with mps.ProcessingPool(num_workers) as pool:
-        power_samples_list = pool.map(st_power_calculator, range(num_workers))
+        all_samples_list = pool.map(st_power_calculator, range(num_workers))
 
-    power_samples = torch.cat(power_samples_list, axis=0)
-    reward_samples = reward_sampler(num_reward_samples_actual)
+    reward_samples = torch.cat([samples_group[0] for samples_group in all_samples_list], axis=0)
+    power_samples = torch.cat([samples_group[1] for samples_group in all_samples_list], axis=0)
 
     print()
-    print(experiment_name)
+    print('Rendering plots...')
 
     viz_kwargs = {
         'show': plot_when_done,
         'save_fig': save_figs,
         'save_handle': experiment_name,
-        'save_folder': save_folder,
+        'save_folder': path.Path(save_folder)/experiment_name,
         'wb_tracker': wb_tracker
     }
 
@@ -210,10 +216,14 @@ def run_one_experiment(
     }
 
     if save_experiment_local:
-        data.save_experiment(experiment, folder=save_folder)
+        data.save_experiment(experiment, folder=path.Path(save_folder)/experiment_name)
     
     if wb_tracker is not None:
         wb_tracker.finish()
     
+    print()
+    print('Run complete:')
+    print(experiment_name)
+
     return experiment
     
