@@ -191,20 +191,16 @@ def run_one_experiment(
     print()
     print('Rendering plots...')
 
-    viz_kwargs = {
-        'show': plot_when_done,
-        'save_fig': save_figs,
-        'save_handle': experiment_name,
-        'save_folder': path.Path(save_folder)/experiment_name,
-        'wb_tracker': wb_tracker
-    }
-
-    viz.plot_power_means(power_samples, state_list, **viz_kwargs)
-    viz.plot_reward_samples(reward_samples, state_list, **viz_kwargs)
-    viz.plot_power_samples(power_samples, state_list, **viz_kwargs)
-    
-    for state in state_list[:-1]: # Don't plot or save terminal state
-        viz.plot_power_correlations(power_samples, state_list, state, **viz_kwargs)
+    viz.render_all_outputs(
+        reward_samples,
+        power_samples,
+        state_list,
+        show=plot_when_done,
+        save_fig=save_figs,
+        save_handle=experiment_name,
+        save_folder=path.Path(save_folder)/experiment_name,
+        wb_tracker=wb_tracker
+    )
     
     experiment = {
         'name': experiment_name,
@@ -222,7 +218,8 @@ def run_one_experiment(
         wb_tracker.finish()
     
     print()
-    print('Run complete:')
+    print('Run complete.')
+    print()
     print(experiment_name)
 
     return experiment

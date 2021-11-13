@@ -37,8 +37,8 @@ def save_experiment(experiment, folder=EXPERIMENT_FOLDER):
     ) as f:
         dill.dump(experiment, f)
 
-def load_experiment(file_name, folder=EXPERIMENT_FOLDER):
-    with open(path.Path()/folder/file_name, 'rb') as f:
+def load_experiment(experiment_name, folder=EXPERIMENT_FOLDER):
+    with open(path.Path()/folder/experiment_name/'data-{}.dill'.format(experiment_name), 'rb') as f:
         experiment = dill.load(f)
     
     return experiment

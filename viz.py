@@ -28,6 +28,9 @@ def policy_rollout(policy, reward_function, state_list, starting_state, number_o
         state_history, reward_history
     )
 
+def get_mean_values(state_samples, state_list):
+    return { state_list[i]: torch.mean(state_samples, axis=0)[i] for i in range(len(state_list)) }
+
 def plot_power_means(
     power_samples,
     state_list,
@@ -171,5 +174,10 @@ def plot_reward_samples(reward_samples, state_list, **kwargs):
         **kwargs
     )
 
-def get_mean_values(state_samples, state_list):
-    return { state_list[i]: torch.mean(state_samples, axis=0)[i] for i in range(len(state_list)) }
+def render_all_outputs(reward_samples, power_samples, state_list, **kwargs):
+    plot_power_means(power_samples, state_list, **kwargs)
+    plot_reward_samples(reward_samples, state_list, **kwargs)
+    plot_power_samples(power_samples, state_list, **kwargs)
+    
+    for state in state_list[:-1]: # Don't plot or save terminal state
+        plot_power_correlations(power_samples, state_list, state, **kwargs)
