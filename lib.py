@@ -188,9 +188,6 @@ def run_one_experiment(
     reward_samples = torch.cat([samples_group[0] for samples_group in all_samples_list], axis=0)
     power_samples = torch.cat([samples_group[1] for samples_group in all_samples_list], axis=0)
 
-    print()
-    print('Rendering plots...')
-
     viz.render_all_outputs(
         reward_samples,
         power_samples,

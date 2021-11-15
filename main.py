@@ -8,18 +8,18 @@ def test():
     return lib.run_one_experiment(
         adjacency_matrix=data.ADJACENCY_MATRIX,
         state_list=data.STATE_LIST,
-        discount_rate=0.5,
+        discount_rate=0.9,
         reward_distribution=utils.reward_distribution_constructor(
             data.STATE_LIST,
-            default_reward_sampler=td.Uniform(torch.tensor([0.]), torch.tensor([1.])).sample
+            default_reward_sampler=td.Uniform(torch.tensor([-1.]), torch.tensor([0.])).sample
         ),
         save_experiment_local=True,
         save_experiment_wandb=True,
-        experiment_handle='gamma_0p5-dist_unif0t1_iid-samples_100k',
+        experiment_handle='gamma_0p9-dist_unif_n1t0_iid-samples_100k',
         wandb_run_params={
             'project': 'power-project',
             'entity': 'power-experiments',
-            'notes': 'Uniform iid distribution of rewards over [0, 1).'
+            'notes': 'Uniform iid distribution of rewards over [-1, 0).'
         },
         plot_when_done=False,
         num_workers=10,
@@ -44,5 +44,21 @@ def test():
 # I commonly use.
 
 import viz
+import pathlib as path
 
 experiment = test()
+'''
+expt = data.load_experiment('20211114110144-gamma_0p1-dist_unif0t1_iid-samples_100k')
+reward_samples, power_samples = expt['outputs']['reward_samples'], expt['outputs']['power_samples']
+
+viz.render_all_outputs(
+    reward_samples,
+    power_samples,
+    data.STATE_LIST,
+    sample_filter=reward_samples[:, 3] > reward_samples[:, 4],
+    show=False,
+    save_fig=True,
+    save_handle='FILTER_reward_ℓ_↖_gt_ℓ_↙',
+    save_folder=path.Path()/data.EXPERIMENT_FOLDER/expt['name']
+)
+'''

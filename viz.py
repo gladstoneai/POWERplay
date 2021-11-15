@@ -71,6 +71,7 @@ def plot_power_samples(
     state_list,
     states_to_plot=None,
     number_of_bins=30,
+    normalize_auc=True,
     show=True,
     save_fig=False,
     save_handle=None,
@@ -95,10 +96,15 @@ def plot_power_samples(
         figsize=(4 * fig_cols, 4 * fig_rows)
     )
 
+    transposed_samples = torch.transpose(power_samples, 0, 1)
+
     for i in range(len(state_indices)):
         # The hist function hangs unless we convert to numpy first
         axs[i // fig_cols][i % fig_cols].hist(
-            np.array(torch.transpose(power_samples, 0, 1)[state_indices[i]]), bins=number_of_bins
+            np.array(transposed_samples[state_indices[i]]),
+            bins=np.linspace(
+                (transposed_samples[:-1]).min(), (transposed_samples[:-1]).max(), number_of_bins
+            ) if normalize_auc else number_of_bins
         )
         axs[i // fig_cols][i % fig_cols].title.set_text(plotted_states[i])
     
@@ -174,10 +180,17 @@ def plot_reward_samples(reward_samples, state_list, **kwargs):
         **kwargs
     )
 
-def render_all_outputs(reward_samples, power_samples, state_list, **kwargs):
-    plot_power_means(power_samples, state_list, **kwargs)
-    plot_reward_samples(reward_samples, state_list, **kwargs)
-    plot_power_samples(power_samples, state_list, **kwargs)
+# Here sample_filter is, e.g., reward_samples[:, 3] < reward_samples[:, 4]
+def render_all_outputs(reward_samples, power_samples, state_list, sample_filter=None, **kwargs):
+    rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
+    ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
+
+    print()
+    print('Rendering plots...')
+
+    plot_power_means(ps_inputs, state_list, **kwargs)
+    plot_reward_samples(rs_inputs, state_list, **kwargs)
+    plot_power_samples(ps_inputs, state_list, **kwargs)
     
     for state in state_list[:-1]: # Don't plot or save terminal state
-        plot_power_correlations(power_samples, state_list, state, **kwargs)
+        plot_power_correlations(ps_inputs, state_list, state, **kwargs)
