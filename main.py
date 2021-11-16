@@ -1,33 +1,38 @@
-import torch
-import lib
+import run
 import data
-import torch.distributions as td
-import utils
+import dist
+import check
 
 def test():
-    return lib.run_one_experiment(
-        adjacency_matrix=data.ADJACENCY_MATRIX,
+    return run.run_one_experiment(
+        adjacency_matrix=data.ADJACENCY_MATRIX_DICT['mdp_from_paper'],
         state_list=data.STATE_LIST,
         discount_rate=0.9,
-        reward_distribution=utils.reward_distribution_constructor(
+        reward_distribution=dist.reward_distribution_constructor(
             data.STATE_LIST,
-            default_reward_sampler=td.Uniform(torch.tensor([-1.]), torch.tensor([0.])).sample
+            default_reward_sampler=dist.preset_pdf_constructor('uniform', -1., 0.)
         ),
-        save_experiment_local=True,
-        save_experiment_wandb=True,
+        save_experiment_local=False,
+        save_experiment_wandb=False,
         experiment_handle='gamma_0p9-dist_unif_n1t0_iid-samples_100k',
         wandb_run_params={
             'project': 'power-project',
             'entity': 'power-experiments',
             'notes': 'Uniform iid distribution of rewards over [-1, 0).'
         },
-        plot_when_done=False,
+        plot_when_done=True,
         num_workers=10,
-        save_figs=True,
-        num_reward_samples=100000
+        save_figs=False,
+        num_reward_samples=10000
     )
 
-# TODO: Begin first experiment series.
+if __name__ == '__main__':
+# Ensure all our adjacency matrices pass sanity checks on startup.
+# TODO: Save these in dill by default and sanitize on saving rather than on loading.
+    for _, adjacency_matrix in data.ADJACENCY_MATRIX_DICT.items():
+        check.check_adjacency_matrix(adjacency_matrix)
+
+# TODO: See run.py file (end).
 
 # TODO: Investigate writing type hints.
 # TODO: Use networkx to construct graph rather than manually writing the adjacency matrix.
@@ -43,22 +48,39 @@ def test():
 # TODO: Refactor experiment wrapper with https://hydra.cc/ when I understand what experiment configs
 # I commonly use.
 
-import viz
-import pathlib as path
+# experiment = test()
 
-experiment = test()
-'''
-expt = data.load_experiment('20211114110144-gamma_0p1-dist_unif0t1_iid-samples_100k')
-reward_samples, power_samples = expt['outputs']['reward_samples'], expt['outputs']['power_samples']
+sweep_params = {
+    'adjacency_matrix': {
+        'value': 'mdp_from_paper'
+    },
+    'state_list': {
+        'value': data.STATE_LIST
+    },
+    'discount_rate': {
+        'values': [0.1, 0.3, 0.5], # , 0.7, 0.9]
+        'names': ['0p1', '0p3', '0p5']
+    },
+    'reward_distribution': {
+        'value': {
+            'default_dist': {
+                'dist_name': 'uniform',
+                'params': [0., 1.]
+            }
+        }
+    },
+    'num_reward_samples': {
+        'value': 100000
+    },
+    'convergence_threshold': {
+        'value': 1e-4
+    },
+    'num_workers': {
+        'value': 10
+    },
+    'random_seed': {
+        'value': None
+    }
+}
 
-viz.render_all_outputs(
-    reward_samples,
-    power_samples,
-    data.STATE_LIST,
-    sample_filter=reward_samples[:, 3] > reward_samples[:, 4],
-    show=False,
-    save_fig=True,
-    save_handle='FILTER_reward_ℓ_↖_gt_ℓ_↙',
-    save_folder=path.Path()/data.EXPERIMENT_FOLDER/expt['name']
-)
-'''
+run.run_experiment_sweep(sweep_params, sweep_description='This is a test run.')
