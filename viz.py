@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import wandb as wb
-from numpy import sqrt
+import math
 
 import data
 
@@ -45,7 +45,7 @@ def plot_power_means(
     ax.bar(
         range(len(state_list)),
         torch.mean(power_samples, axis=0),
-        yerr=torch.std(power_samples, axis=0) / sqrt(len(power_samples)),
+        yerr=torch.std(power_samples, axis=0) / np.sqrt(len(power_samples)),
         align='center',
         ecolor='black',
         capsize=10
@@ -84,8 +84,8 @@ def plot_power_samples(
     plotted_states = state_list[:-1] if (states_to_plot is None) else states_to_plot
     state_indices = [state_list.index(state_label) for state_label in plotted_states]
 
-    fig_cols = 4
-    fig_rows = round(len(state_indices) / fig_cols)
+    fig_cols = min(len(state_indices), 4)
+    fig_rows = math.ceil(len(state_indices) / fig_cols)
 
     fig, axs = plt.subplots(
         fig_rows,
@@ -96,17 +96,19 @@ def plot_power_samples(
         figsize=(4 * fig_cols, 4 * fig_rows)
     )
 
+    axs_rows = axs if fig_cols > 1 else [axs]
+    axs_plot = axs_rows if fig_rows > 1 else [axs_rows]
     transposed_samples = torch.transpose(power_samples, 0, 1)
 
     for i in range(len(state_indices)):
         # The hist function hangs unless we convert to numpy first
-        axs[i // fig_cols][i % fig_cols].hist(
+        axs_plot[i // fig_cols][i % fig_cols].hist(
             np.array(transposed_samples[state_indices[i]]),
             bins=np.linspace(
                 (transposed_samples[:-1]).min(), (transposed_samples[:-1]).max(), number_of_bins
             ) if normalize_auc else number_of_bins
         )
-        axs[i // fig_cols][i % fig_cols].title.set_text(plotted_states[i])
+        axs_plot[i // fig_cols][i % fig_cols].title.set_text(plotted_states[i])
     
     fig.text(0.5, 0.01 / fig_rows, common_x_axis)
 
@@ -136,25 +138,28 @@ def plot_power_correlations(
     state_x_index = state_list.index(state_x)
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
-    fig_cols = 4
-    fig_rows = round(len(state_y_indices) / fig_cols)
+    fig_cols = min(len(state_y_indices), 4)
+    fig_rows = math.ceil(len(state_y_indices) / fig_cols)
 
     fig, axs = plt.subplots(
         fig_rows,
         fig_cols,
         sharex=True,
-        sharey=True,
+        sharey=False,
         tight_layout=True,
         figsize=(4 * fig_cols, 4 * fig_rows)
     )
 
+    axs_rows = axs if fig_cols > 1 else [axs]
+    axs_plot = axs_rows if fig_rows > 1 else [axs_rows]
+
     for i in range(len(state_y_indices)):
-        axs[i // fig_cols][i % fig_cols].hist2d(
+        axs_plot[i // fig_cols][i % fig_cols].hist2d(
             np.array(torch.transpose(power_samples, 0, 1)[state_x_index]),
             np.array(torch.transpose(power_samples, 0, 1)[state_y_indices[i]]),
             bins=number_of_bins
         )
-        axs[i // fig_cols][i % fig_cols].set_ylabel(
+        axs_plot[i // fig_cols][i % fig_cols].set_ylabel(
             'POWER sample of state {} (reward units)'.format(state_y_list[i])
         )
 

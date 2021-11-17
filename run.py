@@ -130,7 +130,6 @@ def run_experiment_sweep(
     entity=data.get_settings_value(data.WANDB_ENTITY_PATH, settings_filename=data.SETTINGS_FILENAME),
     sweep_id=time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())),
     save_outputs_local=False,
-    save_figs_local=False,
     save_folder_local=data.EXPERIMENT_FOLDER,
     plot_when_done=True
 ):
@@ -146,8 +145,17 @@ def run_experiment_sweep(
 
     wb_api.login() # TODO: Refactor out all instances of wb_api in favor of directly calling wb
 
+    if save_outputs_local:
+        data.save_experiment({
+            'name': sweep_config.get('name'), 'inputs': sweep_params
+        }, folder=path.Path()/save_folder_local/sweep_config.get('name'))
+
     def run_one():
         with wb.init() as run:
+            config = { key: (
+                value if ('value' in sweep_params.get(key)
+            ) else value[0]) for key, value in run.config.items() }
+
             run.name = '-'.join([sweep_config.get('name')] + [ # TODO: See if it makes sense to refactor this into a utils function
                 '{0}__{1}'.format(
                     param_name, run.config.get(param_name)[1]
@@ -157,10 +165,20 @@ def run_experiment_sweep(
             # TODO: Add reward function and adjacency matrix interpreter, since they now come in as primitives
             print('HERE') ##
             print(run.config) ##
+            print(config) ##
 
-            discount_rate = run.config['discount_rate'][0] ** 2
-            run.log({ 'output1': discount_rate })
-    
+            reward_samples = run.config.get('adjacency_matrix')[0]
+            power_samples = run.config.get('adjacency_matrix')[1]
+
+            if save_outputs_local:
+                data.save_experiment({
+                    'name': run.name,
+                    'inputs': config,
+                    'outputs': {
+                        'reward_samples': reward_samples, 'power_samples': power_samples
+                    }
+                }, folder=path.Path()/save_folder_local/sweep_config.get('name')/run.name)
+                # TODO NEXT: Add figure rendering & saving, etc.
     wb.agent(wb.sweep(sweep_config), function=run_one)
 
 # TODO: Write a sweep wrapper that splits inputs into an experiment config (for reproducibility) and
@@ -170,4 +188,6 @@ def run_experiment_sweep(
 # TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
 # would be great as it would allow me to run local tests without consuming bandwidth, etc.
 # TODO: Test run of this sweep function.
+# TODO: Transition from old experiment function to new experiment function.
+# TODO: Delete load_experiment function.
 
