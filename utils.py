@@ -1,6 +1,8 @@
 import torch
 import functools as func
 import operator as op
+import math
+import matplotlib.pyplot as plt
 
 ################################################################################
 
@@ -67,3 +69,25 @@ def pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100):
         return pdf_sampler
     
     return constructor_l2
+
+def generate_fig_layout(number_of_subplots):
+    fig_cols = min(number_of_subplots, 4)
+    fig_rows = math.ceil(number_of_subplots / fig_cols)
+
+    fig, axs = plt.subplots(
+        fig_rows,
+        fig_cols,
+        sharex=True,
+        sharey=True,
+        tight_layout=True,
+        figsize=(4 * fig_cols, 4 * fig_rows)
+    )
+
+    axs_rows = axs if fig_cols > 1 else [axs]
+
+    return (
+        fig_cols,
+        fig_rows,
+        fig,
+        axs_rows if fig_rows > 1 else [axs_rows]
+    )

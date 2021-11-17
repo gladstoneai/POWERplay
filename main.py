@@ -13,7 +13,7 @@ def test(reward_inputs, experiment_handle, wandb_notes):
             default_reward_sampler=dist.preset_pdf_constructor(*reward_inputs)
         ),
         save_experiment_local=True,
-        save_experiment_wandb=True,
+        save_experiment_wandb=False,
         experiment_handle=experiment_handle,
         wandb_run_params={
             'project': 'power-project',
@@ -23,7 +23,7 @@ def test(reward_inputs, experiment_handle, wandb_notes):
         plot_when_done=False,
         num_workers=10,
         save_figs=True,
-        num_reward_samples=100000
+        num_reward_samples=10000
     )
 
 if __name__ == '__main__':
@@ -76,8 +76,8 @@ wandb_notes = [
     'Uniform iid distribution of rewards over [2, 4).'
 ]
 
-# inputs = [(r, e, w) for r, e, w in zip(reward_inputs, experiment_handles, wandb_notes)]
-# expts = [test(*(inputs[6]))]
+inputs = [(r, e, w) for r, e, w in zip(reward_inputs, experiment_handles, wandb_notes)]
+expts = [test(*(inputs[6]))]
 
 '''
 

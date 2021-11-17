@@ -86,16 +86,18 @@ def run_one_experiment(
     reward_samples = torch.cat([samples_group[0] for samples_group in all_samples_list], axis=0)
     power_samples = torch.cat([samples_group[1] for samples_group in all_samples_list], axis=0)
 
-    viz.render_all_outputs(
+    rendered_outputs = viz.render_all_outputs(
         reward_samples,
         power_samples,
         state_list,
         show=plot_when_done,
-        save_fig=save_figs,
         save_handle=experiment_name,
-        save_folder=path.Path(save_folder)/experiment_name,
-        wb_tracker=wb_tracker
+        save_figure=data.save_figure if save_figs else None,
+        save_folder=path.Path(save_folder)/experiment_name
     )
+
+    if wb_tracker is not None:
+        wb_tracker.log({ fig_name: wb.Image(fig) for fig_name, fig in rendered_outputs.items() })
     
     experiment = {
         'name': experiment_name,
@@ -142,30 +144,29 @@ def run_experiment_sweep(
         project=project,
         entity=entity
     )
+    sweep_folder = path.Path()/save_folder_local/sweep_config.get('name')
 
     wb_api.login() # TODO: Refactor out all instances of wb_api in favor of directly calling wb
 
     if save_outputs_local:
-        data.save_experiment({
-            'name': sweep_config.get('name'), 'inputs': sweep_params
-        }, folder=path.Path()/save_folder_local/sweep_config.get('name'))
+        data.save_experiment({ 'name': sweep_config.get('name'), 'inputs': sweep_params }, folder=sweep_folder)
 
     def run_one():
         with wb.init() as run:
-            config = { key: (
-                value if ('value' in sweep_params.get(key)
-            ) else value[0]) for key, value in run.config.items() }
-
-            run.name = '-'.join([sweep_config.get('name')] + [ # TODO: See if it makes sense to refactor this into a utils function
-                '{0}__{1}'.format(
-                    param_name, run.config.get(param_name)[1]
-                ) for param_name in sweep_params if ('values' in sweep_params.get(param_name))
+            run_params = {
+                key: (value if ('value' in sweep_params.get(key)) else value[0]) for key, value in run.config.items()
+            }
+            # Hack to force a specified name for the run in W&B interface
+            run.name = '-'.join([sweep_config.get('name')] + [
+                '{0}__{1}'.format(key, value[1]) for key, value in run.config.items() if (
+                    'value' not in sweep_params.get(key)
+                )
              ])
 
             # TODO: Add reward function and adjacency matrix interpreter, since they now come in as primitives
             print('HERE') ##
             print(run.config) ##
-            print(config) ##
+            print(run_params) ##
 
             reward_samples = run.config.get('adjacency_matrix')[0]
             power_samples = run.config.get('adjacency_matrix')[1]
@@ -173,11 +174,11 @@ def run_experiment_sweep(
             if save_outputs_local:
                 data.save_experiment({
                     'name': run.name,
-                    'inputs': config,
+                    'inputs': run_params,
                     'outputs': {
                         'reward_samples': reward_samples, 'power_samples': power_samples
                     }
-                }, folder=path.Path()/save_folder_local/sweep_config.get('name')/run.name)
+                }, folder=sweep_folder/run.name)
                 # TODO NEXT: Add figure rendering & saving, etc.
     wb.agent(wb.sweep(sweep_config), function=run_one)
 
