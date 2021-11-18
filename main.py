@@ -47,7 +47,7 @@ if __name__ == '__main__':
 # args = parser.parse_args()
 # TODO: Refactor experiment wrapper with https://hydra.cc/ when I understand what experiment configs
 # I commonly use.
-
+'''
 reward_inputs = [
     ['uniform', -4., -2.],
     ['uniform', -3., -1.],
@@ -78,7 +78,6 @@ wandb_notes = [
 
 inputs = [(r, e, w) for r, e, w in zip(reward_inputs, experiment_handles, wandb_notes)]
 expts = [test(*(inputs[6]))]
-
 '''
 
 sweep_params = {
@@ -116,7 +115,5 @@ sweep_params = {
 
 run.run_experiment_sweep(
     sweep_params,
-    sweep_description='This is a test run.',
-    save_outputs_local=True
+    sweep_description='This is a test run.'
 )
-'''

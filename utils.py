@@ -31,6 +31,10 @@ def build_sweep_config(
         'method': 'grid'
     }
 
+def toggle_temporary_name(name):
+    prefix = 'TEMP-'
+    return name[len(prefix):] if name[:len(prefix)] == prefix else (prefix + name)
+
 def retrieve(dictionary, path_with_dots):
     return func.reduce(op.getitem, path_with_dots.split('.'), dictionary)
 

@@ -1,6 +1,13 @@
 import torch
 import pathos.multiprocessing as mps
 
+def check_project_exists(project, entity, wb_api):
+    if project not in [proj.name for proj in wb_api.projects(entity=entity)]:
+        raise Exception(
+            'The project {0} doesn\'t exist in the entity {1}. '\
+            'You need to create a project of that name before running this sweep.'.format(project, entity)
+        )
+
 def check_adjacency_matrix(adjacency_matrix):
     if (not (adjacency_matrix[-1][:-1] == 0).all()) or (not adjacency_matrix[-1][-1] == 1):
         raise Exception(
