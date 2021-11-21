@@ -8,6 +8,10 @@ def check_project_exists(project, entity, wb_api):
             'You need to create a project of that name before running this sweep.'.format(project, entity)
         )
 
+def check_num_samples(num_samples, num_workers):
+    if num_samples % num_workers != 0:
+        raise Exception('The number of reward samples must be an exact multiple of the number of workers.')
+
 def check_adjacency_matrix(adjacency_matrix):
     if (not (adjacency_matrix[-1][:-1] == 0).all()) or (not adjacency_matrix[-1][-1] == 1):
         raise Exception(

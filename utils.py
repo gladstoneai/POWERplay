@@ -11,29 +11,22 @@ TINY_NUMBER = 1e-45 # To avoid both divide by 0 and overflow in torch
 ################################################################################
 
 def build_sweep_config(
+    input_sweep_config=None,
     sweep_name=None,
-    sweep_id=None,
-    sweep_params=None,
-    sweep_description=None,
     project=None,
     entity=None
 ):
     return {
+        **input_sweep_config,
         'parameters': { # Allows us to name individual runs with preset strings
-            key: (value_dict if ('value' in sweep_params.get(key)) else { 'values': [
+            key: (value_dict if ('value' in input_sweep_config.get('parameters').get(key)) else { 'values': [
                 [val, name] for val, name in zip(value_dict.get('values'), value_dict.get('names'))
-            ]}) for (key, value_dict) in sweep_params.items()
+            ]}) for (key, value_dict) in input_sweep_config.get('parameters').items()
         },
-        'name': '{0}-{1}'.format(sweep_id, sweep_name),
-        'description': sweep_description,
+        'name': sweep_name,
         'project': project,
-        'entity': entity,
-        'method': 'grid'
+        'entity': entity
     }
-
-def toggle_temporary_name(name):
-    prefix = 'TEMP-'
-    return name[len(prefix):] if name[:len(prefix)] == prefix else (prefix + name)
 
 def retrieve(dictionary, path_with_dots):
     return func.reduce(op.getitem, path_with_dots.split('.'), dictionary)
