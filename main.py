@@ -1,30 +1,6 @@
 import launch
 import data
-import dist
 import check
-
-def test(reward_inputs, experiment_handle, wandb_notes):
-    return launch.run_one_experiment_OLD(
-        adjacency_matrix=data.ADJACENCY_MATRIX_DICT['mdp_from_paper'],
-        state_list=data.STATE_LIST,
-        discount_rate=0.9,
-        reward_distribution=dist.reward_distribution_constructor(
-            data.STATE_LIST,
-            default_reward_sampler=dist.config_to_pdf_constructor(reward_inputs)
-        ),
-        save_experiment_local=True,
-        save_experiment_wandb=False,
-        experiment_handle=experiment_handle,
-        wandb_run_params={
-            'project': 'power-project',
-            'entity': 'power-experiments',
-            'notes': wandb_notes
-        },
-        plot_when_done=False,
-        num_workers=10,
-        save_figs=True,
-        num_reward_samples=10000
-    )
 
 # Ensure all our adjacency matrices pass sanity checks on startup.
 # TODO: Save these in dill by default and sanitize on saving rather than on loading.
@@ -54,11 +30,4 @@ if __name__ == '__main__':
 # TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
 # would be great as it would allow me to run local tests without consuming bandwidth, etc.
 
-'''
-expt = test(
-    { 'dist_name': 'uniform', 'params': [0., 2.] },
-    'gamma_0p9-dist_unif_0t2_iid-samples_100k',
-    'Uniform iid distribution of rewards over [0, 2).'
-)
-'''
 launch.launch_sweep('test_sweep.yaml')

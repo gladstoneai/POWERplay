@@ -86,38 +86,3 @@ def check_sweep_params(sweep_params):
 
     for param_name, value_dict in sweep_params.items():
         check_sweep_param(param_name, value_dict, all_param_checkers[param_name]) 
-
-def check_experiment_inputs(
-    adjacency_matrix=None,
-    discount_rate=None,
-    save_experiment_wandb=None,
-    wandb_run_params=None,
-    reward_distribution=None,
-    state_list=None,
-    plot_when_done=None,
-    save_figs=None,
-    num_workers=None
-):
-    if (plot_when_done or save_figs) and state_list is None:
-        raise Exception('If plotting or saving figures, you need to input the state_list.')
-
-    if num_workers > mps.cpu_count():
-        raise Exception(
-            'You can\'t assign more than {} workers on this machine.'.format(mps.cpu_count())
-        )
-    
-    if save_experiment_wandb:
-        if wandb_run_params.get('project') is None:
-            raise Exception('You need to indicate which W&B project this run belongs to.')
-
-    if (not (adjacency_matrix[-1][:-1] == 0).all()) or (not adjacency_matrix[-1][-1] == 1):
-        raise Exception(
-            'The last row of the adjacency matrix must be 1 in the last entry, 0 elsewhere. '\
-            'The last entry represents the terminal state, which can only lead to itself.'
-        )
-    
-    if discount_rate < 0 or discount_rate > 1:
-        raise Exception('The discount rate should be between 0 and 1.')
-    
-    if not callable(reward_distribution):
-        raise Exception('The reward_distribution must be a callable function.')

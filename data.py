@@ -41,13 +41,13 @@ ADJACENCY_MATRIX_DICT = {
 
 ################################################################################
 
-def save_experiment(experiment, folder=EXPERIMENT_FOLDER): # TODO: Change name of this function to be more general
+def save_experiment(experiment, folder=EXPERIMENT_FOLDER):
     path.Path.mkdir(path.Path()/folder, exist_ok=True)
 
     with open(path.Path()/folder/'data-{}.dill'.format(experiment['name']), 'wb') as f:
         dill.dump(experiment, f)
 
-def load_experiment(experiment_name, folder=EXPERIMENT_FOLDER): # TODO: Delete
+def load_experiment(experiment_name, folder=EXPERIMENT_FOLDER):
     with open(path.Path()/folder/experiment_name/'data-{}.dill'.format(experiment_name), 'rb') as f:
         experiment = dill.load(f)
     
