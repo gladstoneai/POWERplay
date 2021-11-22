@@ -82,7 +82,7 @@ def plot_sample_distributions(
     plotted_states = state_list[:-1] if (states_to_plot is None) else states_to_plot
     state_indices = [state_list.index(state_label) for state_label in plotted_states]
 
-    fig_cols, fig_rows, fig, axs_plot = utils.generate_fig_layout(len(state_indices))
+    fig_cols, fig_rows, fig, axs_plot = utils.generate_fig_layout(len(state_indices), sharey=True)
 
     transposed_samples = torch.transpose(all_samples, 0, 1)
 
@@ -124,7 +124,7 @@ def plot_sample_correlations(
     state_x_index = state_list.index(state_x)
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
-    fig_cols, fig_rows, fig, axs_plot = utils.generate_fig_layout(len(state_y_indices))
+    fig_cols, fig_rows, fig, axs_plot = utils.generate_fig_layout(len(state_y_indices), sharey=False)
 
     for i in range(len(state_y_indices)):
         axs_plot[i // fig_cols][i % fig_cols].hist2d(

@@ -17,7 +17,7 @@ def rewards_to_powers(
     adjacency_matrix,
     discount_rate,
     num_workers=1,
-    convergence_threshold=1e-4
+    convergence_threshold=1e-4,
 ):
     check.check_num_samples(len(reward_samples), num_workers)
 
@@ -55,6 +55,7 @@ def run_one_experiment(
     
     # When the number of samples doesn't divide evenly into the available workers, truncate the samples
     reward_samples = reward_sampler(num_workers * (num_reward_samples // num_workers))
+
     power_samples = rewards_to_powers(
         reward_samples,
         adjacency_matrix,
@@ -62,6 +63,9 @@ def run_one_experiment(
         num_workers=num_workers,
         convergence_threshold=convergence_threshold
     )
+
+    print()
+    print('Run complete.')
 
     return (
         reward_samples,
@@ -74,7 +78,8 @@ def launch_sweep(
     sweep_local_id=time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())),
     entity=data.get_settings_value(data.WANDB_ENTITY_PATH, settings_filename=data.SETTINGS_FILENAME),
     project='uncategorized',
-    output_folder_local=data.EXPERIMENT_FOLDER
+    output_folder_local=data.EXPERIMENT_FOLDER,
+    beep_when_done=False
 ):
     input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=path.Path(sweep_config_folder))
     check.check_sweep_params(input_sweep_config.get('parameters'))
@@ -91,6 +96,9 @@ def launch_sweep(
         output_sweep_config, folder=path.Path(output_folder_local)/sweep_name
     )
 
+# NOTE: The wandb Python API uses multithreading, which makes it incompatible with matplotlib.pyplot rendering.
+# The CLI does not use multithreading, and is compatible with pyplot, so we run the CLI via Python subprocess.
+# (This behavior by wandb is undocumented.)
     sp.run(['wandb', 'login'])
     sp.run([
         'wandb',
@@ -108,5 +116,11 @@ def launch_sweep(
         ]),
         **os.environ
     })
+
+    if beep_when_done:
+        print('\a')
+        print('\a')
+        print('\a')
+
 
 

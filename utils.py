@@ -67,7 +67,7 @@ def pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100):
     
     return constructor_l2
 
-def generate_fig_layout(number_of_subplots):
+def generate_fig_layout(number_of_subplots, sharey=True):
     fig_cols = min(number_of_subplots, 4)
     fig_rows = math.ceil(number_of_subplots / fig_cols)
 
@@ -75,7 +75,7 @@ def generate_fig_layout(number_of_subplots):
         fig_rows,
         fig_cols,
         sharex=True,
-        sharey=True,
+        sharey=sharey,
         tight_layout=True,
         figsize=(4 * fig_cols, 4 * fig_rows)
     )

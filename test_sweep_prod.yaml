@@ -1,0 +1,41 @@
+name: test_sweep_prod
+description: "TEST"
+program: sweep.py
+method: grid
+parameters:
+  adjacency_matrix:
+    value:
+      "mdp_from_paper"
+  state_list:
+    value:
+      ["★", "∅", "ℓ_◁", "ℓ_↖", "ℓ_↙", "r_▷", "r_↗", "r_↘", "TERMINAL"]
+  discount_rate:
+    value:
+      0.9
+  reward_distribution:
+    values:
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-4, -2]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-3.5, -1.5]
+    names:
+      - "iid_uniform_n4tn2"
+      - "iid_uniform_n3p5tn1p5"
+  num_reward_samples:
+    value:
+      100000
+  convergence_threshold:
+    value:
+      0.0001
+  num_workers:
+    value:
+      10
+  random_seed:
+    value:
+      null

@@ -1,0 +1,107 @@
+name: sweep-REWARDS_ACROSS_ZERO-gamma_0p9-samples_100k
+description: "Sweeping reward distribution from iid uniform [-4, -2] to iid uniform [2, 4] in increments of 0.5."
+program: sweep.py
+method: grid
+parameters:
+  adjacency_matrix:
+    value:
+      "mdp_from_paper"
+  state_list:
+    value:
+      ["★", "∅", "ℓ_◁", "ℓ_↖", "ℓ_↙", "r_▷", "r_↗", "r_↘", "TERMINAL"]
+  discount_rate:
+    value:
+      0.9
+  reward_distribution:
+    values:
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-4, -2]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-3.5, -1.5]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-3, -1]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-2.5, -0.5]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-2, 0]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-1.5, 0.5]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-1, 1]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [-0.5, 1.5]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [0, 2]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [0.5, 2.5]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [1, 3]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [1.5, 3.5]
+      - default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [2, 4]
+    names:
+      - "iid_uniform_n4tn2"
+      - "iid_uniform_n3p5tn1p5"
+      - "iid_uniform_n3tn1"
+      - "iid_uniform_n2p5tn0p5"
+      - "iid_uniform_n2t0"
+      - "iid_uniform_n1p5t0p5"
+      - "iid_uniform_n1t1"
+      - "iid_uniform_n0p5t1p5"
+      - "iid_uniform_n0t2"
+      - "iid_uniform_0p5t2p5"
+      - "iid_uniform_1t3"
+      - "iid_uniform_1p5t3p5"
+      - "iid_uniform_2t4"
+  num_reward_samples:
+    value:
+      35000
+  convergence_threshold:
+    value:
+      0.0001
+  num_workers:
+    value:
+      10
+  random_seed:
+    value:
+      null
