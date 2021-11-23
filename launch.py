@@ -74,10 +74,10 @@ def run_one_experiment(
 
 def launch_sweep(
     sweep_config_filename,
-    sweep_config_folder='.',
     sweep_local_id=time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())),
     entity=data.get_settings_value(data.WANDB_ENTITY_PATH, settings_filename=data.SETTINGS_FILENAME),
     project='uncategorized',
+    sweep_config_folder=data.SWEEP_CONFIGS_FOLDER,
     output_folder_local=data.EXPERIMENT_FOLDER,
     beep_when_done=False
 ):

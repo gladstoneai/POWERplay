@@ -25,7 +25,8 @@ def build_sweep_config(
         },
         'name': sweep_name,
         'project': project,
-        'entity': entity
+        'entity': entity,
+        'method': 'grid'
     }
 
 def retrieve(dictionary, path_with_dots):

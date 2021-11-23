@@ -9,6 +9,7 @@ import utils
 
 ################################################################################
 
+SWEEP_CONFIGS_FOLDER = 'configs'
 EXPERIMENT_FOLDER = 'expts'
 SETTINGS_FILENAME = 'settings.json'
 
