@@ -7,9 +7,10 @@ import data
 import viz
 import dist
 import launch
+import utils
 
 def cli_experiment_sweep(
-    adjacency_matrix_dict=data.ADJACENCY_MATRIX_DICT,
+    mdp_graph_dict=data.MDP_GRAPH_DICT,
     distribution_dict=data.DISTRIBUTION_DICT,
     local_sweep_name=os.environ.get('LOCAL_SWEEP_NAME'),
     sweep_variable_params=json.loads(os.environ.get('SWEEP_VARIABLE_PARAMS')),
@@ -30,12 +31,13 @@ def cli_experiment_sweep(
         discount_rate = run_params.get('discount_rate')
         convergence_threshold = run_params.get('convergence_threshold')
         random_seed = run_params.get('random_seed')
+        state_list = run_params.get('state_list')
 
-        adjacency_matrix = adjacency_matrix_dict.get(run_params.get('adjacency_matrix'))
+        mdp_graph = mdp_graph_dict.get(run_params.get('mdp_graph'))
+
+        adjacency_matrix = utils.graph_to_adjacency_matrix(mdp_graph, state_list=state_list)
         reward_sampler = dist.config_to_reward_distribution(
-            run_params.get('state_list'),
-            run_params.get('reward_distribution'),
-            distribution_dict=distribution_dict
+            state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict
         )
 
         reward_samples, power_samples = launch.run_one_experiment(
@@ -61,7 +63,8 @@ def cli_experiment_sweep(
         run.log({ fig_name: wb.Image(fig) for fig_name, fig in viz.render_all_outputs(
             reward_samples,
             power_samples,
-            run_params.get('state_list'),
+            mdp_graph,
+            state_list,
             save_handle=run.name,
             save_figure=data.save_figure,
             save_folder=save_folder,

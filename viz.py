@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import networkx as nx
 
 import data
 import utils
@@ -148,8 +149,28 @@ def plot_sample_correlations(
     
     return fig
 
+def plot_mdp_graph(
+    mdp_graph,
+    show=True,
+    save_handle=None,
+    save_figure=data.save_figure,
+    save_folder=data.EXPERIMENT_FOLDER
+):
+    fig, _ = plt.subplots()
+    nx.draw_planar(
+        mdp_graph, with_labels=True, node_size=300, arrowstyle='->', width='2', font_size=8, font_weight='bold'
+    )
+
+    if callable(save_figure):
+        save_figure(fig, 'mdp_graph-{}'.format(save_handle), folder=save_folder)
+
+    if show:
+        plt.show()
+    
+    return fig
+
 # Here sample_filter is, e.g., reward_samples[:, 3] < reward_samples[:, 4]
-def render_all_outputs(reward_samples, power_samples, state_list, sample_filter=None, **kwargs):
+def render_all_outputs(reward_samples, power_samples, mdp_graph, state_list, sample_filter=None, **kwargs):
     rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
     ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
 
@@ -157,6 +178,7 @@ def render_all_outputs(reward_samples, power_samples, state_list, sample_filter=
     print('Rendering plots...')
 
     return {
+        'MDP graph': plot_mdp_graph(mdp_graph, **kwargs),
         'POWER means': plot_sample_means(
             ps_inputs, state_list, sample_quantity='POWER', sample_units='reward units', **kwargs
         ),

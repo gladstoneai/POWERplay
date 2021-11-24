@@ -3,6 +3,7 @@ import functools as func
 import operator as op
 import math
 import matplotlib.pyplot as plt
+import networkx as nx
 
 ################################################################################
 
@@ -89,3 +90,6 @@ def generate_fig_layout(number_of_subplots, sharey=True):
         fig,
         axs_rows if fig_rows > 1 else [axs_rows]
     )
+
+def graph_to_adjacency_matrix(mdp_graph, state_list=None):
+    return torch.tensor(nx.to_numpy_array(mdp_graph, nodelist=state_list))

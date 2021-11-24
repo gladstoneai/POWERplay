@@ -1,9 +1,9 @@
 import pathlib as path
 import dill
-import torch
 import json
 import torch.distributions as td
 import yaml
+import networkx as nx
 
 import utils
 
@@ -25,18 +25,17 @@ DISTRIBUTION_DICT = {
     'uniform_0_1_manual': utils.pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100)
 }
 
-ADJACENCY_MATRIX_DICT = {
-    'mdp_from_paper': torch.tensor([
-    #    ★  ∅ ℓ◁ ℓ↖ ℓ↙ r▷ r↗ r↘  T
-        [0, 1, 1, 0, 0, 1, 0, 0, 0], # ★
-        [0, 1, 0, 0, 0, 0, 0, 0, 0], # ∅
-        [0, 0, 0, 1, 1, 0, 0, 0, 0], # ℓ_◁
-        [0, 0, 0, 0, 1, 0, 0, 0, 1], # ℓ_↖
-        [0, 0, 0, 1, 1, 0, 0, 0, 0], # ℓ_↙
-        [0, 0, 0, 0, 0, 0, 1, 1, 0], # r_▷
-        [0, 0, 0, 0, 0, 0, 1, 1, 0], # r_↗
-        [0, 0, 0, 0, 0, 0, 1, 1, 0], # r_↘
-        [0, 0, 0, 0, 0, 0, 0, 0, 1]  # TERMINAL
+MDP_GRAPH_DICT = {
+    'mdp_from_paper': nx.DiGraph([
+        ('★', '∅'), ('★', 'ℓ_◁'), ('★', 'r_▷'),
+        ('∅', '∅'),
+        ('ℓ_◁', 'ℓ_↖'), ('ℓ_◁', 'ℓ_↙'),
+        ('ℓ_↖', 'ℓ_↙'), ('ℓ_↖', 'TERMINAL'),
+        ('ℓ_↙', 'ℓ_↖'), ('ℓ_↙', 'ℓ_↙'),
+        ('TERMINAL', 'TERMINAL'),
+        ('r_▷', 'r_↗'), ('r_▷', 'r_↘'),
+        ('r_↘', 'r_↘'), ('r_↘', 'r_↗'),
+        ('r_↗', 'r_↗'), ('r_↗', 'r_↘')
     ])
 }
 

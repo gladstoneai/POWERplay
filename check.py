@@ -1,6 +1,9 @@
 import torch
 import pathos.multiprocessing as mps
 
+import data
+import utils
+
 def check_project_exists(project, entity, wb_api):
     if project not in [proj.name for proj in wb_api.projects(entity=entity)]:
         raise Exception(
@@ -12,11 +15,13 @@ def check_num_samples(num_samples, num_workers):
     if num_samples % num_workers != 0:
         raise Exception('The number of reward samples must be an exact multiple of the number of workers.')
 
-def check_adjacency_matrix(adjacency_matrix):
+def check_mdp_graph(mdp_key, state_list=None, mdp_dict=data.MDP_GRAPH_DICT):
+    adjacency_matrix = utils.graph_to_adjacency_matrix(mdp_dict.get(mdp_key), state_list=state_list)
+
     if (not (adjacency_matrix[-1][:-1] == 0).all()) or (not adjacency_matrix[-1][-1] == 1):
         raise Exception(
             'The last row of the adjacency matrix {} must be 1 in the last entry, 0 elsewhere. '\
-            'The last entry state the terminal state, which can only lead to itself.'.format(adjacency_matrix)
+            'The last state entry is the terminal state, which can only lead to itself.'.format(mdp_key)
         )
 
 def check_policy(policy, tolerance=1e-4):
@@ -73,7 +78,7 @@ def check_sweep_param(param_name, value_dict, checker_function):
 
 def check_sweep_params(sweep_params):
     all_param_checkers = {
-        'adjacency_matrix': noop,
+        'mdp_graph': noop,
         'state_list': noop,
         'discount_rate': check_discount_rate,
         'reward_distribution': noop,

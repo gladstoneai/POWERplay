@@ -2,7 +2,7 @@ name: test_sweep
 description: "This is a test sweep."
 program: sweep.py
 parameters:
-  adjacency_matrix:
+  mdp_graph:
     value:
       "mdp_from_paper"
   state_list:
