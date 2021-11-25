@@ -1,6 +1,5 @@
 import launch
 import data
-import check
 
 def test():
     launch.launch_sweep(
@@ -8,15 +7,6 @@ def test():
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         project='uncategorized'
     )
-
-# Ensure all our adjacency matrices pass sanity checks on startup.
-# TODO: Save these in dill by default and sanitize on saving rather than on loading.
-
-'''
-if __name__ == '__main__':
-    for mdp_key, _ in data.MDP_GRAPH_DICT.items():
-         check.check_mdp_graph(mdp_key, state_list=data.STATE_LIST, mdp_dict=data.MDP_GRAPH_DICT)
-'''
 
 # TODO NEXT: Add animations for sweeps.
 # TODO: Test setting random seed.

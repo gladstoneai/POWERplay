@@ -15,8 +15,13 @@ def check_num_samples(num_samples, num_workers):
     if num_samples % num_workers != 0:
         raise Exception('The number of reward samples must be an exact multiple of the number of workers.')
 
-def check_mdp_graph(mdp_key, state_list=None, mdp_dict=data.MDP_GRAPH_DICT):
-    adjacency_matrix = utils.graph_to_adjacency_matrix(mdp_dict.get(mdp_key), state_list=state_list)
+def check_mdp_graph(mdp_key, mdp_dict=data.MDP_GRAPH_DICT):
+    mdp_graph = mdp_dict.get(mdp_key)
+
+    if list(mdp_graph)[-1] != 'TERMINAL':
+        raise Exception('The last element of the MDP graph {} should always be \'TERMINAL\'.'.format(mdp_key))
+
+    adjacency_matrix = utils.graph_to_adjacency_matrix(mdp_graph)
 
     if (not (adjacency_matrix[-1][:-1] == 0).all()) or (not adjacency_matrix[-1][-1] == 1):
         raise Exception(
@@ -86,7 +91,6 @@ def check_sweep_param(param_name, value_dict, checker_function):
 def check_sweep_params(sweep_params):
     all_param_checkers = {
         'mdp_graph': noop,
-        'state_list': noop,
         'discount_rate': check_discount_rate,
         'reward_distribution': noop,
         'num_reward_samples': noop,

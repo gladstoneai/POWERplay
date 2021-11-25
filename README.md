@@ -66,8 +66,7 @@ Investigation of the following MDP (Figure 1 from the paper):
             num_workers: 10
             random_seed: None
             reward_distribution: {'default_dist': {'dist_name': 'uniform', 'params': [0, 1]}, 'state_dists': {'ℓ_◁': {'dist_name': 'uniform', 'params': [-2, 0]}, '∅': {'dist_name': 'uniform', 'params': [-1, 1]}}}
-            state_list: ['★', '∅', 'ℓ_◁', 'ℓ_↖', 'ℓ_↙', 'r_▷', 'r_↗', 'r_↘', 'TERMINAL']
-    2021-11-23 11:15:03,345 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --mdp_graph=mdp_from_paper --convergence_threshold=0.0001 "--discount_rate=[0.1, '0p1']" --num_reward_samples=10000 --num_workers=10 --random_seed=None "--reward_distribution={'default_dist': {'dist_name': 'uniform', 'params': [0, 1]}, 'state_dists': {'ℓ_◁': {'dist_name': 'uniform', 'params': [-2, 0]}, '∅': {'dist_name': 'uniform', 'params': [-1, 1]}}}" "--state_list=['★', '∅', 'ℓ_◁', 'ℓ_↖', 'ℓ_↙', 'r_▷', 'r_↗', 'r_↘', 'TERMINAL']"
+    2021-11-23 11:15:03,345 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --mdp_graph=mdp_from_paper --convergence_threshold=0.0001 "--discount_rate=[0.1, '0p1']" --num_reward_samples=10000 --num_workers=10 --random_seed=None "--reward_distribution={'default_dist': {'dist_name': 'uniform', 'params': [0, 1]}, 'state_dists': {'ℓ_◁': {'dist_name': 'uniform', 'params': [-2, 0]}, '∅': {'dist_name': 'uniform', 'params': [-1, 1]}}}"
     wandb: Currently logged in as bob-bobson (use `wandb login --relogin` to force relogin)
     wandb: Tracking run with wandb version 0.12.7
     wandb: Syncing run ethereal-sweep-1
@@ -168,10 +167,6 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
   - `mdp_graph`: The `key` that corresponds to the MDP graph you want to use listed in `MDP_GRAPH_DICT` in the `data.py` file.
 
     Typical value: `'mdp_from_paper'`
-
-  - `state_list`: A list of states, each identfied by a unique string, each of which correspond to its respective entry in `mdp_graph`. That is, if `state_list` is `['s1', 's2', 's3']`, then `mdp_graph` should be a 3x3 matrix, with the first row corresponding to `s1`, the second row corresponding to `s2`, and the third row corresponding to `s3`.
-
-    Typical value: `["★", "∅", "ℓ_◁", "ℓ_↖", "ℓ_↙", "r_▷", "r_↗", "r_↘", "TERMINAL"]`
   
   - `discount_rate`: The discount rate for the MDP.
 

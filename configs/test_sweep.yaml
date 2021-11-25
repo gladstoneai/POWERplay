@@ -5,9 +5,6 @@ parameters:
   mdp_graph:
     value:
       "mdp_from_paper"
-  state_list:
-    value:
-      ["★", "∅", "ℓ_◁", "ℓ_↖", "ℓ_↙", "r_▷", "r_↗", "r_↘", "TERMINAL"]
   discount_rate:
     values:
       - 0.1

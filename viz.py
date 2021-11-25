@@ -181,7 +181,8 @@ def plot_mdp_graph(
     return fig
 
 # Here sample_filter is, e.g., reward_samples[:, 3] < reward_samples[:, 4]
-def render_all_outputs(reward_samples, power_samples, mdp_graph, state_list, sample_filter=None, **kwargs):
+def render_all_outputs(reward_samples, power_samples, mdp_graph, sample_filter=None, **kwargs):
+    state_list = list(mdp_graph)
     rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
     ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
 
