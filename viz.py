@@ -157,9 +157,20 @@ def plot_mdp_graph(
     save_folder=data.EXPERIMENT_FOLDER
 ):
     fig, _ = plt.subplots()
-    nx.draw_planar(
-        mdp_graph, with_labels=True, node_size=300, arrowstyle='->', width='2', font_size=8, font_weight='bold'
-    )
+
+    kwargs = {
+        'with_labels': True,
+        'node_size': 300,
+        'arrowstyle': '->',
+        'width': 2,
+        'font_size': 8,
+        'font_weight': 'bold'
+    }
+
+    try:
+        nx.draw_planar(mdp_graph, **kwargs)
+    except nx.NetworkXException: # In case MDP graph is not planar
+        nx.draw_kamada_kawai(mdp_graph, **kwargs)
 
     if callable(save_figure):
         save_figure(fig, 'mdp_graph-{}'.format(save_handle), folder=save_folder)

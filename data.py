@@ -18,7 +18,7 @@ WANDB_ENTITY_PATH = 'public.WANDB_DEFAULT_ENTITY'
 
 ################################################################################
 
-STATE_LIST = ['★', '∅', 'ℓ_◁', 'ℓ_↖', 'ℓ_↙', 'r_▷', 'r_↗', 'r_↘', 'TERMINAL']
+STATE_LIST = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'TERMINAL'] # ['★', '∅', 'ℓ_◁', 'ℓ_↖', 'ℓ_↙', 'r_▷', 'r_↗', 'r_↘', 'TERMINAL']
 
 DISTRIBUTION_DICT = {
     'uniform': td.Uniform,
@@ -36,7 +36,10 @@ MDP_GRAPH_DICT = {
         ('r_▷', 'r_↗'), ('r_▷', 'r_↘'),
         ('r_↘', 'r_↘'), ('r_↘', 'r_↗'),
         ('r_↗', 'r_↗'), ('r_↗', 'r_↘')
-    ])
+    ]),
+    'peterson_graph': nx.DiGraph(
+        [(str(i), str(o)) for i, o in nx.petersen_graph().edges] + [('8', '8'), ('9', '9'), ('TERMINAL', 'TERMINAL')]
+    )
 }
 
 ################################################################################

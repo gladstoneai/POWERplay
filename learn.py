@@ -74,7 +74,7 @@ def power_calculation_constructor(
             )[1]
 
             # NOTE (IMPORTANT): tensor multiplication between optimal_values and reward_samples[i] CANNOT be
-            # used here without causing multiproessing to hang when the TOTAL number of reward samples
+            # used here without causing multiprocessing to hang when the TOTAL number of reward samples
             # is >=40k or so for 10 workers. The source of this bug is unknown but may be related to an
             # idiosyncracy of pathos multiprocessing. Even just CREATING a reward tensor of that size in the
             # main process and having ANY operation on reward_samples in the child process - EVEN if the

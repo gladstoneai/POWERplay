@@ -24,6 +24,13 @@ def check_mdp_graph(mdp_key, state_list=None, mdp_dict=data.MDP_GRAPH_DICT):
             'The last state entry is the terminal state, which can only lead to itself.'.format(mdp_key)
         )
 
+    if torch.tensor([(adjacency_matrix[i] == 0).all() for i in range(len(adjacency_matrix))]).any():
+        raise Exception(
+            'You can\'t have a row of your adjacency matrix whose entries are all zero, '\
+            'because this corresponds to a state with no successor states. Either give that state a self-loop, '\
+            'or connect it to the TERMINAL state whose reward is fixed at 0.'
+        )
+
 def check_policy(policy, tolerance=1e-4):
     if policy.shape[0] != policy.shape[1]:
         raise Exception('The policy tensor must be n x n.')
