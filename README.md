@@ -12,21 +12,31 @@ Investigation of the following MDP (Figure 1 from the paper):
 
 👉 _This repo will only work with Python 3._
 
-1. Activate `virtualenv`. Run:
+1. Ensure Homebrew and Graphviz are installed to enable MDP visualization. Run:
+  
+    ```
+    % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    ```
+
+    ```
+    % brew install graphviz
+    ```
+
+2. Activate `virtualenv`. Run:
 
   ```
   % python3 -m venv venv
   % source venv/bin/activate
   ```
 
-2. Ensure pip is up to date and download required packages. Run:
+3. Ensure pip is up to date and download required packages. Run:
 
   ```
   % pip install --upgrade pip
   % pip install -r requirements.txt
   ```
 
-3. Create a W&B account if you don't have one already. Then create a file in the main directory called `settings.json` with the following format:
+4. Create a W&B account if you don't have one already. Then create a file in the main directory called `settings.json` with the following format:
 
 ```
 {
@@ -39,7 +49,7 @@ Investigation of the following MDP (Figure 1 from the paper):
 }
 ```
 
-4. Run the `test()` function that will calculate the POWER for each state in the MDP with graph given by `data.MDP_GRAPH_DICT['mdp_from_paper']`, plot the results, and post them to W&B. Run:
+5. Run the `test()` function that will calculate the POWER for each state in the MDP with graph given by `data.MDP_GRAPH_DICT['mdp_from_paper']`, plot the results, and post them to W&B. Run:
 
   ```
   % python -i main.py
@@ -51,7 +61,7 @@ Investigation of the following MDP (Figure 1 from the paper):
   >>> experiment = test()
   ```
 
-5. Confirm that the output you get is consistent. You should see something like:
+6. Confirm that the output you get is consistent. You should see something like:
 
   ```
     wandb: Currently logged in as bob-bobson (use `wandb login --relogin` to force relogin)
