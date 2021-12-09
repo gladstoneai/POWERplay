@@ -93,3 +93,27 @@ def generate_fig_layout(number_of_subplots, sharey=True):
 
 def graph_to_adjacency_matrix(mdp_graph, state_list=None):
     return torch.tensor(nx.to_numpy_array(mdp_graph, nodelist=state_list))
+
+# Converts an undirected graph into a digraph; adds self-loops to all "absorbing" states; adds a TERMINAL state.
+# Basically, a quick and dirty way to convert default NetworkX graphs into graphs compatible with our MDP
+# conventions.
+def quick_graph_to_mdp(mdp_graph):
+    return nx.DiGraph(
+        list(mdp_graph.edges) + [
+            (node, node) for node in mdp_graph.nodes() if node not in [edge[0] for edge in mdp_graph.edges()]
+        ] + [('TERMINAL', 'TERMINAL')]
+    )
+
+def build_run_name(local_sweep_name, run_config, sweep_variable_params):
+    return '-'.join([local_sweep_name] + [ # sorted() ensures naming is always consistent
+        '{0}__{1}'.format(key, run_config[key][1]) for key in sorted(run_config.keys()) if (
+            key in sweep_variable_params
+        )
+    ])
+
+def get_variable_params(sweep_config):
+    return [
+        param for param in sweep_config.get('parameters').keys() if (
+            sweep_config.get('parameters').get(param).get('values') is not None
+        )
+    ]

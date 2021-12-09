@@ -109,11 +109,7 @@ def launch_sweep(
         ).group()
     ], env={
         'LOCAL_SWEEP_NAME': sweep_name,
-        'SWEEP_VARIABLE_PARAMS': json.dumps([
-            param for param in input_sweep_config.get('parameters').keys() if (
-                input_sweep_config.get('parameters').get(param).get('values') is not None
-            )
-        ]),
+        'SWEEP_VARIABLE_PARAMS': json.dumps(utils.get_variable_params(input_sweep_config)),
         **os.environ
     })
 

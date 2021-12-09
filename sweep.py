@@ -22,9 +22,7 @@ def cli_experiment_sweep(
             key: (value[0] if (key in sweep_variable_params) else value) for key, value in run.config.items()
         }
         # Hack to force a specified name for the run in W&B interface
-        run.name = '-'.join([local_sweep_name] + [
-            '{0}__{1}'.format(key, value[1]) for key, value in run.config.items() if (key in sweep_variable_params)
-        ])
+        run.name = utils.build_run_name(local_sweep_name, run.config, sweep_variable_params)
 
         num_reward_samples = run_params.get('num_reward_samples')
         num_workers = run_params.get('num_workers')

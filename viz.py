@@ -41,9 +41,9 @@ def plot_sample_means(
     save_figure=data.save_figure,
     save_folder=data.EXPERIMENT_FOLDER
 ):
-    fig, ax = plt.subplots()
+    fig, ax_ = plt.subplots()
 
-    ax.bar(
+    ax_.bar(
         range(len(state_list)),
         torch.mean(all_samples, axis=0),
         yerr=torch.std(all_samples, axis=0) / np.sqrt(len(all_samples)),
@@ -51,14 +51,14 @@ def plot_sample_means(
         ecolor='black',
         capsize=10
     )
-    ax.set_ylabel('{0} of state ({1})'.format(sample_quantity, sample_units))
-    ax.set_xticks(range(len(state_list)))
-    ax.set_xticklabels(state_list)
-    ax.set_title('{} (mean $\pm$ standard error of the mean) for each state'.format(sample_quantity))
+    ax_.set_ylabel('{0} of state ({1})'.format(sample_quantity, sample_units))
+    ax_.set_xticks(range(len(state_list)))
+    ax_.set_xticklabels(state_list)
+    ax_.set_title('{} (mean $\pm$ standard error of the mean) for each state'.format(sample_quantity))
 
     plt.tight_layout()
 
-    if callable(save_figure):
+    if callable(save_figure) and save_handle is not None:
         save_figure(fig, '{0}_means-{1}'.format(sample_quantity, save_handle), folder=save_folder)
 
     if show:
@@ -83,23 +83,23 @@ def plot_sample_distributions(
     plotted_states = state_list[:-1] if (states_to_plot is None) else states_to_plot
     state_indices = [state_list.index(state_label) for state_label in plotted_states]
 
-    fig_cols, fig_rows, fig, axs_plot = utils.generate_fig_layout(len(state_indices), sharey=True)
+    fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(len(state_indices), sharey=True)
 
     transposed_samples = torch.transpose(all_samples, 0, 1)
 
     for i in range(len(state_indices)):
         # The hist function hangs unless we convert to numpy first
-        axs_plot[i // fig_cols][i % fig_cols].hist(
+        axs_plot_[i // fig_cols][i % fig_cols].hist(
             np.array(transposed_samples[state_indices[i]]),
             bins=np.linspace(
                 (transposed_samples[:-1]).min(), (transposed_samples[:-1]).max(), number_of_bins
             ) if normalize_auc else number_of_bins
         )
-        axs_plot[i // fig_cols][i % fig_cols].title.set_text(plotted_states[i])
+        axs_plot_[i // fig_cols][i % fig_cols].title.set_text(plotted_states[i])
     
     fig.text(0.5, 0.01 / fig_rows, '{0} samples ({1})'.format(sample_quantity, sample_units))
 
-    if callable(save_figure):
+    if callable(save_figure) and save_handle is not None:
         save_figure(fig, '{0}_samples-{1}'.format(sample_quantity, save_handle), folder=save_folder)
     
     if show:
@@ -125,21 +125,21 @@ def plot_sample_correlations(
     state_x_index = state_list.index(state_x)
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
-    fig_cols, fig_rows, fig, axs_plot = utils.generate_fig_layout(len(state_y_indices), sharey=False)
+    fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(len(state_y_indices), sharey=False)
 
     for i in range(len(state_y_indices)):
-        axs_plot[i // fig_cols][i % fig_cols].hist2d(
+        axs_plot_[i // fig_cols][i % fig_cols].hist2d(
             np.array(torch.transpose(all_samples, 0, 1)[state_x_index]),
             np.array(torch.transpose(all_samples, 0, 1)[state_y_indices[i]]),
             bins=number_of_bins
         )
-        axs_plot[i // fig_cols][i % fig_cols].set_ylabel(
+        axs_plot_[i // fig_cols][i % fig_cols].set_ylabel(
             '{0} sample of state {1} ({2})'.format(sample_quantity, state_y_list[i], sample_units)
         )
 
     fig.text(0.5, 0.01 / fig_rows, '{0} sample of state {1} ({2})'.format(sample_quantity, state_x, sample_units))
 
-    if callable(save_figure):
+    if callable(save_figure) and save_handle is not None:
         save_figure(
             fig, '{0}_correlations_{1}-{2}'.format(sample_quantity, state_x, save_handle), folder=save_folder
         )
@@ -172,7 +172,7 @@ def plot_mdp_graph(
     except nx.NetworkXException: # In case MDP graph is not planar
         nx.draw_kamada_kawai(mdp_graph, **kwargs)
 
-    if callable(save_figure):
+    if callable(save_figure) and save_handle is not None:
         save_figure(fig, 'mdp_graph-{}'.format(save_handle), folder=save_folder)
 
     if show:

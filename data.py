@@ -4,6 +4,7 @@ import json
 import torch.distributions as td
 import yaml
 import networkx as nx
+import PIL as pil
 
 import utils
 
@@ -37,9 +38,11 @@ MDP_GRAPH_DICT = {
         ('r_↘', 'r_↘'), ('r_↘', 'r_↗'),
         ('r_↗', 'r_↗'), ('r_↗', 'r_↘')
     ]),
-    'peterson_graph': nx.DiGraph(
-        [(str(i), str(o)) for i, o in nx.petersen_graph().edges] + [('8', '8'), ('9', '9'), ('TERMINAL', 'TERMINAL')]
-    )
+    'petersen_graph': utils.quick_graph_to_mdp(nx.petersen_graph()),
+    'tutte_graph': utils.quick_graph_to_mdp(nx.tutte_graph()),
+    'sedgewick_maze_graph': utils.quick_graph_to_mdp(nx.sedgewick_maze_graph()),
+    'tetrahedral_graph': utils.quick_graph_to_mdp(nx.tetrahedral_graph()),
+    'complete_graph_8': utils.quick_graph_to_mdp(nx.complete_graph(8))
 }
 
 ################################################################################
@@ -73,15 +76,15 @@ def save_sweep_config(sweep_config_dict, folder=EXPERIMENT_FOLDER):
 
 def load_full_sweep(sweep_name, folder=EXPERIMENT_FOLDER):
     sweep_dict = load_sweep_config('{}.yaml'.format(sweep_name), folder=path.Path(folder)/sweep_name)
-    runs_dict = {}
+    runs_dict_ = {}
     for item_path in (path.Path()/folder/sweep_name).iterdir():
         if item_path.is_dir():
             with open(item_path/'data-{}.dill'.format(item_path.name), 'rb') as fr:
-                runs_dict[item_path.name] = dill.load(fr)
+                runs_dict_[item_path.name] = dill.load(fr)
 
     return {
         **sweep_dict,
-        'all_runs_data': runs_dict
+        'all_runs_data': runs_dict_
     }
 
 def save_figure(figure, fig_name, folder=EXPERIMENT_FOLDER):
@@ -93,3 +96,16 @@ def get_settings_value(settings_key_path, settings_filename=SETTINGS_FILENAME):
         value = utils.retrieve(json.load(f), settings_key_path)
     
     return value
+
+def load_png_figure(figure_name, folder):
+    return pil.Image.open(path.Path()/folder/'{}.png'.format(figure_name))
+
+def save_gif_from_frames(frames_list, gif_name, folder):
+    frames_list[0].save(
+        path.Path()/folder/'{}.gif'.format(gif_name),
+        format='GIF',
+        append_images=frames_list,
+        save_all=True,
+        duration=100,
+        loop=0
+    )
