@@ -49,7 +49,7 @@ Investigation of the following MDP (Figure 1 from the paper):
 }
 ```
 
-5. Run the `test()` function that will calculate the POWER for each state in the MDP with graph given by `data.MDP_GRAPH_DICT['mdp_from_paper']`, plot the results, and post them to W&B. Run:
+5. Run the `test()` function that will calculate the POWER for each state in the MDP whose `dot` format graph is stored in `mdps/mdp_from_paper.gv`, plot the results, and post them to W&B. Run:
 
   ```
   % python -i main.py

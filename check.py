@@ -15,8 +15,8 @@ def check_num_samples(num_samples, num_workers):
     if num_samples % num_workers != 0:
         raise Exception('The number of reward samples must be an exact multiple of the number of workers.')
 
-def check_mdp_graph(mdp_key, mdp_dict=data.MDP_GRAPH_DICT):
-    mdp_graph = mdp_dict.get(mdp_key)
+def check_mdp_graph(mdp_key, mdps_folder=data.MDPS_FOLDER):
+    mdp_graph = data.load_graph_from_dot_file(mdp_key, folder=mdps_folder)
 
     if list(mdp_graph)[-1] != 'TERMINAL':
         raise Exception('The last element of the MDP graph {} should always be \'TERMINAL\'.'.format(mdp_key))
