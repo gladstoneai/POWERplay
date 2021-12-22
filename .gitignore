@@ -4,6 +4,7 @@ settings.json
 /venv
 /expts
 /wandb
+/temp
 
 configs/*
 

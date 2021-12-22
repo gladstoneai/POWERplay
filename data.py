@@ -5,6 +5,7 @@ import torch.distributions as td
 import yaml
 import networkx as nx
 import PIL as pil
+import graphviz as gv
 
 import utils
 
@@ -12,6 +13,9 @@ import utils
 
 SWEEP_CONFIGS_FOLDER = 'configs'
 EXPERIMENT_FOLDER = 'expts'
+MDPS_FOLDER = 'mdps'
+TEMP_FOLDER = 'temp'
+
 SETTINGS_FILENAME = 'settings.json'
 
 WANDB_KEY_PATH = 'private.WANDB_API_KEY'
@@ -19,30 +23,9 @@ WANDB_ENTITY_PATH = 'public.WANDB_DEFAULT_ENTITY'
 
 ################################################################################
 
-STATE_LIST = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'TERMINAL'] # ['★', '∅', 'ℓ_◁', 'ℓ_↖', 'ℓ_↙', 'r_▷', 'r_↗', 'r_↘', 'TERMINAL']
-
 DISTRIBUTION_DICT = {
     'uniform': td.Uniform,
     'uniform_0_1_manual': utils.pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100)
-}
-
-MDP_GRAPH_DICT = {
-    'mdp_from_paper': nx.DiGraph([
-        ('★', '∅'), ('★', 'ℓ_◁'), ('★', 'r_▷'),
-        ('∅', '∅'),
-        ('ℓ_◁', 'ℓ_↖'), ('ℓ_◁', 'ℓ_↙'),
-        ('ℓ_↖', 'ℓ_↙'), ('ℓ_↖', 'TERMINAL'),
-        ('ℓ_↙', 'ℓ_↖'), ('ℓ_↙', 'ℓ_↙'),
-        ('TERMINAL', 'TERMINAL'),
-        ('r_▷', 'r_↗'), ('r_▷', 'r_↘'),
-        ('r_↘', 'r_↘'), ('r_↘', 'r_↗'),
-        ('r_↗', 'r_↗'), ('r_↗', 'r_↘')
-    ]),
-    'petersen_graph': utils.quick_graph_to_mdp(nx.petersen_graph()),
-    'tutte_graph': utils.quick_graph_to_mdp(nx.tutte_graph()),
-    'sedgewick_maze_graph': utils.quick_graph_to_mdp(nx.sedgewick_maze_graph()),
-    'tetrahedral_graph': utils.quick_graph_to_mdp(nx.tetrahedral_graph()),
-    'complete_graph_8': utils.quick_graph_to_mdp(nx.complete_graph(8))
 }
 
 ################################################################################
@@ -109,3 +92,42 @@ def save_gif_from_frames(frames_list, gif_name, folder):
         duration=100,
         loop=0
     )
+
+def load_graph_from_dot_file(mdp_name, folder=MDPS_FOLDER):
+    mdp_graph_ = nx.drawing.nx_pydot.read_dot(path.Path()/folder/'{}.gv'.format(mdp_name))
+
+# NOTE: Either the dot format or the NetworkX pydot converter has a bug that often causes
+# an extra orphan node to be appended to the extracted graph, whose name is '\\n'. This seems
+# to be related to bad escaping of the '\' character in one of the steps. We remove those
+# nodes manually in the extraction process when they occur.
+    try:
+        mdp_graph_.remove_node('\\n')
+    except nx.exception.NetworkXError:
+        pass
+
+    return mdp_graph_
+
+def save_graph_to_dot_file(mdp_graph, mdp_filename, folder=MDPS_FOLDER):
+    nx.drawing.nx_pydot.write_dot(mdp_graph, path.Path()/folder/'{}.gv'.format(mdp_filename))
+
+def create_and_save_mdp_figure(
+    mdp_filename,
+    fig_name=None,
+    mdps_folder=MDPS_FOLDER,
+    fig_folder=TEMP_FOLDER,
+    show=False
+):
+    fig_filename = fig_name if fig_name is not None else mdp_filename
+    fig_filepath = path.Path()/fig_folder/'{}.png'.format(fig_filename)
+
+    gv.render(
+        'dot',
+        'png',
+        path.Path()/mdps_folder/'{}.gv'.format(mdp_filename),
+        outfile=fig_filepath
+    )
+    
+    if show:
+        gv.view(fig_filepath)
+
+    return load_png_figure(fig_filepath.stem, fig_filepath.parent)

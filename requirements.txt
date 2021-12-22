@@ -7,3 +7,4 @@ wandb==0.12.7
 networkx==2.6.3
 scipy==1.7.3
 graphviz==0.19
+pydot==1.4.2

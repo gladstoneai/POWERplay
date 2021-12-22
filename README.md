@@ -246,3 +246,52 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
   (Note that it's best to use "p" instead of "." for decimals, since the parameter names are going to be used in filenames.)
 
 🟢 The `launch.launch_sweep()` function returns no output. Instead, it saves the results of the sweep to the `output_folder_local` folder, and to the `/wandb` folder. The rendered correlation plots associated with each run of the sweep are saved under a subfolder of their respective run.
+
+## Creating a new MDP graph
+
+🟣 To save a new MDP graph for later experiments, use `data.save_graph_to_dot_file()` to save a NetworkX graph as a `dot` file in the `mpds` folder. For example, the following code creates and saves the MDP graph from Figure 1 of _Optimal policies tend to seek power_:
+
+```
+>>> import networkx as nx
+>>> new_mdp = nx.DiGraph([
+        ('★', '∅'), ('★', 'ℓ_◁'), ('★', 'r_▷'),
+        ('∅', '∅'),
+        ('ℓ_◁', 'ℓ_↖'), ('ℓ_◁', 'ℓ_↙'),
+        ('ℓ_↖', 'ℓ_↙'), ('ℓ_↖', 'TERMINAL'),
+        ('ℓ_↙', 'ℓ_↖'), ('ℓ_↙', 'ℓ_↙'),
+        ('TERMINAL', 'TERMINAL'),
+        ('r_▷', 'r_↗'), ('r_▷', 'r_↘'),
+        ('r_↘', 'r_↘'), ('r_↘', 'r_↗'),
+        ('r_↗', 'r_↗'), ('r_↗', 'r_↘')
+    ], name='POWER paper MDP'),
+>>> data.save_graph_to_dot_file(new_mdp, 'mdp_from_paper')
+```
+
+**NOTE:** MDPs you save this way will be tracked by git.
+
+🔵 Here are the input arguments to `data.save_graph_to_dot_file()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `mdp_graph [networkx.DiGraph, required]`: The NetworkX [DiGraph](https://networkx.org/documentation/stable/reference/classes/digraph.html) you want to save as your MDP. This should be a directed graph, with nodes representing states, edges representing transitions, and an obligatory `'TERMINAL'` state. If you don't intend to give your MDP a terminal state, then the `'TERMINAL'` state should have no inbound edges.
+
+  For quick tests, you can use one of the [prepackaged NetworkX graph topologies](https://networkx.org/documentation/stable/tutorial.html?highlight=petersen_graph#graph-generators-and-graph-operations) (such as the Petersen graph), and convert these to a compatible directed graph using `utils.quick_graph_to_mdp()`:
+
+  ```
+  >>> import networkx as nx
+  >>> utils.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')
+  ```
+
+  (Note that using `quick_graph_to_mdp()` has the side effect of making your graph not just _directed_, but also _acyclic_. It also forces `'TERMINAL'` to be the only node with no inbound edges, and makes sure that all nodes have at least one outbound edge or self-loop.)
+
+  Typical value: `utils.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')`
+
+- `mdp_filename [str, required]`: The name of the file to save the MDP graph as. This should be a filename without an extension, and should be unique among all MDP graphs you have saved.
+
+  Typical value: `'petersen_graph'`
+
+- `folder [str] (data.MDPS_FOLDER)`: The folder to save the MDP graph in. Note that the `data.MDPS_FOLDER` folder is tracked by git.
+
+  Typical value: `'mdps'`
+
+🟢 The `data.save_graph_to_dot_file()` function returns no output. Instead, it saves the MDP graph to the `data.MDPS_FOLDER` folder for future use.

@@ -8,10 +8,9 @@ def test():
         project='uncategorized'
     )
 
-# TODO: Run an experiment on 2D grid using NetworkX lattice package.
-# TODO: Change figure rendering so parameter values appear in the title (which makes animations clearer).
 # TODO: Use Bayesian updating & conjugate priors for sweep annealing. (Beta & Dirichlet distributions.)
 # TODO: Test setting random seed.
+# TODO: (?) Create a state container for training loop with stateless functions underneath.
 # TODO: Save with wandb instead of homespun data methods.
 # TODO: Investigate writing type hints.
 # TODO: Add argparse.ArgumentParser().
@@ -24,9 +23,8 @@ def test():
 # TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
 # would be great as it would allow me to run local tests without consuming bandwidth, etc.
 
-# TODO NEXT: Use graphviz (already installed) to give better graph visualizations.
-# TODO: Edit the names of states in NetworkX graphs to give them significant labels.
-
+# TODO NEXT: Run an experiment on 2D grid using NetworkX lattice package.
+# TODO NEXT: Change figure rendering so parameter values appear in the title (which makes animations clearer).
 
 '''
 launch.launch_sweep(

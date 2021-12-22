@@ -97,11 +97,11 @@ def graph_to_adjacency_matrix(mdp_graph, state_list=None):
 # Converts an undirected graph into a digraph; adds self-loops to all "absorbing" states; adds a TERMINAL state.
 # Basically, a quick and dirty way to convert default NetworkX graphs into graphs compatible with our MDP
 # conventions.
-def quick_graph_to_mdp(mdp_graph):
+def quick_graph_to_mdp(mdp_graph, name=''):
     return nx.DiGraph(
         list(mdp_graph.edges) + [
             (node, node) for node in mdp_graph.nodes() if node not in [edge[0] for edge in mdp_graph.edges()]
-        ] + [('TERMINAL', 'TERMINAL')]
+        ] + [('TERMINAL', 'TERMINAL')], name=name
     )
 
 def build_run_name(local_sweep_name, run_config, sweep_variable_params):

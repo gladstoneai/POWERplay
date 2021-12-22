@@ -10,11 +10,11 @@ import launch
 import utils
 
 def cli_experiment_sweep(
-    mdp_graph_dict=data.MDP_GRAPH_DICT,
     distribution_dict=data.DISTRIBUTION_DICT,
     local_sweep_name=os.environ.get('LOCAL_SWEEP_NAME'),
     sweep_variable_params=json.loads(os.environ.get('SWEEP_VARIABLE_PARAMS')),
-    experiment_folder=data.EXPERIMENT_FOLDER
+    experiment_folder=data.EXPERIMENT_FOLDER,
+    mdps_folder=data.MDPS_FOLDER
 ):
 
     with wb.init() as run:
@@ -30,8 +30,7 @@ def cli_experiment_sweep(
         convergence_threshold = run_params.get('convergence_threshold')
         random_seed = run_params.get('random_seed')
 
-        mdp_graph = mdp_graph_dict.get(run_params.get('mdp_graph'))
-
+        mdp_graph = data.load_graph_from_dot_file(run_params.get('mdp_graph'), folder=mdps_folder)
         adjacency_matrix = utils.graph_to_adjacency_matrix(mdp_graph)
         reward_sampler = dist.config_to_reward_distribution(
             list(mdp_graph), run_params.get('reward_distribution'), distribution_dict=distribution_dict
