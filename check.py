@@ -90,7 +90,7 @@ def check_sweep_param(param_name, value_dict, checker_function):
 
 def check_sweep_params(sweep_params):
     all_param_checkers = {
-        'mdp_graph': noop,
+        'mdp_graph': check_mdp_graph,
         'discount_rate': check_discount_rate,
         'reward_distribution': noop,
         'num_reward_samples': noop,

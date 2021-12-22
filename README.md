@@ -257,13 +257,13 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
         ('★', '∅'), ('★', 'ℓ_◁'), ('★', 'r_▷'),
         ('∅', '∅'),
         ('ℓ_◁', 'ℓ_↖'), ('ℓ_◁', 'ℓ_↙'),
-        ('ℓ_↖', 'ℓ_↙'), ('ℓ_↖', 'TERMINAL'),
         ('ℓ_↙', 'ℓ_↖'), ('ℓ_↙', 'ℓ_↙'),
-        ('TERMINAL', 'TERMINAL'),
         ('r_▷', 'r_↗'), ('r_▷', 'r_↘'),
         ('r_↘', 'r_↘'), ('r_↘', 'r_↗'),
-        ('r_↗', 'r_↗'), ('r_↗', 'r_↘')
-    ], name='POWER paper MDP'),
+        ('r_↗', 'r_↗'), ('r_↗', 'r_↘'),
+        ('ℓ_↖', 'ℓ_↙'), ('ℓ_↖', 'TERMINAL'),
+        ('TERMINAL', 'TERMINAL')
+    ], name='POWER paper MDP')
 >>> data.save_graph_to_dot_file(new_mdp, 'mdp_from_paper')
 ```
 
@@ -279,10 +279,19 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
 
   ```
   >>> import networkx as nx
-  >>> utils.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')
+  >>> petersen_mdp = utils.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')
   ```
 
-  (Note that using `quick_graph_to_mdp()` has the side effect of making your graph not just _directed_, but also _acyclic_. It also forces `'TERMINAL'` to be the only node with no inbound edges, and makes sure that all nodes have at least one outbound edge or self-loop.)
+  You can also use `utils.quick_graph_to_mdp()` to create a compatible MDP for a gridworld from NetworkX's built-in gridworld functions:
+
+  ```
+  >>> import networkx as nx
+  >>> gridworld_3x3 = utils.quick_graph_to_mdp(nx.generators.lattice.grid_2d_graph(3, 3, create_using=nx.DiGraph()))
+  ```
+
+  If you set `create_using=nx.DiGraph()` in `grid_2d_graph()`, you'll ensure that all the `quick_graph_to_mdp()` function does is add an orphan `'TERMINAL'` state to the graph.
+
+  (Note that using `quick_graph_to_mdp()` on an undirected graph makes the resulting output graph not just _directed_, but also _acyclic_. It also forces `'TERMINAL'` to be an orphan node with no inbound edges, sets `'TERMINAL'` as the _last_ node in the graph's node list, and makes sure that every non-terminal node has at least one outbound edge or self-loop.)
 
   Typical value: `utils.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')`
 

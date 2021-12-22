@@ -25,12 +25,3 @@ def test():
 
 # TODO NEXT: Run an experiment on 2D grid using NetworkX lattice package.
 # TODO NEXT: Change figure rendering so parameter values appear in the title (which makes animations clearer).
-
-'''
-launch.launch_sweep(
-    'sweep-COMPLETE_GRAPH_8_NODES_MDP_GAMMA_SWEEP-distribution_uniform_0t1-samples_100k.yaml',
-    entity=data.get_settings_value('public.WANDB_COLLAB_ENTITY'),
-    project='power-project',
-    beep_when_done=True
-)
-'''

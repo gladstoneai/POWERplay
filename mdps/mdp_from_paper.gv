@@ -5,9 +5,9 @@ digraph "POWER paper MDP" {
 "r_▷";
 "ℓ_↖";
 "ℓ_↙";
-TERMINAL;
 "r_↗";
 "r_↘";
+TERMINAL;
 "★" -> "∅";
 "★" -> "ℓ_◁";
 "★" -> "r_▷";
@@ -20,9 +20,9 @@ TERMINAL;
 "ℓ_↖" -> TERMINAL;
 "ℓ_↙" -> "ℓ_↖";
 "ℓ_↙" -> "ℓ_↙";
-TERMINAL -> TERMINAL;
 "r_↗" -> "r_↗";
 "r_↗" -> "r_↘";
 "r_↘" -> "r_↘";
 "r_↘" -> "r_↗";
+TERMINAL -> TERMINAL;
 }
