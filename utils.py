@@ -104,6 +104,10 @@ def quick_graph_to_mdp(mdp_graph, name=''):
         ] + [('TERMINAL', 'TERMINAL')], name=name
     )
 
+# Adds self-loops to all states in a digraph.
+def mdp_add_self_loops(mdp_graph):
+    return nx.DiGraph(list(mdp_graph.edges) + [(node, node) for node in mdp_graph.nodes()], name=mdp_graph.name)
+
 def build_run_name(local_sweep_name, run_config, sweep_variable_params):
     return '-'.join([local_sweep_name] + [ # sorted() ensures naming is always consistent
         '{0}__{1}'.format(key, run_config[key][1]) for key in sorted(run_config.keys()) if (

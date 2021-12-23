@@ -286,10 +286,10 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
 
   ```
   >>> import networkx as nx
-  >>> gridworld_3x3 = utils.quick_graph_to_mdp(nx.generators.lattice.grid_2d_graph(3, 3, create_using=nx.DiGraph()))
+  >>> gridworld_3x3 = utils.quick_graph_to_mdp(nx.generators.lattice.grid_2d_graph(3, 3, create_using=nx.DiGraph()), name='3x3 gridworld')
   ```
 
-  If you set `create_using=nx.DiGraph()` in `grid_2d_graph()`, you'll ensure that all the `quick_graph_to_mdp()` function does is add an orphan `'TERMINAL'` state to the graph.
+  If you set `create_using=nx.DiGraph()` in `grid_2d_graph()`, you'll ensure that all the `quick_graph_to_mdp()` function does is add an orphan `'TERMINAL'` state to the graph. You'll generally want to use `utils.mdp_add_self_loops()` on a gridworld graph to create a physically realistic gridworld (the agent needs to be able to stay where it is).
 
   (Note that using `quick_graph_to_mdp()` on an undirected graph makes the resulting output graph not just _directed_, but also _acyclic_. It also forces `'TERMINAL'` to be an orphan node with no inbound edges, sets `'TERMINAL'` as the _last_ node in the graph's node list, and makes sure that every non-terminal node has at least one outbound edge or self-loop.)
 
