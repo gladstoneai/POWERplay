@@ -23,5 +23,6 @@ def test():
 # TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
 # would be great as it would allow me to run local tests without consuming bandwidth, etc.
 
-# TODO NEXT: Run an experiment on 2D grid using NetworkX lattice package.
+# TODO NEXT: Add self-loops to the gridworld too so the agent can stay in the same place.
 # TODO NEXT: Change figure rendering so parameter values appear in the title (which makes animations clearer).
+
