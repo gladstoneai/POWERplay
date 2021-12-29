@@ -4,6 +4,7 @@ import operator as op
 import math
 import matplotlib.pyplot as plt
 import networkx as nx
+import numpy as np
 
 ################################################################################
 
@@ -69,9 +70,13 @@ def pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100):
     
     return constructor_l2
 
-def generate_fig_layout(number_of_subplots, sharey=True):
-    fig_cols = min(number_of_subplots, 4)
-    fig_rows = math.ceil(number_of_subplots / fig_cols)
+def generate_fig_layout(subplots, sharey=True):
+    # If layout is for a gridworld, subplots will be a 2-tuple
+    if isinstance(subplots, tuple) and len(subplots) == 2:
+        fig_rows, fig_cols = subplots
+    else:
+        fig_cols = min(subplots, 4)
+        fig_rows = math.ceil(subplots / fig_cols)
 
     fig, axs = plt.subplots(
         fig_rows,
@@ -121,3 +126,8 @@ def get_variable_params(sweep_config):
             sweep_config.get('parameters').get(param).get('values') is not None
         )
     ]
+
+def gridworld_coords_from_states(gridworld_state_list):
+    return list(np.array([
+        [int(coord) for coord in state[1:-1].split(',')] for state in gridworld_state_list if state != 'TERMINAL'
+    ]).T)

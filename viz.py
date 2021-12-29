@@ -5,28 +5,6 @@ import torch
 import data
 import utils
 
-def policy_rollout(policy, reward_function, state_list, starting_state, number_of_steps):
-    if len(policy) != len(reward_function):
-        raise Exception('The policy must have the same number of rows as the reward_function has entries.')
-    
-    if len(reward_function) != len(state_list):
-        raise Exception('The reward_function and state_list must have the same length.')   
-
-    state_index = state_list.index(starting_state)
-
-    state_history = [starting_state]
-    reward_history = [reward_function[state_index].item()]
-
-    for _ in range(number_of_steps):
-        state_index = (policy[state_index] == 1).nonzero()[0].item()
-
-        state_history += [state_list[state_index]]
-        reward_history += [reward_function[state_index].item()]
-    
-    return (
-        state_history, reward_history
-    )
-
 def get_mean_values(state_samples, state_list):
     return { state_list[i]: torch.mean(state_samples, axis=0)[i] for i in range(len(state_list)) }
 
@@ -34,6 +12,7 @@ def plot_sample_means(
     all_samples,
     state_list,
     show=True,
+    plot_as_gridworld=False,
     save_handle=None,
     sample_quantity='POWER',
     sample_units='reward units',
@@ -42,18 +21,33 @@ def plot_sample_means(
 ):
     fig, ax_ = plt.subplots()
 
-    ax_.bar(
-        range(len(state_list)),
-        torch.mean(all_samples, axis=0),
-        yerr=torch.std(all_samples, axis=0) / np.sqrt(len(all_samples)),
-        align='center',
-        ecolor='black',
-        capsize=10
-    )
-    ax_.set_ylabel('{0} of state ({1})'.format(sample_quantity, sample_units))
-    ax_.set_xticks(range(len(state_list)))
-    ax_.set_xticklabels(state_list)
-    ax_.set_title('{} (mean $\pm$ standard error of the mean) for each state'.format(sample_quantity))
+    if plot_as_gridworld:
+        row_coords, col_coords = utils.gridworld_coords_from_states(state_list)
+        heat_map, _, _ = np.histogram2d(
+            row_coords,
+            col_coords,
+            bins=[max(row_coords) + 1, max(col_coords) + 1],
+            weights=all_samples.mean(axis=0)[:-1] # Don't plot TERMINAL
+        )
+
+        ax_.imshow(heat_map)
+        ax_.set_xticks(range(max(col_coords) + 1))
+        ax_.set_yticks(range(max(row_coords) + 1))
+        ax_.set_title('{0} means for each gridworld state ({1})'.format(sample_quantity, sample_units))
+
+    else:
+        ax_.bar(
+            range(len(state_list)),
+            torch.mean(all_samples, axis=0),
+            yerr=torch.std(all_samples, axis=0) / np.sqrt(len(all_samples)),
+            align='center',
+            ecolor='black',
+            capsize=10
+        )
+        ax_.set_ylabel('{0} of state ({1})'.format(sample_quantity, sample_units))
+        ax_.set_xticks(range(len(state_list)))
+        ax_.set_xticklabels(state_list)
+        ax_.set_title('{} (mean $\pm$ standard error of the mean) for each state'.format(sample_quantity))
 
     plt.tight_layout()
 
@@ -72,6 +66,7 @@ def plot_sample_distributions(
     number_of_bins=30,
     normalize_auc=True,
     show=True,
+    plot_as_gridworld=False,
     sample_quantity='POWER',
     sample_units='reward units',
     save_handle=None,
@@ -81,20 +76,29 @@ def plot_sample_distributions(
     # The terminal state (last in the list) has power 0 in all samples, so we don't plot it by default.
     plotted_states = state_list[:-1] if (states_to_plot is None) else states_to_plot
     state_indices = [state_list.index(state_label) for state_label in plotted_states]
-
-    fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(len(state_indices), sharey=True)
-
     transposed_samples = torch.transpose(all_samples, 0, 1)
 
-    for i in range(len(state_indices)):
+    if plot_as_gridworld:
+        row_coords, col_coords = utils.gridworld_coords_from_states(plotted_states)
+
+        fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(
+            (max(row_coords) + 1, max(col_coords) + 1), sharey=True
+        )
+        axis_coords_list = list(zip(row_coords, col_coords))
+    
+    else:
+        fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(len(state_indices), sharey=True)
+        axis_coords_list = [(i // fig_cols, i % fig_cols) for i in range(len(state_indices))]
+
+    for axis_coords, state, state_index in zip(axis_coords_list, plotted_states, state_indices):
         # The hist function hangs unless we convert to numpy first
-        axs_plot_[i // fig_cols][i % fig_cols].hist(
-            np.array(transposed_samples[state_indices[i]]),
+        axs_plot_[axis_coords[0]][axis_coords[1]].hist(
+            np.array(transposed_samples[state_index]),
             bins=np.linspace(
                 (transposed_samples[:-1]).min(), (transposed_samples[:-1]).max(), number_of_bins
             ) if normalize_auc else number_of_bins
         )
-        axs_plot_[i // fig_cols][i % fig_cols].title.set_text(plotted_states[i])
+        axs_plot_[axis_coords[0]][axis_coords[1]].title.set_text(state)
     
     fig.text(0.5, 0.01 / fig_rows, '{0} samples ({1})'.format(sample_quantity, sample_units))
 
@@ -113,6 +117,7 @@ def plot_sample_correlations(
     state_list_y=None,
     number_of_bins=30,
     show=True,
+    plot_as_gridworld=False,
     sample_quantity='POWER',
     sample_units='reward units',
     save_handle=None,
@@ -124,16 +129,26 @@ def plot_sample_correlations(
     state_x_index = state_list.index(state_x)
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
-    fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(len(state_y_indices), sharey=False)
+    if plot_as_gridworld:
+        row_coords, col_coords = utils.gridworld_coords_from_states(state_y_list)
 
-    for i in range(len(state_y_indices)):
-        axs_plot_[i // fig_cols][i % fig_cols].hist2d(
+        fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(
+            (max(row_coords) + 1, max(col_coords) + 1), sharey=False
+        )
+        axis_coords_list = list(zip(row_coords, col_coords))
+
+    else:
+        fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(len(state_y_indices), sharey=False)
+        axis_coords_list = [(i // fig_cols, i % fig_cols) for i in range(len(state_y_indices))]
+
+    for axis_coords, state_y, state_y_index in zip(axis_coords_list, state_y_list, state_y_indices):
+        axs_plot_[axis_coords[0]][axis_coords[1]].hist2d(
             np.array(torch.transpose(all_samples, 0, 1)[state_x_index]),
-            np.array(torch.transpose(all_samples, 0, 1)[state_y_indices[i]]),
+            np.array(torch.transpose(all_samples, 0, 1)[state_y_index]),
             bins=number_of_bins
         )
-        axs_plot_[i // fig_cols][i % fig_cols].set_ylabel(
-            '{0} sample of state {1} ({2})'.format(sample_quantity, state_y_list[i], sample_units)
+        axs_plot_[axis_coords[0]][axis_coords[1]].set_ylabel(
+            '{0} sample of state {1} ({2})'.format(sample_quantity, state_y, sample_units)
         )
 
     fig.text(0.5, 0.01 / fig_rows, '{0} sample of state {1} ({2})'.format(sample_quantity, state_x, sample_units))
@@ -174,7 +189,11 @@ def render_all_outputs(reward_samples, power_samples, mdp_graph, sample_filter=N
     state_list = list(mdp_graph)
     rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
     ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
-    mdp_kwargs = { k: kwargs[k] for k in kwargs.keys() if k != 'save_figure' }
+    mdp_kwargs = {
+        key: kwargs[key] for key in list(
+            set(kwargs.keys()) & set(['show', 'save_handle', 'save_folder', 'temp_folder'])
+        )
+    }
 
     print()
     print('Rendering plots...')

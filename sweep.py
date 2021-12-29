@@ -1,3 +1,4 @@
+from matplotlib.pyplot import plot
 import wandb as wb
 import os
 import json
@@ -13,6 +14,7 @@ def cli_experiment_sweep(
     distribution_dict=data.DISTRIBUTION_DICT,
     local_sweep_name=os.environ.get('LOCAL_SWEEP_NAME'),
     sweep_variable_params=json.loads(os.environ.get('SWEEP_VARIABLE_PARAMS')),
+    plot_as_gridworld=(os.environ.get('PLOT_AS_GRIDWORLD') == 'True'),
     experiment_folder=data.EXPERIMENT_FOLDER,
     mdps_folder=data.MDPS_FOLDER
 ):
@@ -63,7 +65,8 @@ def cli_experiment_sweep(
             save_handle=run.name,
             save_figure=data.save_figure,
             save_folder=save_folder,
-            show=False
+            show=False,
+            plot_as_gridworld=plot_as_gridworld
         ).items() })
 
 cli_experiment_sweep()

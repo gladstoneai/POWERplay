@@ -79,6 +79,7 @@ def launch_sweep(
     project='uncategorized',
     sweep_config_folder=data.SWEEP_CONFIGS_FOLDER,
     output_folder_local=data.EXPERIMENT_FOLDER,
+    plot_as_gridworld=False,
     beep_when_done=False
 ):
     input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=path.Path(sweep_config_folder))
@@ -108,15 +109,15 @@ def launch_sweep(
             sp.run(['wandb', 'sweep', sweep_config_filepath], capture_output=True).stderr.decode('utf-8')
         ).group()
     ], env={
+        **os.environ,
         'LOCAL_SWEEP_NAME': sweep_name,
         'SWEEP_VARIABLE_PARAMS': json.dumps(utils.get_variable_params(input_sweep_config)),
-        **os.environ
+        'PLOT_AS_GRIDWORLD': str(plot_as_gridworld) # Only str allowed in os.environ
     })
 
     if beep_when_done:
         print('\a')
         print('\a')
         print('\a')
-
 
 
