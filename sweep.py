@@ -1,4 +1,3 @@
-from matplotlib.pyplot import plot
 import wandb as wb
 import os
 import json

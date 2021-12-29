@@ -27,9 +27,3 @@ def test():
 # TODO: Use Bayesian updating & conjugate priors for sweep annealing. (Beta & Dirichlet distributions.)
 # TODO: Test a gridworld that's two squares with one cell in between (a "bridge").
 
-launch.launch_sweep(
-    'test_sweep_gridworld.yaml',
-    entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
-    project='uncategorized',
-    plot_as_gridworld=True
-)
