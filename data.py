@@ -25,7 +25,8 @@ WANDB_ENTITY_PATH = 'public.WANDB_DEFAULT_ENTITY'
 
 DISTRIBUTION_DICT = {
     'uniform': td.Uniform,
-    'uniform_0_1_manual': utils.pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100)
+    'uniform_0_1_manual': utils.pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100),
+    'beta': td.Beta
 }
 
 ################################################################################
