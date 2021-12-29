@@ -9,7 +9,6 @@ def test():
     )
 
 # TODO: Test setting random seed.
-# TODO: Remove privileged status of TERMINAL state (and delete MDP requirements for a TERMINAL state).
 # TODO: Put code files in src directory.
 # TODO: (?) Create a state container for training loop with stateless functions underneath.
 # TODO: Save with wandb instead of homespun data methods.
@@ -24,12 +23,11 @@ def test():
 # TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
 # would be great as it would allow me to run local tests without consuming bandwidth, etc.
 
-# TODO NEXT: Change figure rendering so parameter values appear in the title (which makes animations clearer).
-# TODO NEXT: Test a gridworld that's two squares with one cell in between (a "bridge").
-
+# TODO NEXT: Remove privileged status of TERMINAL state (and delete MDP requirements for a TERMINAL state).
+# TODO NEXT: Writeup with thoughts on next steps for experiments.
 '''
 launch.launch_sweep(
-    'sweep-REWARD_ANNEALING_CONJUGATE_BETA_ON_GRIDWORLD-gamma_0p5-samples_100k.yaml',
+    'sweep-SL_GRIDWORLD_2_3x3_ROOMS_GAMMA_SWEEP-distribution_uniform_0t1-samples_100k.yaml',
     entity=data.get_settings_value('public.WANDB_COLLAB_ENTITY'),
     project='power-project',
     plot_as_gridworld=True,
