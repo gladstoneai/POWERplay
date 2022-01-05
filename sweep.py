@@ -14,6 +14,7 @@ def cli_experiment_sweep(
     local_sweep_name=os.environ.get('LOCAL_SWEEP_NAME'),
     sweep_variable_params=json.loads(os.environ.get('SWEEP_VARIABLE_PARAMS')),
     plot_as_gridworld=(os.environ.get('PLOT_AS_GRIDWORLD') == 'True'),
+    plot_correlations=(os.environ.get('PLOT_CORRELATIONS') == 'True'),
     experiment_folder=data.EXPERIMENT_FOLDER,
     mdps_folder=data.MDPS_FOLDER
 ):
@@ -65,7 +66,8 @@ def cli_experiment_sweep(
             save_figure=data.save_figure,
             save_folder=save_folder,
             show=False,
-            plot_as_gridworld=plot_as_gridworld
+            plot_as_gridworld=plot_as_gridworld,
+            plot_correlations=plot_correlations
         ).items() })
 
 cli_experiment_sweep()

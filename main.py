@@ -8,8 +8,6 @@ def test():
         project='uncategorized'
     )
 
-# TODO: Remove privileged status of TERMINAL state (and delete MDP requirements for a TERMINAL state).
-# TODO: Test setting random seed.
 # TODO: Put code files in src directory.
 # TODO: (?) Create a state container for training loop with stateless functions underneath.
 # TODO: Save with wandb instead of homespun data methods.
@@ -24,8 +22,5 @@ def test():
 # TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
 # would be great as it would allow me to run local tests without consuming bandwidth, etc.
 
-# TODO NEXT: Do a run for a 100-cell gridworld at 0.8 discount rate, 5k-10k samples to confirm scaling.
-# TODO NEXT: Look at how the POWER of the states changes as we anneal from maxent to a distribution over one-hot
-# reward functions. (i.e., the distribution that places equal weight on any one state having a reward of 1, with
-# the rest having reward of 0.)
-
+# TODO: Remove privileged status of TERMINAL state (and delete MDP requirements for a TERMINAL state).
+# TODO: Test setting random seed.

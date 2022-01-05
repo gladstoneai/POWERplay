@@ -80,6 +80,7 @@ def launch_sweep(
     sweep_config_folder=data.SWEEP_CONFIGS_FOLDER,
     output_folder_local=data.EXPERIMENT_FOLDER,
     plot_as_gridworld=False,
+    plot_correlations=True,
     beep_when_done=False
 ):
     input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=path.Path(sweep_config_folder))
@@ -112,7 +113,8 @@ def launch_sweep(
         **os.environ,
         'LOCAL_SWEEP_NAME': sweep_name,
         'SWEEP_VARIABLE_PARAMS': json.dumps(utils.get_variable_params(input_sweep_config)),
-        'PLOT_AS_GRIDWORLD': str(plot_as_gridworld) # Only str allowed in os.environ
+        'PLOT_AS_GRIDWORLD': str(plot_as_gridworld), # Only str allowed in os.environ
+        'PLOT_CORRELATIONS': str(plot_correlations)
     })
 
     if beep_when_done:

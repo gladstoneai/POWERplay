@@ -20,18 +20,19 @@ def plot_sample_means(
     save_figure=data.save_figure,
     save_folder=data.EXPERIMENT_FOLDER
 ):
-    fig, ax_ = plt.subplots()
-
     if plot_as_gridworld:
         row_coords, col_coords = utils.gridworld_coords_from_states(state_list)
+        num_rows, num_cols = max(row_coords) + 1, max(col_coords) + 1
         excluded_coords = list(
             set(
-                it.product(range(max(row_coords) + 1), range(max(col_coords) + 1))
+                it.product(range(num_rows), range(num_cols))
             ) - set(
                 [(row_coord, col_coord) for row_coord, col_coord in zip(row_coords, col_coords)]
             )
         )
         sample_means = all_samples.mean(axis=0)[:-1] # Don't plot TERMINAL
+
+        fig, ax_ = plt.subplots(figsize=(num_rows, num_cols))
 
         # Fill excluded coords with nan values to maximize contrast for non-nan entries
         heat_map, _, _ = np.histogram2d(
@@ -57,6 +58,8 @@ def plot_sample_means(
             )
 
     else:
+        fig, ax_ = plt.subplots()
+
         ax_.bar(
             range(len(state_list)),
             torch.mean(all_samples, axis=0),
@@ -206,7 +209,14 @@ def plot_mdp_graph(
     return fig
 
 # Here sample_filter is, e.g., reward_samples[:, 3] < reward_samples[:, 4]
-def render_all_outputs(reward_samples, power_samples, mdp_graph, sample_filter=None, **kwargs):
+def render_all_outputs(
+    reward_samples,
+    power_samples,
+    mdp_graph,
+    sample_filter=None,
+    plot_correlations=True,
+    **kwargs
+):
     state_list = list(mdp_graph)
     rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
     ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
@@ -230,9 +240,9 @@ def render_all_outputs(reward_samples, power_samples, mdp_graph, sample_filter=N
         'POWER samples over states': plot_sample_distributions(
             ps_inputs, state_list, sample_quantity='POWER', sample_units='reward units', **kwargs
         ),
-        **{
+        **({
             'POWER correlations, state {}'.format(state): plot_sample_correlations(
                 ps_inputs, state_list, state, sample_quantity='POWER', sample_units='reward units', **kwargs
             ) for state in state_list[:-1] # Don't plot or save terminal state
-        }
+        } if plot_correlations else {})
     }
