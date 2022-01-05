@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import itertools as it
 
 import data
 import utils
@@ -23,11 +24,20 @@ def plot_sample_means(
 
     if plot_as_gridworld:
         row_coords, col_coords = utils.gridworld_coords_from_states(state_list)
+        excluded_coords = list(
+            set(
+                it.product(range(max(row_coords) + 1), range(max(col_coords) + 1))
+            ) - set(
+                [(row_coord, col_coord) for row_coord, col_coord in zip(row_coords, col_coords)]
+            )
+        )
+        # Fill excluded coords with nan values to maximize contrast for non-nan entries
         heat_map, _, _ = np.histogram2d(
-            row_coords,
-            col_coords,
+            np.append(row_coords, [coords[0] for coords in excluded_coords]),
+            np.append(col_coords, [coords[1] for coords in excluded_coords]),
             bins=[max(row_coords) + 1, max(col_coords) + 1],
-            weights=all_samples.mean(axis=0)[:-1] # Don't plot TERMINAL
+        # Don't plot TERMINAL
+            weights=np.append(all_samples.mean(axis=0)[:-1], np.full(len(excluded_coords), np.nan))
         )
 
         ax_.imshow(heat_map)
