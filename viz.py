@@ -31,19 +31,30 @@ def plot_sample_means(
                 [(row_coord, col_coord) for row_coord, col_coord in zip(row_coords, col_coords)]
             )
         )
+        sample_means = all_samples.mean(axis=0)[:-1] # Don't plot TERMINAL
+
         # Fill excluded coords with nan values to maximize contrast for non-nan entries
         heat_map, _, _ = np.histogram2d(
             np.append(row_coords, [coords[0] for coords in excluded_coords]),
             np.append(col_coords, [coords[1] for coords in excluded_coords]),
             bins=[max(row_coords) + 1, max(col_coords) + 1],
-        # Don't plot TERMINAL
-            weights=np.append(all_samples.mean(axis=0)[:-1], np.full(len(excluded_coords), np.nan))
+            weights=np.append(sample_means, np.full(len(excluded_coords), np.nan))
         )
 
         ax_.imshow(heat_map)
         ax_.set_xticks(range(max(col_coords) + 1))
         ax_.set_yticks(range(max(row_coords) + 1))
         ax_.set_title('{0} means for each gridworld state ({1})'.format(sample_quantity, sample_units))
+
+        for sample_index in range(len(row_coords)):
+            ax_.text(
+                row_coords[sample_index],
+                col_coords[sample_index],
+                round(float(sample_means[sample_index]), 4),
+                ha='center',
+                va='center',
+                color='w'
+            )
 
     else:
         ax_.bar(
