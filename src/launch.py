@@ -7,10 +7,10 @@ import re
 import os
 import json
 
-import utils
-import data
-import learn
-import check
+from . import utils
+from . import data
+from . import learn
+from . import check
 
 def rewards_to_powers(
     reward_samples,

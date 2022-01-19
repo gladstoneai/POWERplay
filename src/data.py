@@ -7,7 +7,7 @@ import networkx as nx
 import PIL as pil
 import graphviz as gv
 
-import utils
+from . import utils
 
 ################################################################################
 

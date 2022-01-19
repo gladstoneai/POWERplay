@@ -1,6 +1,6 @@
 import torch
 
-import data
+from . import data
 
 # A 1d pdf config has the form
 # { 'dist_name': <key for distribution in data.DISTRIBUTION_DICT>, 'params': <params input to that distribution> }

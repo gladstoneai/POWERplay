@@ -1,8 +1,8 @@
 import torch
 import pathos.multiprocessing as mps
 
-import data
-import utils
+from . import data
+from . import utils
 
 def check_project_exists(project, entity, wb_api):
     if project not in [proj.name for proj in wb_api.projects(entity=entity)]:

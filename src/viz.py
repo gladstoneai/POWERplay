@@ -3,8 +3,8 @@ import numpy as np
 import torch
 import itertools as it
 
-import data
-import utils
+from . import data
+from . import utils
 
 def get_mean_values(state_samples, state_list):
     return { state_list[i]: torch.mean(state_samples, axis=0)[i] for i in range(len(state_list)) }

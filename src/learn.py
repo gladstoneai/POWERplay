@@ -3,7 +3,7 @@ import torch
 import copy as cp
 import sys
 
-import utils
+from . import utils
 
 def get_greedy_policy(value_function, adjacency_matrix):
     return tf.one_hot(torch.argmax(

@@ -1,7 +1,7 @@
 import pathlib as path
 
-import data
-import utils
+from . import data
+from . import utils
 
 def animate_full_sweep(
     sweep_name,

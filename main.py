@@ -1,5 +1,5 @@
-import launch
-import data
+from src import launch
+from src import data
 
 def test():
     launch.launch_sweep(
@@ -8,7 +8,6 @@ def test():
         project='uncategorized'
     )
 
-# TODO: Put code files in src directory.
 # TODO: (?) Create a state container for training loop with stateless functions underneath.
 # TODO: Save with wandb instead of homespun data methods.
 # TODO: Investigate writing type hints.
@@ -24,3 +23,6 @@ def test():
 
 # TODO: Remove privileged status of TERMINAL state (and delete MDP requirements for a TERMINAL state).
 # TODO: Test setting random seed.
+
+# TODO NEXT: Test simple 3-cell gridworld with 2 agents and a fixed policy.
+# TODO NEXT: Experiment with multiple fixed policies in the 3-cell 2-agent gridworld.

@@ -3,11 +3,11 @@ import os
 import json
 import pathlib as path
 
-import data
-import viz
-import dist
-import launch
-import utils
+from src import data
+from src import viz
+from src import dist
+from src import launch
+from src import utils
 
 def cli_experiment_sweep(
     distribution_dict=data.DISTRIBUTION_DICT,
