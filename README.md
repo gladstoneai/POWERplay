@@ -6,7 +6,7 @@ Reference paper: _[Optimal policies tend to seek power](https://arxiv.org/pdf/19
 
 Investigation of the following MDP (Figure 1 from the paper):
 
-![power-example-mdp](img/power-example-mdp.png)
+![power-example-mdp](img/power_example_mdp.png)
 
 ## Installation, setup, and testing
 
@@ -247,7 +247,7 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
 
 🟢 The `launch.launch_sweep()` function returns no output. Instead, it saves the results of the sweep to the `output_folder_local` folder, and to the `/wandb` folder. The rendered correlation plots associated with each run of the sweep are saved under a subfolder of their respective run.
 
-## Creating a new MDP graph
+## Creating a deterministic MDP graph
 
 🟣 To save a new MDP graph for later experiments, use `data.save_graph_to_dot_file()` to save a NetworkX graph as a `dot` file in the `mpds` folder. For example, the following code creates and saves the MDP graph from Figure 1 of _Optimal policies tend to seek power_:
 
@@ -275,25 +275,15 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
 
 - `mdp_graph [networkx.DiGraph, required]`: The NetworkX [DiGraph](https://networkx.org/documentation/stable/reference/classes/digraph.html) you want to save as your MDP. This should be a directed graph, with nodes representing states, edges representing transitions, and an obligatory `'TERMINAL'` state. If you don't intend to give your MDP a terminal state, then the `'TERMINAL'` state should have no inbound edges.
 
-  For quick tests, you can use one of the [prepackaged NetworkX graph topologies](https://networkx.org/documentation/stable/tutorial.html?highlight=petersen_graph#graph-generators-and-graph-operations) (such as the Petersen graph), and convert these to a compatible directed graph using `utils.quick_graph_to_mdp()`:
+  For quick tests, you can use one of the [prepackaged NetworkX graph topologies](https://networkx.org/documentation/stable/tutorial.html?highlight=petersen_graph#graph-generators-and-graph-operations) (such as the Petersen graph), and convert these to a compatible directed graph using `mdp.quick_graph_to_mdp()`:
 
   ```
   >>> import networkx as nx
   >>> petersen_mdp = utils.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')
   ```
-
-  You can also use `utils.quick_graph_to_mdp()` to create a compatible MDP for a gridworld from NetworkX's built-in gridworld functions:
-
-  ```
-  >>> import networkx as nx
-  >>> gridworld_3x3 = utils.quick_graph_to_mdp(nx.generators.lattice.grid_2d_graph(3, 3, create_using=nx.DiGraph()), name='3x3 gridworld')
-  ```
-
-  If you set `create_using=nx.DiGraph()` in `grid_2d_graph()`, you'll ensure that all the `quick_graph_to_mdp()` function does is add an orphan `'TERMINAL'` state to the graph. You'll generally want to use `utils.mdp_add_self_loops()` on a gridworld graph to create a physically realistic gridworld (the agent needs to be able to stay where it is).
-
   (Note that using `quick_graph_to_mdp()` on an undirected graph makes the resulting output graph not just _directed_, but also _acyclic_. It also forces `'TERMINAL'` to be an orphan node with no inbound edges, sets `'TERMINAL'` as the _last_ node in the graph's node list, and makes sure that every non-terminal node has at least one outbound edge or self-loop.)
 
-  Typical value: `utils.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')`
+  Typical value: `mdp.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')`
 
 - `mdp_filename [str, required]`: The name of the file to save the MDP graph as. This should be a filename without an extension, and should be unique among all MDP graphs you have saved.
 
@@ -304,3 +294,39 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
   Typical value: `'mdps'`
 
 🟢 The `data.save_graph_to_dot_file()` function returns no output. Instead, it saves the MDP graph to the `data.MDPS_FOLDER` folder for future use.
+
+## Creating a gridworld MDP graph
+
+🟣 To create a gridworld MDP, use `mdp.construct_gridworld()`. For example, the following code creates the gridworld pictured below:
+
+```
+>>> gridworld = mdp.construct_gridworld(10, 10, squares_to_delete=[['(0, 0)', '(3, 2)'], ['(6, 4)', '(8, 7)']])
+```
+
+![gridworld-example](img/gridworld_example.png)
+
+🔵 Here are the input arguments to `mdp.construct_gridworld()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `num_rows [int, required]`: The maximum number of rows in your gridworld.
+
+  Typical value: `5`
+
+- `num_cols [int, required]`: The maximum number of columns in your gridworld.
+
+  Typical value: `5`
+
+- `name [str] ('custom gridworld')`: The name you want to give your gridworld.
+
+  Typical value: `'3x3 gridworld'`
+
+- `squares_to_delete [list] ([])`: A list of 2-tuples, where each 2-tuple is a pair of coordinates (in **string** format) for the edges of a square you want to delete from your gridworld. For example, if you want to delete the square with the top-left corner at (0, 0) and the bottom-right corner at (2, 2), then you would use `squares_to_delete=[['(0, 0)', '(2, 2)']]`. This format allows us to quickly construct gridworlds with interesting structures.
+
+  Typical value: `[['(0, 0)', '(3, 2)'], ['(6, 4)', '(8, 7)']]`
+
+🟢 Here is the output to `mdp.construct_gridworld()`:
+
+- `gridworld_graph [networkx.DiGraph]`: An MDP graph representing the gridworld you created. Each square has a self-loop, and connections to the squares above, beneath, to the left, and to the right of it (if they exist).
+
+The states of the gridworld MDP are strings indicating the coordinates of each cell in the gridworld. For example, the state `'(0, 0)'` represents the cell at the top-left corner of the gridworld.

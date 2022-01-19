@@ -6,9 +6,6 @@ import itertools as it
 from . import data
 from . import utils
 
-def get_mean_values(state_samples, state_list):
-    return { state_list[i]: torch.mean(state_samples, axis=0)[i] for i in range(len(state_list)) }
-
 def plot_sample_means(
     all_samples,
     state_list,
@@ -49,8 +46,8 @@ def plot_sample_means(
 
         for sample_index in range(len(row_coords)):
             ax_.text(
-                row_coords[sample_index],
                 col_coords[sample_index],
+                row_coords[sample_index],
                 round(float(sample_means[sample_index]), 4),
                 ha='center',
                 va='center',

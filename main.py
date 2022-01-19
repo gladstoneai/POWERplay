@@ -8,6 +8,15 @@ def test():
         project='uncategorized'
     )
 
+def test_gridworld():
+    launch.launch_sweep(
+        'test_sweep_gridworld.yaml',
+        entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        project='uncategorized'
+    )
+
+# TODO: Remove privileged status of TERMINAL state (and delete MDP requirements for a TERMINAL state).
+# TODO: Test setting random seed.
 # TODO: (?) Create a state container for training loop with stateless functions underneath.
 # TODO: Save with wandb instead of homespun data methods.
 # TODO: Investigate writing type hints.
@@ -21,8 +30,7 @@ def test():
 # TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
 # would be great as it would allow me to run local tests without consuming bandwidth, etc.
 
-# TODO: Remove privileged status of TERMINAL state (and delete MDP requirements for a TERMINAL state).
-# TODO: Test setting random seed.
-
 # TODO NEXT: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 # TODO NEXT: Experiment with multiple fixed policies in the 3-cell 2-agent gridworld.
+
+# TODO NEXT: Add policy construction method onto an existing gridworld. Test & document.

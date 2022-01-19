@@ -5,8 +5,6 @@ import math
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import itertools as it
-import copy as cp
 
 ################################################################################
 
@@ -101,20 +99,6 @@ def generate_fig_layout(subplots, sharey=True):
 def graph_to_adjacency_matrix(mdp_graph, state_list=None):
     return torch.tensor(nx.to_numpy_array(mdp_graph, nodelist=state_list))
 
-# Converts an undirected graph into a digraph; adds self-loops to all "absorbing" states; adds a TERMINAL state.
-# Basically, a quick and dirty way to convert default NetworkX graphs into graphs compatible with our MDP
-# conventions.
-def quick_graph_to_mdp(mdp_graph, name=''):
-    return nx.DiGraph(
-        list(mdp_graph.edges) + [
-            (node, node) for node in mdp_graph.nodes() if node not in [edge[0] for edge in mdp_graph.edges()]
-        ] + [('TERMINAL', 'TERMINAL')], name=name
-    )
-
-# Adds self-loops to all states in a digraph.
-def mdp_add_self_loops(mdp_graph):
-    return nx.DiGraph(list(nx.DiGraph(mdp_graph).edges) + [(node, node) for node in mdp_graph.nodes()], name=mdp_graph.name)
-
 def build_run_name(local_sweep_name, run_config, sweep_variable_params):
     return '-'.join([local_sweep_name] + [ # sorted() ensures naming is always consistent
         '{0}__{1}'.format(key, run_config[key][1]) for key in sorted(run_config.keys()) if (
@@ -131,17 +115,5 @@ def get_variable_params(sweep_config):
 
 def gridworld_coords_from_states(gridworld_state_list):
     return list(np.array([
-        [int(coord) for coord in state[1:-1].split(',')] for state in gridworld_state_list if state != 'TERMINAL'
+        [int(coord) for coord in str(state)[1:-1].split(',')] for state in gridworld_state_list if state != 'TERMINAL'
     ]).T)
-
-# Deletes all states of a gridworld in the square defined by corner1_state and corner2_state.
-# e.g., corner1_state='(0, 0)', corner1_state='(2, 2)' deletes all states in the square:
-# '(0, 0)', '(0, 1)', '(0, 2)', '(1, 0)', '(1, 1)', '(1, 2)', '(2, 0)', '(2, 1)', '(2, 2)'
-def delete_gridworld_square(gridworld_mdp_graph, corner1_state, corner2_state):
-    row_coord_lims, col_coord_lims = gridworld_coords_from_states([corner1_state, corner2_state])
-    rows_to_delete = list(range(min(row_coord_lims), max(row_coord_lims) + 1))
-    cols_to_delete = list(range(min(col_coord_lims), max(col_coord_lims) + 1))
-
-    states_to_delete = [state for state in it.product(rows_to_delete, cols_to_delete)]
-    # The state may be saved as a str or a tuple, so we delete both kinds.
-    return cp.deepcopy(gridworld_mdp_graph).remove_nodes_from(states_to_delete + [str(state) for state in states_to_delete])
