@@ -5,21 +5,20 @@ import sys
 
 from . import utils
 
-def get_greedy_policy(value_function, adjacency_matrix):
-    return tf.one_hot(torch.argmax(
-        adjacency_matrix * (value_function + torch.min(value_function) + 1), axis=1
-    ), num_classes=len(value_function))
-
 def value_iteration(
     reward_function,
     discount_rate,
-    adjacency_matrix,
+    state_action_matrix,
+    transition_tensor=None,
     value_initialization=None,
     convergence_threshold=1e-4
 ):
     value_function = torch.zeros(len(reward_function)) if (
         value_initialization is None
     ) else cp.deepcopy(value_initialization)
+    transition_tensor_sparse = utils.create_default_transition_tensor(state_action_matrix) if (
+        transition_tensor is None
+    ) else transition_tensor.to_sparse()
 
     is_first_iteration = True
 
@@ -31,19 +30,18 @@ def value_iteration(
         
         for state in range(len(reward_function)):
             value_function[state] = reward_function[state] + discount_rate * torch.max(
-                value_function.masked_select(adjacency_matrix[state].type(torch.ByteTensor).bool())
+                # Previously: value_function.masked_select(state_action_matrix[state].type(torch.ByteTensor).bool())
+                torch.sparse.mm(transition_tensor_sparse[state], value_function.unsqueeze(1))
             )
 
         max_value_change = utils.calculate_value_convergence(old_values, value_function)
 
-    return (
-        get_greedy_policy(value_function, adjacency_matrix),
-        value_function
-    )
+    return value_function
 
 def power_calculation_constructor(
-    adjacency_matrix,
+    state_action_matrix,
     discount_rate,
+    transition_tensor=None,
     convergence_threshold=1e-4,
     value_initializations=None,
     worker_pool_size=1
@@ -67,10 +65,11 @@ def power_calculation_constructor(
             optimal_values = value_iteration(
                 reward_samples[i],
                 discount_rate,
-                adjacency_matrix,
+                state_action_matrix,
+                transition_tensor=transition_tensor,
                 value_initialization=all_value_initializations[i],
                 convergence_threshold=convergence_threshold
-            )[1]
+            )
 
             # NOTE (IMPORTANT): tensor multiplication between optimal_values and reward_samples[i] CANNOT be
             # used here without causing multiprocessing to hang when the TOTAL number of reward samples

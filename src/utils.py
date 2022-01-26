@@ -96,7 +96,7 @@ def generate_fig_layout(subplots, sharey=True):
         axs_rows if fig_rows > 1 else [axs_rows]
     )
 
-def graph_to_adjacency_matrix(mdp_graph, state_list=None):
+def graph_to_state_action_matrix(mdp_graph, state_list=None):
     return torch.tensor(nx.to_numpy_array(mdp_graph, nodelist=state_list))
 
 def build_run_name(local_sweep_name, run_config, sweep_variable_params):
@@ -117,3 +117,12 @@ def gridworld_coords_from_states(gridworld_state_list):
     return list(np.array([
         [int(coord) for coord in str(state)[1:-1].split(',')] for state in gridworld_state_list
     ]).T)
+
+def create_default_transition_tensor(state_action_matrix):
+    sparse_sam = state_action_matrix.to_sparse()
+    return torch.sparse_coo_tensor(
+        torch.vstack((sparse_sam.indices(), sparse_sam.indices()[1].unsqueeze(0))),
+        sparse_sam.values(),
+        3 * [sparse_sam.size()[0]],
+        dtype=torch.float
+    )

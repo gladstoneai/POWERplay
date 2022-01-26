@@ -18,9 +18,9 @@ def check_num_samples(num_samples, num_workers):
 def check_mdp_graph(mdp_key, mdps_folder=data.MDPS_FOLDER):
     mdp_graph = data.load_graph_from_dot_file(mdp_key, folder=mdps_folder)
 
-    adjacency_matrix = utils.graph_to_adjacency_matrix(mdp_graph)
+    state_action_matrix = utils.graph_to_state_action_matrix(mdp_graph)
 
-    if torch.tensor([(adjacency_matrix[i] == 0).all() for i in range(len(adjacency_matrix))]).any():
+    if torch.tensor([(state_action_matrix[i] == 0).all() for i in range(len(state_action_matrix))]).any():
         raise Exception(
             'You can\'t have a row of your adjacency matrix whose entries are all zero, '\
             'because this corresponds to a state with no successor states. Either give that state a self-loop, '\
