@@ -9,7 +9,6 @@ digraph "Petersen graph" {
 7;
 8;
 9;
-TERMINAL;
 0 -> 1;
 0 -> 4;
 0 -> 5;
@@ -27,5 +26,4 @@ TERMINAL;
 7 -> 9;
 8 -> 8;
 9 -> 9;
-TERMINAL -> TERMINAL;
 }

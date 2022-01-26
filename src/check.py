@@ -18,22 +18,13 @@ def check_num_samples(num_samples, num_workers):
 def check_mdp_graph(mdp_key, mdps_folder=data.MDPS_FOLDER):
     mdp_graph = data.load_graph_from_dot_file(mdp_key, folder=mdps_folder)
 
-    if list(mdp_graph)[-1] != 'TERMINAL':
-        raise Exception('The last element of the MDP graph {} should always be \'TERMINAL\'.'.format(mdp_key))
-
     adjacency_matrix = utils.graph_to_adjacency_matrix(mdp_graph)
-
-    if (not (adjacency_matrix[-1][:-1] == 0).all()) or (not adjacency_matrix[-1][-1] == 1):
-        raise Exception(
-            'The last row of the adjacency matrix {} must be 1 in the last entry, 0 elsewhere. '\
-            'The last state entry is the terminal state, which can only lead to itself.'.format(mdp_key)
-        )
 
     if torch.tensor([(adjacency_matrix[i] == 0).all() for i in range(len(adjacency_matrix))]).any():
         raise Exception(
             'You can\'t have a row of your adjacency matrix whose entries are all zero, '\
             'because this corresponds to a state with no successor states. Either give that state a self-loop, '\
-            'or connect it to the TERMINAL state whose reward is fixed at 0.'
+            'or connect it to a terminal state whose reward is fixed at 0.'
         )
 
 def check_policy(policy, tolerance=1e-4):
@@ -57,8 +48,10 @@ def check_num_workers(num_workers):
         )
 
 # Ensures that each param conforms to a modified version of https://docs.wandb.ai/guides/sweeps/configuration
-# along with param-specific sanity checks. In the case of params that are not primitive types (str, float,
-# list, etc.) we use a dictionary in data.py to recover the value from the primitive input param.
+# along with param-specific sanity checks. In the case of params that are primitive types (str, float,
+# list, etc.), the param is directly present in the config. In the case of distributions, we use a dictionary
+# in data.py to recover the actual distribution value. And in the case of MDP graphs, we use tracked dot files
+# in the `mdps` folder.
 def check_sweep_param(param_name, value_dict, checker_function):
     if set(value_dict.keys()) == set(['value']):
         checker_function(value_dict.get('value'))

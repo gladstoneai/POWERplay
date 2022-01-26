@@ -115,5 +115,5 @@ def get_variable_params(sweep_config):
 
 def gridworld_coords_from_states(gridworld_state_list):
     return list(np.array([
-        [int(coord) for coord in str(state)[1:-1].split(',')] for state in gridworld_state_list if state != 'TERMINAL'
+        [int(coord) for coord in str(state)[1:-1].split(',')] for state in gridworld_state_list
     ]).T)

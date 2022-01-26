@@ -17,11 +17,11 @@ def reward_distribution_constructor(
     def reward_distribution(number_of_samples):
         state_sampler_list = [(state_reward_samplers[state_list[i]] if (
             state_list[i] in state_reward_samplers.keys()
-        ) else default_reward_sampler) for i in range(len(state_list) - 1)]
+        ) else default_reward_sampler) for i in range(len(state_list))]
 
         return torch.cat([
             sample(torch.tensor([number_of_samples])).unsqueeze(1) for sample in state_sampler_list
-        ] + [torch.zeros(number_of_samples, 1)], dim=1)
+        ], dim=1)
     
     return reward_distribution
 

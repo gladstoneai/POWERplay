@@ -12,10 +12,15 @@ def test_gridworld():
     launch.launch_sweep(
         'test_sweep_gridworld.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
-        project='uncategorized'
+        project='uncategorized',
+        plot_as_gridworld=True
     )
 
-# TODO: Remove privileged status of TERMINAL state (and delete MDP requirements for a TERMINAL state).
+# TODO NEXT: Test simple 3-cell gridworld with 2 agents and a fixed policy.
+# TODO: Add policy construction and checking methods onto an existing gridworld. Test & document.
+# TODO: Add visualization for gridworld and Agent 2 policy.
+# TODO: Add method to safe (gridworld, policy, MDP) triple.
+# TODO: Experiment with multiple fixed policies in the 3-cell 2-agent gridworld.
 # TODO: Test setting random seed.
 # TODO: (?) Create a state container for training loop with stateless functions underneath.
 # TODO: Save with wandb instead of homespun data methods.
@@ -30,7 +35,5 @@ def test_gridworld():
 # TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
 # would be great as it would allow me to run local tests without consuming bandwidth, etc.
 
-# TODO NEXT: Test simple 3-cell gridworld with 2 agents and a fixed policy.
-# TODO NEXT: Experiment with multiple fixed policies in the 3-cell 2-agent gridworld.
-
-# TODO NEXT: Add policy construction method onto an existing gridworld. Test & document.
+# TODO NEXT: Extend value iteration to stochastic transition functions.
+# TODO NEXT: Run annealing simulations with stochastic transition functions.

@@ -17,7 +17,7 @@ def rewards_to_powers(
     adjacency_matrix,
     discount_rate,
     num_workers=1,
-    convergence_threshold=1e-4,
+    convergence_threshold=1e-4
 ):
     check.check_num_samples(len(reward_samples), num_workers)
 
@@ -81,9 +81,10 @@ def launch_sweep(
     output_folder_local=data.EXPERIMENT_FOLDER,
     plot_as_gridworld=False,
     plot_correlations=True,
-    beep_when_done=False
+    beep_when_done=False,
+    environ=os.environ
 ):
-    input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=path.Path(sweep_config_folder))
+    input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=sweep_config_folder)
     check.check_sweep_params(input_sweep_config.get('parameters'))
 
     sweep_name = '{0}-{1}'.format(sweep_local_id, input_sweep_config.get('name'))
@@ -99,7 +100,7 @@ def launch_sweep(
     )
 
 # NOTE: The wandb Python API uses multithreading, which makes it incompatible with matplotlib.pyplot rendering.
-# The CLI does not use multithreading, and is compatible with pyplot, so we run the CLI via Python subprocess.
+# The wandb CLI does not use multithreading, and is compatible with pyplot, so we run the CLI via Python subprocess.
 # (This behavior by wandb is undocumented.)
     sp.run(['wandb', 'login'])
     sp.run([
@@ -110,7 +111,7 @@ def launch_sweep(
             sp.run(['wandb', 'sweep', sweep_config_filepath], capture_output=True).stderr.decode('utf-8')
         ).group()
     ], env={
-        **os.environ,
+        **environ,
         'LOCAL_SWEEP_NAME': sweep_name,
         'SWEEP_VARIABLE_PARAMS': json.dumps(utils.get_variable_params(input_sweep_config)),
         'PLOT_AS_GRIDWORLD': str(plot_as_gridworld), # Only str allowed in os.environ

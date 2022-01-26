@@ -27,7 +27,7 @@ def plot_sample_means(
                 [(row_coord, col_coord) for row_coord, col_coord in zip(row_coords, col_coords)]
             )
         )
-        sample_means = all_samples.mean(axis=0)[:-1] # Don't plot TERMINAL
+        sample_means = all_samples.mean(axis=0)
 
         fig, ax_ = plt.subplots(figsize=(num_rows, num_cols))
 
@@ -35,13 +35,13 @@ def plot_sample_means(
         heat_map, _, _ = np.histogram2d(
             np.append(row_coords, [coords[0] for coords in excluded_coords]),
             np.append(col_coords, [coords[1] for coords in excluded_coords]),
-            bins=[max(row_coords) + 1, max(col_coords) + 1],
+            bins=[num_rows, num_cols],
             weights=np.append(sample_means, np.full(len(excluded_coords), np.nan))
         )
 
         ax_.imshow(heat_map)
-        ax_.set_xticks(range(max(col_coords) + 1))
-        ax_.set_yticks(range(max(row_coords) + 1))
+        ax_.set_xticks(range(num_cols))
+        ax_.set_yticks(range(num_rows))
         ax_.set_title('{0} means for each gridworld state ({1})'.format(sample_quantity, sample_units))
 
         for sample_index in range(len(row_coords)):
@@ -94,8 +94,7 @@ def plot_sample_distributions(
     save_figure=data.save_figure,
     save_folder=data.EXPERIMENT_FOLDER
 ):
-    # The terminal state (last in the list) has power 0 in all samples, so we don't plot it by default.
-    plotted_states = state_list[:-1] if (states_to_plot is None) else states_to_plot
+    plotted_states = state_list if (states_to_plot is None) else states_to_plot
     state_indices = [state_list.index(state_label) for state_label in plotted_states]
     transposed_samples = torch.transpose(all_samples, 0, 1)
 
@@ -116,7 +115,7 @@ def plot_sample_distributions(
         axs_plot_[axis_coords[0]][axis_coords[1]].hist(
             np.array(transposed_samples[state_index]),
             bins=np.linspace(
-                (transposed_samples[:-1]).min(), (transposed_samples[:-1]).max(), number_of_bins
+                (transposed_samples[:-1]).min(), (transposed_samples[:-1]).max(), number_of_bins # HERE: Why do we not look at the last sample?
             ) if normalize_auc else number_of_bins
         )
         axs_plot_[axis_coords[0]][axis_coords[1]].title.set_text(state)
@@ -145,8 +144,7 @@ def plot_sample_correlations(
     save_figure=data.save_figure,
     save_folder=data.EXPERIMENT_FOLDER
 ):
-    # The terminal state (last in the list) has power 0 in all samples, so we don't plot it by default.
-    state_y_list = state_list[:-1] if (state_list_y is None) else state_list_y
+    state_y_list = state_list if (state_list_y is None) else state_list_y
     state_x_index = state_list.index(state_x)
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
@@ -240,6 +238,6 @@ def render_all_outputs(
         **({
             'POWER correlations, state {}'.format(state): plot_sample_correlations(
                 ps_inputs, state_list, state, sample_quantity='POWER', sample_units='reward units', **kwargs
-            ) for state in state_list[:-1] # Don't plot or save terminal state
+            ) for state in state_list
         } if plot_correlations else {})
     }

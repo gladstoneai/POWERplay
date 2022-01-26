@@ -6,14 +6,14 @@ import torch
 from . import utils
 from . import viz
 
-# Converts an undirected graph into a digraph; adds self-loops to all "absorbing" states; adds a TERMINAL state.
+# Converts an undirected graph into a digraph and adds self-loops to all "absorbing" states.
 # Basically, a quick and dirty way to convert default NetworkX graphs into graphs compatible with our MDP
 # conventions.
 def quick_graph_to_mdp(mdp_graph, name=''):
     return nx.DiGraph(
         list(mdp_graph.edges) + [
             str((node, node)) for node in mdp_graph.nodes() if node not in [edge[0] for edge in mdp_graph.edges()]
-        ] + [('TERMINAL', 'TERMINAL')], name=name
+        ], name=name
     )
 
 # Adds self-loops to all states in a digraph.
