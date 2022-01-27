@@ -30,7 +30,7 @@ def value_iteration(
         
         for state in range(len(reward_function)):
             value_function[state] = reward_function[state] + discount_rate * torch.max(
-                # Previously: value_function.masked_select(state_action_matrix[state].type(torch.ByteTensor).bool())
+                # value_function.masked_select(state_action_matrix[state].type(torch.ByteTensor).bool())
                 torch.sparse.mm(transition_tensor_sparse[state], value_function.unsqueeze(1))
             )
 
