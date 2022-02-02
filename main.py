@@ -21,14 +21,13 @@ from src import data
 # I commonly use.
 # TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
 # would be great as it would allow me to run local tests without consuming bandwidth, etc.
-
-# TODO NEXT: Fix multiprocessing bug that freezes execution above 30k samples.
-# TODO NEXT: Use unsqueeze() on the value_function by default in value_iteration in learn.py.
-# TODO NEXT? Add sparse / non-sparse flag to toggle value iteration calculation.
+# TODO: Add sparse / non-sparse flag to toggle value iteration calculation.
 # - "Using a sparse storage format for storing sparse arrays can be advantageous only when the
 #   size and sparsity levels of arrays are high. Otherwise, for small-sized or low-sparsity arrays
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
+
+# TODO NEXT: Use unsqueeze() on the value_function by default in value_iteration in learn.py.
 # TODO NEXT: Add checks for transition_tensor and state_action_matrix.
 # - If transition_tensor is None, state_action_matrix should be square.
 # - transition_tensor should have all zeros in axis 2 in places where state_action_matrix has a zero.
@@ -37,4 +36,6 @@ from src import data
 # - If transition_tensor is not None, state_action_matrix should have dimension (states, actions).
 # TODO NEXT: Add graph visualization for MDPs that represent stochastic transition functions.
 
-rewards, powers = test.test_stochastic()
+if __name__ == '__main__':
+    test.test_gridworld()
+    rewards, powers = test.test_stochastic()

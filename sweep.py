@@ -70,4 +70,5 @@ def cli_experiment_sweep(
             plot_correlations=plot_correlations
         ).items() })
 
-cli_experiment_sweep()
+if __name__ == '__main__':
+    cli_experiment_sweep()

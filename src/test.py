@@ -60,6 +60,6 @@ def test_stochastic():
         discount_rate,
         reward_sampler,
         transition_tensor=transition_tensor,
-        num_reward_samples=30000,
+        num_reward_samples=50000,
         num_workers=10
     )

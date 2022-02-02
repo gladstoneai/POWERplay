@@ -1,4 +1,3 @@
-import torch.nn.functional as tf
 import torch
 import copy as cp
 import sys
@@ -38,58 +37,52 @@ def value_iteration(
 
     return value_function
 
-def power_calculation_constructor(
+def power_sample_calculator(
+    reward_samples,
     state_action_matrix,
     discount_rate,
     transition_tensor=None,
     convergence_threshold=1e-4,
     value_initializations=None,
-    worker_pool_size=1
+    worker_pool_size=1,
+    worker_id=0
 ):
-    def power_sample_calculator(reward_samples, worker_id=1):
-        all_value_initializations = [None] * len(reward_samples) if (
-            value_initializations is None
-        ) else value_initializations
 
-        all_power_samples_ = []
+    all_value_initializations = [None] * len(reward_samples) if (
+        value_initializations is None
+    ) else value_initializations
 
-        for i in range(len(reward_samples)):
-            if worker_id == 0: # Only the first worker prints so the pool isn't slowed
-                sys.stdout.write('Running samples {0} / {1}'.format(
-                    worker_pool_size * (i + 1), worker_pool_size * len(reward_samples)
-                ))
-                sys.stdout.flush()
-                sys.stdout.write('\r')
-                sys.stdout.flush()
+    all_power_samples_ = []
 
-            optimal_values = value_iteration(
-                reward_samples[i],
-                discount_rate,
-                state_action_matrix,
-                transition_tensor=transition_tensor,
-                value_initialization=all_value_initializations[i],
-                convergence_threshold=convergence_threshold
-            )
+    for i in range(len(reward_samples)):
+        if worker_id == 0: # Only the first worker prints so the pool isn't slowed
+            sys.stdout.write('Running samples {0} / {1}'.format(
+                worker_pool_size * (i + 1), worker_pool_size * len(reward_samples)
+            ))
+            sys.stdout.flush()
+            sys.stdout.write('\r')
+            sys.stdout.flush()
 
-            # NOTE (IMPORTANT): tensor multiplication between optimal_values and reward_samples[i] CANNOT be
-            # used here without causing multiprocessing to hang when the TOTAL number of reward samples
-            # is >=40k or so for 10 workers. The source of this bug is unknown but may be related to an
-            # idiosyncracy of pathos multiprocessing. Even just CREATING a reward tensor of that size in the
-            # main process and having ANY operation on reward_samples in the child process - EVEN if the
-            # reward_samples tensor is NOT RELATED to the created 40k+ tensor outside - is sufficient to
-            # reproduce this bug. There is obviously some kind of side effect at play here. Explicitly
-            # making all operations on reward_samples element-wise patches the bug, because these ops don't
-            # "count" as being done on the reward_samples tensor, but only on its elements.
-            all_power_samples_ += [((1 - discount_rate) / discount_rate) * torch.tensor(
-                [(optimal_values[state] - reward_samples[i][state]) for state in range(len(optimal_values))]
-            )]
+        optimal_values = value_iteration(
+            reward_samples[i],
+            discount_rate,
+            state_action_matrix,
+            transition_tensor=transition_tensor,
+            value_initialization=all_value_initializations[i],
+            convergence_threshold=convergence_threshold
+        )
 
-        if worker_id == 0:
-            print() # Jump to newline after stdout.flush()
+        all_power_samples_ += [((1 - discount_rate) / discount_rate) * torch.tensor(
+            [(optimal_values[state] - reward_samples[i][state]) for state in range(len(optimal_values))]
+        )]
 
-        return torch.stack(all_power_samples_)
-    
-    return power_sample_calculator
+    if worker_id == 0:
+        print() # Jump to newline after stdout.flush()
 
-def calculate_power_samples(*args, **kwargs):
-    return power_calculation_constructor(*args, **kwargs)(0)
+    return torch.stack(all_power_samples_)
+
+def power_sample_calculator_mps(state_action_matrix, discount_rate, reward_samples, worker_id, **kwargs):
+    return power_sample_calculator(reward_samples, state_action_matrix, discount_rate, **{
+        **kwargs,
+        **{ 'worker_id': worker_id }
+    })

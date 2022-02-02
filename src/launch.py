@@ -1,4 +1,4 @@
-import pathos.multiprocessing as mps
+import multiprocessing as mps
 import torch
 import pathlib as path
 import time
@@ -6,6 +6,7 @@ import subprocess as sp
 import re
 import os
 import json
+import functools as func
 
 from . import utils
 from . import data
@@ -22,7 +23,8 @@ def rewards_to_powers(
 ):
     check.check_num_samples(len(reward_samples), num_workers)
 
-    st_power_calculator = learn.power_calculation_constructor(
+    power_calculator = func.partial(
+        learn.power_sample_calculator_mps,
         state_action_matrix,
         discount_rate,
         transition_tensor=transition_tensor,
@@ -31,13 +33,15 @@ def rewards_to_powers(
         worker_pool_size=num_workers
     )
 
-    with mps.ProcessingPool(num_workers) as pool:
-        power_samples_list = pool.map(
-            st_power_calculator,
-            torch.split(reward_samples, len(reward_samples) // num_workers, dim=0),
-            range(num_workers)
+    with mps.Pool(num_workers) as pool:
+        power_samples_list = pool.starmap(
+            power_calculator,
+            zip(
+                torch.split(reward_samples, len(reward_samples) // num_workers, dim=0),
+                range(num_workers)
+            )
         )
-
+    
     return torch.cat(power_samples_list, axis=0)
 
 def run_one_experiment(
@@ -126,5 +130,3 @@ def launch_sweep(
         print('\a')
         print('\a')
         print('\a')
-
-

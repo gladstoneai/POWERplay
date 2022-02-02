@@ -1,5 +1,5 @@
 import torch
-import pathos.multiprocessing as mps
+import multiprocessing as mps
 
 from . import data
 from . import utils
