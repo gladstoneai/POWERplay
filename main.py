@@ -27,15 +27,16 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Use unsqueeze() on the value_function by default in value_iteration in learn.py.
+# TODO NEXT: Add method to convert an MDP in "stochastic format" into a transition tensor.
+# TODO NEXT: Add method to convert an MDP in deterministic format into stochastic format.
 # TODO NEXT: Add checks for transition_tensor and state_action_matrix.
 # - If transition_tensor is None, state_action_matrix should be square.
 # - transition_tensor should have all zeros in axis 2 in places where state_action_matrix has a zero.
 # - transition_tensor should have every axis 2 sum to 1 in places where state_action_matrix has a 1.
 # - Dimensionality of transition_tensor should be (states, actions, states).
 # - If transition_tensor is not None, state_action_matrix should have dimension (states, actions).
-# TODO NEXT: Add graph visualization for MDPs that represent stochastic transition functions.
 
 if __name__ == '__main__':
     test.test_gridworld()
     rewards, powers = test.test_stochastic()
+

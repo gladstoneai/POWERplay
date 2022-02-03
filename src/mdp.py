@@ -5,6 +5,7 @@ import torch
 
 from . import utils
 from . import viz
+from . import check
 
 # Converts an undirected graph into a digraph and adds self-loops to all "absorbing" states.
 # Basically, a quick and dirty way to convert default NetworkX graphs into graphs compatible with our MDP
@@ -45,6 +46,29 @@ def construct_gridworld(num_rows, num_cols, name='custom gridworld', squares_to_
         gridworld_mdp_ = delete_gridworld_square(gridworld_mdp_, square_corners[0], square_corners[1])
     
     return mdp_add_self_loops(gridworld_mdp_)
+
+def add_state_action(mdp_graph, state_to_add, action_dict, check_closure=False):
+        check.check_name_for_underscores(state_to_add)
+        check.check_action_dict(action_dict)
+
+        mdp_graph_ = cp.deepcopy(mdp_graph)
+
+        mdp_graph_.add_node(state_to_add, shape='box', label=state_to_add)
+
+        for action in action_dict.keys():
+            action_node_id = '__'.join([action, state_to_add])
+            mdp_graph_.add_node(action_node_id, shape='circle', label=action)
+            mdp_graph_.add_edge(state_to_add, action_node_id)
+
+            for state in action_dict[action].keys():
+                state_node_id = '__'.join([state, action, state_to_add])
+                mdp_graph_.add_node(state_node_id, shape='box', label=state)
+                mdp_graph_.add_edge(action_node_id, state_node_id, label=action_dict[action][state])
+        
+        if check_closure:
+            check.check_stochastic_mdp_closure(mdp_graph_)
+
+        return mdp_graph_
 
 def view_gridworld(gridworld_mdp):
     viz.plot_sample_means(

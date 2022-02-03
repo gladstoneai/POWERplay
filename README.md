@@ -328,4 +328,51 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
 
 - `gridworld_graph [networkx.DiGraph]`: An MDP graph representing the gridworld you created. Each square has a self-loop, and connections to the squares above, beneath, to the left, and to the right of it (if they exist).
 
-The states of the gridworld MDP are strings indicating the coordinates of each cell in the gridworld. For example, the state `'(0, 0)'` represents the cell at the top-left corner of the gridworld.
+  The states of the gridworld MDP are strings indicating the coordinates of each cell in the gridworld. For example, the state `'(0, 0)'` represents the cell at the top-left corner of the gridworld.
+
+## Creating a stochastic MDP graph
+
+🟣 To create a stochastic MDP, start from either 1) an empty (`nx.DiGraph()`) or 2) an existing stochastic MDP, and use use `mdp.add_state_action()`. For example, the following code adds a state with actions `'L'`, `'H'`, and `'R'` to the MDP graph:
+
+```
+>>> stochastic_mdp = mdp.add_state_actionmdp.add_state_action(nx.DiGraph(), '2', {
+        'L': { '1': 1 },
+        'H': { '1': 0.5, '2': 0.5 },
+        'R': { '2': 0.2, '3': 0.8 }
+    })
+```
+
+🔵 Here are the input arguments to `mdp.add_state_action()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `mdp_graph [networkx.DiGraph, required]`: The NetworkX [DiGraph](https://networkx.org/documentation/stable/reference/classes/digraph.html) you want to add the state to. This should be an MDP formatted as in the picture below:
+
+  ![stochastic-mdp-example](img/stochastic_mdp_example.png)
+  
+  Here the squares represent states, the circles represent actions, and the arrows represent transitions. The numbers on each arrow represent the probability of that action-state transition.
+
+  Typical value: `nx.DiGraph()`
+
+- `state_to_add [str, required]`: The state whose outgoing transitions you want to add to the MDP graph.
+
+  Typical value: `'1'`
+
+- `action_dict [dict, required]`: A dictionary of actions and their corresponding transitions. The keys of this dictionary are actions, and the values are dictionaries of states and their corresponding probabilities.
+
+  Typical value:
+  ```
+    {
+        'L': { '1': 1 },
+        'H': { '1': 0.5, '2': 0.5 },
+        'R': { '2': 0.2, '3': 0.8 }
+    }
+  ```
+
+- `check_closure [bool] (False)`: Whether or not to throw a warning if the MDP graph is not closed. "Not closed" means that the MDP incldues states that have no outgoing transitions. MDPs that aren't closed can't be used for experiments and will cause an error in POWER sweeps.
+
+  Typical value: `False`
+
+🟢 Here is the output to `mdp.add_state_action()`:
+
+- `new_mdp_graph [networkx.DiGraph]`: An MDP graph representing the new MDP, with the new state, actions, and outgoing transitions added to it.

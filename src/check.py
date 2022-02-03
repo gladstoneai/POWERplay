@@ -1,8 +1,16 @@
 import torch
 import multiprocessing as mps
+import networkx as nx
+import warnings as warn
 
 from . import data
 from . import utils
+
+################################################################################
+
+PROBABILITY_TOLERANCE = 1e-4
+
+################################################################################
 
 def check_project_exists(project, entity, wb_api):
     if project not in [proj.name for proj in wb_api.projects(entity=entity)]:
@@ -14,6 +22,43 @@ def check_project_exists(project, entity, wb_api):
 def check_num_samples(num_samples, num_workers):
     if num_samples % num_workers != 0:
         raise Exception('The number of reward samples must be an exact multiple of the number of workers.')
+
+def check_name_for_underscores(name):
+    if '__' in name:
+        raise Exception(
+            'The state or action {} has a double underscore in its name, which is forbidden'.format(name)
+        )
+
+def check_action_dict(action_dict, tolerance=PROBABILITY_TOLERANCE):
+    if action_dict == {}:
+        raise Exception('The action_dict can\'t be empty.')
+
+    for action in action_dict.keys():
+        check_name_for_underscores(action)
+
+        if action_dict[action] == {}:
+            raise Exception('The state dict for action {} can\'t be empty.'.format(action))
+
+        if abs(sum([action_dict[action][state] for state in action_dict[action].keys()]) - 1) > tolerance:
+            raise Exception('The state transition probabilities for action {} must sum to 1.'.format(action))
+        
+        for state in action_dict[action].keys():
+            check_name_for_underscores(state)
+
+def check_stochastic_mdp_closure(mdp_graph):
+    node_attributes = nx.get_node_attributes(mdp_graph, 'label')
+    out_states_list = list(set([
+        node_attributes[node_id] for node_id in node_attributes.keys() if (len(node_id.split('__')) == 3)
+    ]))
+    
+    for out_state in out_states_list:
+        if out_state not in list(mdp_graph):
+            warn.warn(
+                'Your MDP is not closed so can\'t yet be used for experiments. '\
+                'State {} exists as an action output but hasn\'t had its accessible actions defined.'.format(
+                    out_state
+                )
+            )
 
 def check_mdp_graph(mdp_key, mdps_folder=data.MDPS_FOLDER):
     mdp_graph = data.load_graph_from_dot_file(mdp_key, folder=mdps_folder)
@@ -27,14 +72,14 @@ def check_mdp_graph(mdp_key, mdps_folder=data.MDPS_FOLDER):
             'or connect it to a terminal state whose reward is fixed at 0.'
         )
 
-def check_policy(policy, tolerance=1e-4):
+def check_policy(policy, tolerance=PROBABILITY_TOLERANCE):
     if policy.shape[0] != policy.shape[1]:
         raise Exception('The policy tensor must be n x n.')
     
     if (torch.abs(torch.sum(policy, 1) - 1) > tolerance).any():
         raise Exception('Each row of the policy tensor must sum to 1.')
 
-def noop(param_value):
+def noop(_):
     pass
 
 def check_discount_rate(discount_rate):
