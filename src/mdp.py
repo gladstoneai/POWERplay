@@ -2,6 +2,7 @@ import networkx as nx
 import copy as cp
 import itertools as it
 import torch
+import numpy as np
 
 from . import utils
 from . import viz
@@ -69,6 +70,43 @@ def add_state_action(mdp_graph, state_to_add, action_dict, check_closure=False):
             check.check_stochastic_mdp_closure(mdp_graph_)
 
         return mdp_graph_
+
+def gridworld_to_stochastic_graph(gridworld_mdp):
+    allowed_transitions = {
+        'up': lambda coords, coords_list: '({0}, {1})'.format(coords[0], coords[1]) if (
+            [coords[0] - 1, coords[1]] in coords_list
+        ) else None,
+        'down': lambda coords, coords_list: '({0}, {1})'.format(coords[0] + 1, coords[1]) if (
+            [coords[0] + 1, coords[1]] in coords_list
+        ) else None,
+        'left': lambda coords, coords_list: '({0}, {1})'.format(coords[0], coords[1] - 1) if (
+            [coords[0], coords[1] - 1] in coords_list
+        ) else None,
+        'right': lambda coords, coords_list: '({0}, {1})'.format(coords[0], coords[1] + 1) if (
+            [coords[0], coords[1] + 1] in coords_list
+        ) else None,
+        'stay': lambda coords, _: '({0}, {1})'.format(coords[0], coords[1])
+    }
+    stochastic_graph_ = nx.DiGraph()
+
+    grid_coords_list = list(list(grid_coords) for grid_coords in np.vstack(
+        utils.gridworld_coords_from_states(utils.get_states_from_graph(gridworld_mdp))
+    ).T)
+
+    for grid_coords in grid_coords_list:
+        stochastic_graph_ = add_state_action(
+            stochastic_graph_,
+            '({0}, {1})'.format(grid_coords[0], grid_coords[1]),
+            {
+                action: {
+                    transition(grid_coords, grid_coords_list): 1
+                } for action, transition in allowed_transitions.items() if transition(
+                    grid_coords, grid_coords_list
+                ) is not None
+            }
+        )
+    
+    return stochastic_graph_
 
 def view_gridworld(gridworld_mdp):
     viz.plot_sample_means(

@@ -26,8 +26,9 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Add method to convert an MDP in deterministic format into stochastic format.
-# TODO: Run annealing simulations with stochastic transition functions.
+# TODO NEXT: Run annealing simulations with stochastic transition functions.
+# - Gridworld with "wind".
+# TODO: Run scaling tests to confirm we can do ~100 state MDPs in stochastic mode.
 
 if __name__ == '__main__':
     pass
