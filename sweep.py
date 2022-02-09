@@ -33,13 +33,14 @@ def cli_experiment_sweep(
         random_seed = run_params.get('random_seed')
 
         mdp_graph = data.load_graph_from_dot_file(run_params.get('mdp_graph'), folder=mdps_folder)
-        state_action_matrix = utils.graph_to_state_action_matrix(mdp_graph)
+        transition_tensor = utils.graph_to_transition_tensor(mdp_graph)
+        state_list = utils.get_states_from_graph(mdp_graph)
         reward_sampler = dist.config_to_reward_distribution(
-            list(mdp_graph), run_params.get('reward_distribution'), distribution_dict=distribution_dict
+            state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict
         )
 
         reward_samples, power_samples = launch.run_one_experiment(
-            state_action_matrix,
+            transition_tensor,
             discount_rate,
             reward_sampler,
             num_reward_samples=num_reward_samples,

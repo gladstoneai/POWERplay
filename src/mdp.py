@@ -53,17 +53,17 @@ def add_state_action(mdp_graph, state_to_add, action_dict, check_closure=False):
 
         mdp_graph_ = cp.deepcopy(mdp_graph)
 
-        mdp_graph_.add_node(state_to_add, shape='box', label=state_to_add)
+        mdp_graph_.add_node(state_to_add)
 
         for action in action_dict.keys():
             action_node_id = '__'.join([action, state_to_add])
-            mdp_graph_.add_node(action_node_id, shape='circle', label=action)
+            mdp_graph_.add_node(action_node_id)
             mdp_graph_.add_edge(state_to_add, action_node_id)
 
             for state in action_dict[action].keys():
                 state_node_id = '__'.join([state, action, state_to_add])
-                mdp_graph_.add_node(state_node_id, shape='box', label=state)
-                mdp_graph_.add_edge(action_node_id, state_node_id, label=action_dict[action][state])
+                mdp_graph_.add_node(state_node_id)
+                mdp_graph_.add_edge(action_node_id, state_node_id, weight=action_dict[action][state])
         
         if check_closure:
             check.check_stochastic_mdp_closure(mdp_graph_)

@@ -5,6 +5,7 @@ import math
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import copy as cp
 
 ################################################################################
 
@@ -96,9 +97,6 @@ def generate_fig_layout(subplots, sharey=True):
         axs_rows if fig_rows > 1 else [axs_rows]
     )
 
-def graph_to_state_action_matrix(mdp_graph, state_list=None):
-    return torch.tensor(nx.to_numpy_array(mdp_graph, nodelist=state_list))
-
 def build_run_name(local_sweep_name, run_config, sweep_variable_params):
     return '-'.join([local_sweep_name] + [ # sorted() ensures naming is always consistent
         '{0}__{1}'.format(key, run_config[key][1]) for key in sorted(run_config.keys()) if (
@@ -118,11 +116,65 @@ def gridworld_coords_from_states(gridworld_state_list):
         [int(coord) for coord in str(state)[1:-1].split(',')] for state in gridworld_state_list
     ]).T)
 
-def create_default_transition_tensor(state_action_matrix):
-    sparse_sam = state_action_matrix.to_sparse()
-    return torch.sparse_coo_tensor(
-        torch.vstack((sparse_sam.indices(), sparse_sam.indices()[1].unsqueeze(0))),
-        sparse_sam.values(),
-        3 * [sparse_sam.size()[0]],
-        dtype=torch.float
+def transform_graph_for_plots(mdp_graph):
+    mdp_graph_ = cp.deepcopy(mdp_graph)
+
+    nx.set_node_attributes(
+        mdp_graph_,
+        { node_id: str(node_id).split('__')[0] for node_id in list(mdp_graph_) },
+        name='label'
     )
+    nx.set_node_attributes( # Boxes are states, circles are actions
+        mdp_graph_,
+        { node_id: (
+            'circle' if len(node_id.split('__')) == 2 else 'box'
+        ) for node_id in list(mdp_graph_) },
+        name='shape'
+    )
+    nx.set_edge_attributes(
+        mdp_graph_,
+        nx.get_edge_attributes(mdp_graph_, 'weight'),
+        name='label'
+    )
+
+    return mdp_graph_
+
+# Return True if graph is in stochastic format, False otherwise. Currently this just checks whether
+# some edges in the graph have weights. If none have weights, we conclude the graph is not in
+# stochastic format.
+def is_graph_stochastic(mdp_graph):
+    return (nx.get_edge_attributes(mdp_graph, 'weight') != {})
+
+def get_states_from_graph(graph):
+    return [
+        node for node in list(graph) if len(node.split('__')) == 1
+    ] if is_graph_stochastic(graph) else list(graph)
+
+def get_actions_from_graph(graph):
+    return sorted(set([
+        node.split('__')[0] for node in list(graph) if len(node.split('__')) == 2
+    ])) if is_graph_stochastic(graph) else list(graph)
+
+def graph_to_transition_tensor(graph):
+    if is_graph_stochastic(graph):
+        state_list, action_list = get_states_from_graph(graph), get_actions_from_graph(graph)
+        transition_tensor_ = torch.zeros(len(state_list), len(action_list), len(state_list))
+
+        for i in range(len(state_list)):
+            for j in range(len(action_list)):
+                for k in range(len(state_list)):
+
+                    try:
+                        transition_tensor_[i][j][k] = graph['__'.join(
+                            [action_list[j], state_list[i]]
+                        )]['__'.join(
+                            [state_list[k], action_list[j], state_list[i]]
+                        )]['weight']
+# Some state-action-state triples don't occur; transition_tensor_ entry remains zero in those cases.
+                    except KeyError:
+                        pass
+    
+    else:
+        transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(graph)))
+    
+    return transition_tensor_.to(torch.float)

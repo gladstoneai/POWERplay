@@ -189,10 +189,13 @@ def plot_mdp_graph(
     save_folder=data.TEMP_FOLDER,
     temp_folder=data.TEMP_FOLDER
 ):
+
+    graph_to_plot = utils.transform_graph_for_plots(mdp_graph)
+
 # We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
 # rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
 # and so git doesn't track these.
-    data.save_graph_to_dot_file(mdp_graph, save_handle, folder=temp_folder)
+    data.save_graph_to_dot_file(graph_to_plot, save_handle, folder=temp_folder)
     fig = data.create_and_save_mdp_figure(
         save_handle,
         fig_name='mdp_graph-{}'.format(save_handle),
@@ -212,7 +215,7 @@ def render_all_outputs(
     plot_correlations=True,
     **kwargs
 ):
-    state_list = list(mdp_graph)
+    state_list = utils.get_states_from_graph(mdp_graph)
     rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
     ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
     mdp_kwargs = {

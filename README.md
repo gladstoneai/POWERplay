@@ -126,7 +126,7 @@ For example:
 
 The YAML file is the canonical description of the sweep in your experiment, and YAML files corresponding to individual runs of your sweep are saved in the `expts` and `wandb` directories.
 
-🔵 Here are the input arguments to `run_one_experiment` and what they mean (the YAML API is described afterwards):
+🔵 Here are the input arguments to `launch_sweep` and what they mean (the YAML API is described afterwards):
 
 (Listed as `name [type] (default): description`.)
 

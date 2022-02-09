@@ -7,17 +7,14 @@ from . import utils
 def value_iteration(
     reward_function,
     discount_rate,
-    state_action_matrix,
-    transition_tensor=None,
+    transition_tensor,
     value_initialization=None,
     convergence_threshold=1e-4
 ):
     value_function = torch.zeros(len(reward_function)) if (
         value_initialization is None
     ) else cp.deepcopy(value_initialization)
-    transition_tensor_sparse = utils.create_default_transition_tensor(state_action_matrix) if (
-        transition_tensor is None
-    ) else transition_tensor.to_sparse()
+    transition_tensor_sparse = transition_tensor.to_sparse()
 
     is_first_iteration = True
 
@@ -38,9 +35,8 @@ def value_iteration(
 
 def power_sample_calculator(
     reward_samples,
-    state_action_matrix,
+    transition_tensor,
     discount_rate,
-    transition_tensor=None,
     convergence_threshold=1e-4,
     value_initializations=None,
     worker_pool_size=1,
@@ -65,8 +61,7 @@ def power_sample_calculator(
         optimal_values = value_iteration(
             reward_samples[i],
             discount_rate,
-            state_action_matrix,
-            transition_tensor=transition_tensor,
+            transition_tensor,
             value_initialization=all_value_initializations[i],
             convergence_threshold=convergence_threshold
         )

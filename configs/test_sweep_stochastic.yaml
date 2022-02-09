@@ -1,0 +1,33 @@
+name: test_sweep_stochastic
+description: "Sweeping over a 4-cell environment with stochastic transitions."
+program: sweep.py
+parameters:
+  mdp_graph:
+    value:
+      "stochastic_graph_4_states"
+  discount_rate:
+    values:
+      - 0.3
+      - 0.9
+    names:
+      - "0p3"
+      - "0p9"
+  reward_distribution:
+    value:
+      default_dist:
+        dist_name:
+          "uniform"
+        params:
+          [0, 1]
+  num_reward_samples:
+    value:
+      50000
+  convergence_threshold:
+    value:
+      0.0001
+  num_workers:
+    value:
+      10
+  random_seed:
+    value:
+      null

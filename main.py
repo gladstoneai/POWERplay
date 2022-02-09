@@ -2,7 +2,6 @@ from src import test
 from src import launch
 from src import data
 
-# TODO: Run annealing simulations with stochastic transition functions.
 # TODO: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 # TODO: Add policy construction and checking methods onto an existing gridworld. Test & document.
 # TODO: Add visualization for gridworld and Agent 2 policy.
@@ -27,16 +26,11 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Add method to convert an MDP in "stochastic format" into a transition tensor.
 # TODO NEXT: Add method to convert an MDP in deterministic format into stochastic format.
-# TODO NEXT: Add checks for transition_tensor and state_action_matrix.
-# - If transition_tensor is None, state_action_matrix should be square.
-# - transition_tensor should have all zeros in axis 2 in places where state_action_matrix has a zero.
-# - transition_tensor should have every axis 2 sum to 1 in places where state_action_matrix has a 1.
-# - Dimensionality of transition_tensor should be (states, actions, states).
-# - If transition_tensor is not None, state_action_matrix should have dimension (states, actions).
+# TODO: Run annealing simulations with stochastic transition functions.
 
 if __name__ == '__main__':
-    test.test_gridworld()
-    rewards, powers = test.test_stochastic()
-
+    pass
+    # test.test_vanilla()
+    # test.test_gridworld()
+    # test.test_stochastic()

@@ -15,9 +15,8 @@ from . import check
 
 def rewards_to_powers(
     reward_samples,
-    state_action_matrix,
+    transition_tensor,
     discount_rate,
-    transition_tensor=None,
     num_workers=1,
     convergence_threshold=1e-4
 ):
@@ -25,9 +24,8 @@ def rewards_to_powers(
 
     power_calculator = func.partial(
         learn.power_sample_calculator_mps,
-        state_action_matrix,
+        transition_tensor,
         discount_rate,
-        transition_tensor=transition_tensor,
         convergence_threshold=convergence_threshold,
         value_initializations=None,
         worker_pool_size=num_workers
@@ -45,10 +43,9 @@ def rewards_to_powers(
     return torch.cat(power_samples_list, axis=0)
 
 def run_one_experiment(
-    state_action_matrix,
+    transition_tensor,
     discount_rate,
     reward_sampler,
-    transition_tensor=None,
     num_reward_samples=10000,
     num_workers=1,
     convergence_threshold=1e-4,
@@ -65,9 +62,8 @@ def run_one_experiment(
 
     power_samples = rewards_to_powers(
         reward_samples,
-        state_action_matrix,
+        transition_tensor,
         discount_rate,
-        transition_tensor=transition_tensor,
         num_workers=num_workers,
         convergence_threshold=convergence_threshold
     )

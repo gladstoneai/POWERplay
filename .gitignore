@@ -10,3 +10,4 @@ configs/*
 
 !configs/test_sweep.yaml
 !configs/test_sweep_gridworld.yaml
+!configs/test_sweep_stochastic.yaml

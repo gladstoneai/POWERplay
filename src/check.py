@@ -60,17 +60,24 @@ def check_stochastic_mdp_closure(mdp_graph):
                 )
             )
 
-def check_mdp_graph(mdp_key, mdps_folder=data.MDPS_FOLDER):
+def check_mdp_graph(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.MDPS_FOLDER):
     mdp_graph = data.load_graph_from_dot_file(mdp_key, folder=mdps_folder)
+    transition_tensor = utils.graph_to_transition_tensor(mdp_graph)
+    state_list, action_list = utils.get_states_from_graph(mdp_graph), utils.get_actions_from_graph(mdp_graph)
 
-    state_action_matrix = utils.graph_to_state_action_matrix(mdp_graph)
-
-    if torch.tensor([(state_action_matrix[i] == 0).all() for i in range(len(state_action_matrix))]).any():
-        raise Exception(
-            'You can\'t have a row of your adjacency matrix whose entries are all zero, '\
-            'because this corresponds to a state with no successor states. Either give that state a self-loop, '\
-            'or connect it to a terminal state whose reward is fixed at 0.'
-        )
+    if list(transition_tensor.shape) != [len(state_list), len(action_list), len(state_list)]:
+        raise Exception('The transition tensor for MDP {0} must have shape [{1}, {2}, {1}]'.format(
+            mdp_key, len(state_list), len(action_list)
+        ))
+    
+    for state_tensor in transition_tensor:
+        for action_tensor in state_tensor:
+            if (not (action_tensor == 0).all()) and (action_tensor.sum() - 1).abs() > tolerance:
+                raise Exception(
+                    'Every inner row of the transition tensor {} must either be all zeros ' \
+                    '(if the action can\'t be taken) or sum to 1 ' \
+                    '(the total probability of ending up in any downstream state).'.format(mdp_key)
+                )
 
 def check_policy(policy, tolerance=PROBABILITY_TOLERANCE):
     if policy.shape[0] != policy.shape[1]:

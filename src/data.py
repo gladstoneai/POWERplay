@@ -95,18 +95,40 @@ def save_gif_from_frames(frames_list, gif_name, folder):
     )
 
 def load_graph_from_dot_file(mdp_name, folder=MDPS_FOLDER):
-    mdp_graph_ = nx.drawing.nx_pydot.read_dot(path.Path()/folder/'{}.gv'.format(mdp_name))
+    input_graph_ = nx.drawing.nx_pydot.read_dot(path.Path()/folder/'{}.gv'.format(mdp_name))
 
 # NOTE: Either the dot format or the NetworkX pydot converter has a bug that often causes
 # an extra orphan node to be appended to the extracted graph, whose name is '\\n'. This seems
 # to be related to bad escaping of the '\' character in one of the steps. We remove those
 # nodes manually in the extraction process when they occur.
     try:
-        mdp_graph_.remove_node('\\n')
+        input_graph_.remove_node('\\n')
     except nx.exception.NetworkXError:
         pass
 
-    return mdp_graph_
+# The following lines fix two issues with the dot format:
+# 1) The dot format converts float weights to double-quoted strings in the saved file, which
+# then get re-quoted when NetworkX loads from the dot file. This results in weights like
+# '"0.9"'. So we have to strip away the " character and manually revert each weight to
+# a float.
+# 2) The dot format adds a trailing 0 to the tuple for each edge. Before saving, an edge
+# would be ('1', '2'). After saving and re-loading, the same edge would be ('1', '2', 0).
+# So we also have to create a whole new graph with the correct edge ids.
+    output_graph_ = nx.DiGraph()
+    output_graph_.add_nodes_from(input_graph_.nodes)
+    output_graph_.add_edges_from([edge[:2] for edge in input_graph_.edges])
+
+    nx.set_edge_attributes(
+        output_graph_,
+        {
+            edge[:2]: float(weight.strip('"')) for edge, weight in nx.get_edge_attributes(
+                input_graph_, 'weight'
+            ).items()
+        },
+        name='weight'
+    )
+    
+    return output_graph_
 
 def save_graph_to_dot_file(mdp_graph, mdp_filename, folder=MDPS_FOLDER):
     nx.drawing.nx_pydot.write_dot(mdp_graph, path.Path()/folder/'{}.gv'.format(mdp_filename))
