@@ -178,3 +178,19 @@ def graph_to_transition_tensor(graph):
         transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(graph)))
     
     return transition_tensor_.to(torch.float)
+
+def clone_run_inputs(runs_data_with_transition_tensor, ignore_terminal_state=False):
+    return {
+        run_data['name']: {
+            'args': [
+                run_data['outputs']['reward_samples'][:,:-1] if (
+                    ignore_terminal_state
+                ) else run_data['outputs']['reward_samples'],
+                run_data['inputs']['transition_tensor'],
+                run_data['inputs']['discount_rate']
+            ], 'kwargs': {
+                'num_workers': run_data['inputs']['num_workers'],
+                'convergence_threshold': run_data['inputs']['convergence_threshold']
+            }
+         } for run_data in runs_data_with_transition_tensor.values()
+    }

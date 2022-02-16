@@ -71,6 +71,18 @@ def add_state_action(mdp_graph, state_to_add, action_dict, check_closure=False):
 
         return mdp_graph_
 
+def mdp_to_stochastic_graph(mdp_graph):
+    stochastic_graph_ = nx.DiGraph()
+
+    for state in utils.get_states_from_graph(mdp_graph):
+        stochastic_graph_ = add_state_action(
+            stochastic_graph_,
+            state,
+            { next_state: { next_state: 1 } for next_state in mdp_graph.successors(state) }
+        )
+    
+    return stochastic_graph_
+
 def gridworld_to_stochastic_graph(gridworld_mdp):
     allowed_transitions = {
         'up': lambda coords, coords_list: '({0}, {1})'.format(coords[0], coords[1]) if (

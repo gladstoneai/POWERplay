@@ -2,10 +2,12 @@ from src import test
 from src import launch
 from src import data
 
+# TODO: Refactor gridworld coordinates & functions that go from '(0, 1)' to [0, 1] and vice versa.
 # TODO: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 # TODO: Add policy construction and checking methods onto an existing gridworld. Test & document.
 # TODO: Add visualization for gridworld and Agent 2 policy.
 # TODO: Add method to save (gridworld, policy, MDP) triple.
+# TODO: Do profiling and see which parts are the slowest.
 # TODO: Experiment with multiple fixed policies in the 3-cell 2-agent gridworld.
 # TODO: Test setting random seed.
 # TODO: (?) Create a state container for training loop with stateless functions underneath.
@@ -27,7 +29,11 @@ from src import data
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
 # TODO NEXT: Run annealing simulations with stochastic transition functions.
-# - Gridworld with "wind".
+# - Validate that deterministic MDPs still give you all the same answers as before as a base test case.
+# - Slight perturbation: add some noise to all actions and you should see POWER go down everywhere.
+#     - Can do annealing: stochasticity increases as you uniformly add noise to all states.
+#     - The delta of POWER between states.
+# - Wind, teleporters, irreversible actions / doorways.
 # TODO: Run scaling tests to confirm we can do ~100 state MDPs in stochastic mode.
 
 if __name__ == '__main__':

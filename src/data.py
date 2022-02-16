@@ -31,8 +31,11 @@ DISTRIBUTION_DICT = {
 
 ################################################################################
 
+def create_folder(folder_name):
+    path.Path.mkdir(path.Path()/folder_name, exist_ok=True)
+
 def save_experiment(experiment, folder=EXPERIMENT_FOLDER):
-    path.Path.mkdir(path.Path()/folder, exist_ok=True)
+    create_folder(folder)
 
     with open(path.Path()/folder/'data-{}.dill'.format(experiment['name']), 'wb') as f:
         dill.dump(experiment, f)
@@ -50,7 +53,7 @@ def load_sweep_config(sweep_config_filename, folder=EXPERIMENT_FOLDER):
     return sweep_config
 
 def save_sweep_config(sweep_config_dict, folder=EXPERIMENT_FOLDER):
-    path.Path.mkdir(path.Path()/folder, exist_ok=True)
+    create_folder(folder)
     sweep_config_filepath = path.Path()/folder/'{}.yaml'.format(sweep_config_dict.get('name'))
 
     with open(sweep_config_filepath, 'w') as f:
@@ -72,7 +75,7 @@ def load_full_sweep(sweep_name, folder=EXPERIMENT_FOLDER):
     }
 
 def save_figure(figure, fig_name, folder=EXPERIMENT_FOLDER):
-    path.Path.mkdir(path.Path()/folder, exist_ok=True)
+    create_folder(folder)
     figure.savefig(path.Path()/folder/'{}.png'.format(fig_name), transparent=True)
 
 def get_settings_value(settings_key_path, settings_filename=SETTINGS_FILENAME):
