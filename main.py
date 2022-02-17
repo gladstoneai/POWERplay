@@ -2,6 +2,7 @@ from src import test
 from src import launch
 from src import data
 
+# TODO: Render really big stochastic MDPs nicely in graphviz. See save_graph_to_dot_file for more info.
 # TODO: Refactor gridworld coordinates & functions that go from '(0, 1)' to [0, 1] and vice versa.
 # TODO: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 # TODO: Add policy construction and checking methods onto an existing gridworld. Test & document.
@@ -38,6 +39,7 @@ from src import data
 
 if __name__ == '__main__':
     pass
+
     # test.test_vanilla()
     # test.test_gridworld()
     # test.test_stochastic()

@@ -195,7 +195,7 @@ def plot_mdp_graph(
 # We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
 # rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
 # and so git doesn't track these.
-    data.save_graph_to_dot_file(graph_to_plot, save_handle, folder=temp_folder)
+    data.save_graph_to_dot_file(graph_to_plot, save_handle, adjust_layout=True, folder=temp_folder)
     fig = data.create_and_save_mdp_figure(
         save_handle,
         fig_name='mdp_graph-{}'.format(save_handle),

@@ -85,7 +85,7 @@ def mdp_to_stochastic_graph(mdp_graph):
 
 def gridworld_to_stochastic_graph(gridworld_mdp):
     allowed_transitions = {
-        'up': lambda coords, coords_list: '({0}, {1})'.format(coords[0], coords[1]) if (
+        'up': lambda coords, coords_list: '({0}, {1})'.format(coords[0] - 1, coords[1]) if (
             [coords[0] - 1, coords[1]] in coords_list
         ) else None,
         'down': lambda coords, coords_list: '({0}, {1})'.format(coords[0] + 1, coords[1]) if (
