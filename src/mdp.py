@@ -28,7 +28,7 @@ def mdp_add_self_loops(mdp_graph):
 def delete_gridworld_square(gridworld_mdp_graph, corner1_state, corner2_state):
     gridworld_mdp_graph_ = cp.deepcopy(gridworld_mdp_graph)
 
-    row_coord_lims, col_coord_lims = utils.gridworld_coords_from_states([corner1_state, corner2_state])
+    row_coord_lims, col_coord_lims = np.array(utils.gridworld_states_to_coords([corner1_state, corner2_state])).T
     rows_to_delete = list(range(min(row_coord_lims), max(row_coord_lims) + 1))
     cols_to_delete = list(range(min(col_coord_lims), max(col_coord_lims) + 1))
 
@@ -85,30 +85,30 @@ def mdp_to_stochastic_graph(mdp_graph):
 
 def gridworld_to_stochastic_graph(gridworld_mdp):
     allowed_transitions = {
-        'up': lambda coords, coords_list: '({0}, {1})'.format(coords[0] - 1, coords[1]) if (
+        'up': lambda coords, coords_list: utils.gridworld_coords_to_state([coords[0] - 1, coords[1]]) if (
             [coords[0] - 1, coords[1]] in coords_list
         ) else None,
-        'down': lambda coords, coords_list: '({0}, {1})'.format(coords[0] + 1, coords[1]) if (
+        'down': lambda coords, coords_list: utils.gridworld_coords_to_state([coords[0] + 1, coords[1]]) if (
             [coords[0] + 1, coords[1]] in coords_list
         ) else None,
-        'left': lambda coords, coords_list: '({0}, {1})'.format(coords[0], coords[1] - 1) if (
+        'left': lambda coords, coords_list: utils.gridworld_coords_to_state([coords[0], coords[1] - 1]) if (
             [coords[0], coords[1] - 1] in coords_list
         ) else None,
-        'right': lambda coords, coords_list: '({0}, {1})'.format(coords[0], coords[1] + 1) if (
+        'right': lambda coords, coords_list: utils.gridworld_coords_to_state([coords[0], coords[1] + 1]) if (
             [coords[0], coords[1] + 1] in coords_list
         ) else None,
-        'stay': lambda coords, _: '({0}, {1})'.format(coords[0], coords[1])
+        'stay': lambda coords, _: utils.gridworld_coords_to_state([coords[0], coords[1]])
     }
     stochastic_graph_ = nx.DiGraph()
 
-    grid_coords_list = list(list(grid_coords) for grid_coords in np.vstack(
-        utils.gridworld_coords_from_states(utils.get_states_from_graph(gridworld_mdp))
-    ).T)
+    grid_coords_list = [list(grid_coords) for grid_coords in utils.gridworld_coords_to_states(
+        utils.get_states_from_graph(gridworld_mdp))
+    ]
 
     for grid_coords in grid_coords_list:
         stochastic_graph_ = add_state_action(
             stochastic_graph_,
-            '({0}, {1})'.format(grid_coords[0], grid_coords[1]),
+            utils.gridworld_coords_to_state([grid_coords[0], grid_coords[1]]),
             {
                 action: {
                     transition(grid_coords, grid_coords_list): 1

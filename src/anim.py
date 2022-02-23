@@ -45,7 +45,7 @@ def generate_sweep_animations(
         'POWER_means',
         'POWER_samples'
     ] + [
-        'POWER_correlations_{}'.format(state) for state in list(
+        'POWER_correlations_{}'.format(state) for state in utils.get_states_from_graph(
             data.load_graph_from_dot_file(sweep['parameters']['mdp_graph']['value'])
         )[:-1]
     ]

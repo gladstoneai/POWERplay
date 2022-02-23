@@ -335,7 +335,7 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
 🟣 To create a stochastic MDP, start from either 1) an empty (`nx.DiGraph()`) or 2) an existing stochastic MDP, and use use `mdp.add_state_action()`. For example, the following code adds a state with actions `'L'`, `'H'`, and `'R'` to the MDP graph:
 
 ```
->>> stochastic_mdp = mdp.add_state_actionmdp.add_state_action(nx.DiGraph(), '2', {
+>>> stochastic_mdp = mdp.add_state_action(nx.DiGraph(), '2', {
         'L': { '1': 1 },
         'H': { '1': 0.5, '2': 0.5 },
         'R': { '2': 0.2, '3': 0.8 }

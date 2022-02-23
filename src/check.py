@@ -45,14 +45,13 @@ def check_action_dict(action_dict, tolerance=PROBABILITY_TOLERANCE):
         for state in action_dict[action].keys():
             check_name_for_underscores(state)
 
-def check_stochastic_mdp_closure(mdp_graph):
-    node_attributes = nx.get_node_attributes(mdp_graph, 'label')
+def check_stochastic_mdp_closure(stoch_mdp_graph):
     out_states_list = list(set([
-        node_attributes[node_id] for node_id in node_attributes.keys() if (len(node_id.split('__')) == 3)
+        node.split('__')[0] for node in list(stoch_mdp_graph) if (len(node.split('__')) == 3)
     ]))
-    
+
     for out_state in out_states_list:
-        if out_state not in list(mdp_graph):
+        if out_state not in utils.get_states_from_graph(stoch_mdp_graph):
             warn.warn(
                 'Your MDP is not closed so can\'t yet be used for experiments. '\
                 'State {} exists as an action output but hasn\'t had its accessible actions defined.'.format(
@@ -78,13 +77,6 @@ def check_mdp_graph(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.M
                     '(if the action can\'t be taken) or sum to 1 ' \
                     '(the total probability of ending up in any downstream state).'.format(mdp_key)
                 )
-
-def check_policy(policy, tolerance=PROBABILITY_TOLERANCE):
-    if policy.shape[0] != policy.shape[1]:
-        raise Exception('The policy tensor must be n x n.')
-    
-    if (torch.abs(torch.sum(policy, 1) - 1) > tolerance).any():
-        raise Exception('Each row of the policy tensor must sum to 1.')
 
 def noop(_):
     pass

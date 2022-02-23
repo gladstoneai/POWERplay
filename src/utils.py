@@ -111,12 +111,17 @@ def get_variable_params(sweep_config):
         )
     ]
 
-def gridworld_coords_from_states(gridworld_state_list):
-    return list(np.array([
-        [int(coord) for coord in str(state)[1:-1].split(',')] for state in (
-            [gridworld_state_list] if isinstance(gridworld_state_list, str) else gridworld_state_list
-        )
-    ]).T)
+def gridworld_state_to_coords(gridworld_state):
+    return [int(coord) for coord in str(gridworld_state)[1:-1].split(',')]
+
+def gridworld_states_to_coords(gridworld_state_list):
+    return [gridworld_state_to_coords(state) for state in gridworld_state_list]
+
+def gridworld_coords_to_state(gridworld_coords):
+    return '({0}, {1})'.format(gridworld_coords[0], gridworld_coords[1])
+
+def gridworld_coords_to_states(gridworld_coords_list):
+    return [gridworld_coords_to_state(coords) for coords in gridworld_coords_list]
 
 def transform_graph_for_plots(mdp_graph):
     mdp_graph_ = cp.deepcopy(mdp_graph)

@@ -159,7 +159,9 @@ def create_and_save_mdp_figure(
     proc1 = sp.Popen(['ccomps', '-x', path.Path()/mdps_folder/'{}.gv'.format(mdp_filename)], stdout=sp.PIPE)
     proc2 = sp.Popen(['dot'], stdin=proc1.stdout, stdout=sp.PIPE)
     proc3 = sp.Popen(['gvpack', '-array{}'.format(subgraphs_per_row)], stdin=proc2.stdout, stdout=sp.PIPE)
-    sp.Popen(['neato', '-Tpng', '-n2', '-o', fig_filepath], stdin=proc3.stdout)
+# Final command is a run to ensure execution is synchronous. This forces the process to wait until
+# the fig file exists before trying to retreive it with gv.view or load_png_figure.
+    sp.run(['neato', '-Tpng', '-n2', '-o', fig_filepath], stdin=proc3.stdout)
     
     if show:
         gv.view(fig_filepath)

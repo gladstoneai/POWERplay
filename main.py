@@ -26,7 +26,6 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Refactor gridworld coordinates & functions that go from '(0, 1)' to [0, 1] and vice versa.
 # TODO NEXT: Test setting random seed.
 # - For every part of the code that requires a random number generator.
 # - Ideally you pass in a random number generator for each component.

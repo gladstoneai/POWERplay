@@ -18,7 +18,7 @@ def plot_sample_means(
     save_folder=data.EXPERIMENT_FOLDER
 ):
     if plot_as_gridworld:
-        row_coords, col_coords = utils.gridworld_coords_from_states(state_list)
+        row_coords, col_coords = np.array(utils.gridworld_states_to_coords(state_list)).T
         num_rows, num_cols = max(row_coords) + 1, max(col_coords) + 1
         excluded_coords = list(
             set(
@@ -99,7 +99,7 @@ def plot_sample_distributions(
     transposed_samples = torch.transpose(all_samples, 0, 1)
 
     if plot_as_gridworld:
-        row_coords, col_coords = utils.gridworld_coords_from_states(plotted_states)
+        row_coords, col_coords = np.array(utils.gridworld_states_to_coords(plotted_states)).T
 
         fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(
             (max(row_coords) + 1, max(col_coords) + 1), sharey=True
@@ -149,7 +149,7 @@ def plot_sample_correlations(
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
     if plot_as_gridworld:
-        row_coords, col_coords = utils.gridworld_coords_from_states(state_y_list)
+        row_coords, col_coords = np.array(utils.gridworld_states_to_coords(state_y_list)).T
 
         fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(
             (max(row_coords) + 1, max(col_coords) + 1), sharey=False
