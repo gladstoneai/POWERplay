@@ -185,6 +185,7 @@ def plot_sample_correlations(
 def plot_mdp_graph(
     mdp_graph,
     show=True,
+    subgraphs_per_row=6,
     save_handle='temp',
     save_folder=data.TEMP_FOLDER,
     temp_folder=data.TEMP_FOLDER
@@ -195,9 +196,10 @@ def plot_mdp_graph(
 # We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
 # rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
 # and so git doesn't track these.
-    data.save_graph_to_dot_file(graph_to_plot, save_handle, adjust_layout=True, folder=temp_folder)
+    data.save_graph_to_dot_file(graph_to_plot, save_handle, folder=temp_folder)
     fig = data.create_and_save_mdp_figure(
         save_handle,
+        subgraphs_per_row=subgraphs_per_row,
         fig_name='mdp_graph-{}'.format(save_handle),
         mdps_folder=temp_folder,
         fig_folder=save_folder,

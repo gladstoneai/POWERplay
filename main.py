@@ -2,15 +2,12 @@ from src import test
 from src import launch
 from src import data
 
-# TODO: Render really big stochastic MDPs nicely in graphviz. See save_graph_to_dot_file for more info.
-# TODO: Refactor gridworld coordinates & functions that go from '(0, 1)' to [0, 1] and vice versa.
 # TODO: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 # TODO: Add policy construction and checking methods onto an existing gridworld. Test & document.
 # TODO: Add visualization for gridworld and Agent 2 policy.
 # TODO: Add method to save (gridworld, policy, MDP) triple.
 # TODO: Do profiling and see which parts are the slowest.
 # TODO: Experiment with multiple fixed policies in the 3-cell 2-agent gridworld.
-# TODO: Test setting random seed.
 # TODO: (?) Create a state container for training loop with stateless functions underneath.
 # TODO: Save with wandb instead of homespun data methods.
 # TODO: Investigate writing type hints.
@@ -29,8 +26,11 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
+# TODO NEXT: Refactor gridworld coordinates & functions that go from '(0, 1)' to [0, 1] and vice versa.
+# TODO NEXT: Test setting random seed.
+# - For every part of the code that requires a random number generator.
+# - Ideally you pass in a random number generator for each component.
 # TODO NEXT: Run annealing simulations with stochastic transition functions.
-# - Validate that deterministic MDPs still give you all the same answers as before as a base test case.
 # - Slight perturbation: add some noise to all actions and you should see POWER go down everywhere.
 #     - Can do annealing: stochasticity increases as you uniformly add noise to all states.
 #     - The delta of POWER between states.

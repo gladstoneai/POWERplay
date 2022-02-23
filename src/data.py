@@ -6,6 +6,7 @@ import yaml
 import networkx as nx
 import PIL as pil
 import graphviz as gv
+import subprocess as sp
 
 from . import utils
 
@@ -140,25 +141,12 @@ def load_graph_from_dot_file(mdp_name, folder=MDPS_FOLDER):
     
     return output_graph_
 
-def save_graph_to_dot_file(mdp_graph, mdp_filename, adjust_layout=False, folder=MDPS_FOLDER):
-    file_name = '{}.gv'.format(mdp_filename)
-    file_folder = path.Path()/folder
-
-# NOTE: This line doesn't actually do anything visually yet, but it's hard to figure out
-# how to pipe pydot graphs to graphviz source, so I'm keeping it in as a reminder. Eventually
-# we want to render these graphs in a nicer format (not just horizontally) but my timebox to
-# figure out how to do this ran out.
-# Instructions on how to do this in pure graphviz code:
-# https://stackoverflow.com/questions/8002352/how-to-control-subgraphs-layout-in-dot
-    if adjust_layout:
-        gv.Source(
-            nx.drawing.nx_pydot.to_pydot(mdp_graph).to_string()
-        ).unflatten(chain=3).save(filename=file_name, directory=file_folder)
-    else:
-        nx.drawing.nx_pydot.write_dot(mdp_graph, file_folder/file_name)
+def save_graph_to_dot_file(mdp_graph, mdp_filename, folder=MDPS_FOLDER):
+    nx.drawing.nx_pydot.write_dot(mdp_graph, path.Path()/folder/'{}.gv'.format(mdp_filename))
 
 def create_and_save_mdp_figure(
     mdp_filename,
+    subgraphs_per_row=6,
     fig_name=None,
     mdps_folder=MDPS_FOLDER,
     fig_folder=TEMP_FOLDER,
@@ -167,12 +155,11 @@ def create_and_save_mdp_figure(
     fig_filename = fig_name if fig_name is not None else mdp_filename
     fig_filepath = path.Path()/fig_folder/'{}.png'.format(fig_filename)
 
-    gv.render(
-        'dot',
-        'png',
-        path.Path()/mdps_folder/'{}.gv'.format(mdp_filename),
-        outfile=fig_filepath
-    )
+# See https://stackoverflow.com/questions/8002352/how-to-control-subgraphs-layout-in-dot
+    proc1 = sp.Popen(['ccomps', '-x', path.Path()/mdps_folder/'{}.gv'.format(mdp_filename)], stdout=sp.PIPE)
+    proc2 = sp.Popen(['dot'], stdin=proc1.stdout, stdout=sp.PIPE)
+    proc3 = sp.Popen(['gvpack', '-array{}'.format(subgraphs_per_row)], stdin=proc2.stdout, stdout=sp.PIPE)
+    sp.Popen(['neato', '-Tpng', '-n2', '-o', fig_filepath], stdin=proc3.stdout)
     
     if show:
         gv.view(fig_filepath)
