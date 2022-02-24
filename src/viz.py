@@ -185,7 +185,7 @@ def plot_sample_correlations(
 def plot_mdp_graph(
     mdp_graph,
     show=True,
-    subgraphs_per_row=6,
+    subgraphs_per_row=4,
     save_handle='temp',
     save_folder=data.TEMP_FOLDER,
     temp_folder=data.TEMP_FOLDER

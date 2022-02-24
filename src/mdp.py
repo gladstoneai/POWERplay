@@ -71,6 +71,23 @@ def add_state_action(mdp_graph, state_to_add, action_dict, check_closure=False):
 
         return mdp_graph_
 
+def remove_state_action(mdp_graph, state_to_remove, check_closure=False):
+    mdp_graph_ = cp.deepcopy(mdp_graph)
+    mdp_graph_.remove_nodes_from([
+        stoch_state for stoch_state in mdp_graph_ if stoch_state.split('__')[-1] == state_to_remove
+    ])
+
+    if check_closure:
+        check.check_stochastic_mdp_closure(mdp_graph_)
+    
+    return mdp_graph_
+
+def update_state_action(mdp_graph, state_to_update, new_action_dict, check_closure=False):
+    mdp_graph_ = cp.deepcopy(mdp_graph)
+    mdp_graph_ = remove_state_action(mdp_graph_, state_to_update, check_closure=False)
+
+    return add_state_action(mdp_graph_, state_to_update, new_action_dict, check_closure=check_closure)
+
 def mdp_to_stochastic_graph(mdp_graph):
     stochastic_graph_ = nx.DiGraph()
 
@@ -83,42 +100,67 @@ def mdp_to_stochastic_graph(mdp_graph):
     
     return stochastic_graph_
 
-def gridworld_to_stochastic_graph(gridworld_mdp):
-    allowed_transitions = {
-        'up': lambda coords, coords_list: utils.gridworld_coords_to_state([coords[0] - 1, coords[1]]) if (
-            [coords[0] - 1, coords[1]] in coords_list
-        ) else None,
-        'down': lambda coords, coords_list: utils.gridworld_coords_to_state([coords[0] + 1, coords[1]]) if (
-            [coords[0] + 1, coords[1]] in coords_list
-        ) else None,
-        'left': lambda coords, coords_list: utils.gridworld_coords_to_state([coords[0], coords[1] - 1]) if (
-            [coords[0], coords[1] - 1] in coords_list
-        ) else None,
-        'right': lambda coords, coords_list: utils.gridworld_coords_to_state([coords[0], coords[1] + 1]) if (
-            [coords[0], coords[1] + 1] in coords_list
-        ) else None,
-        'stay': lambda coords, _: utils.gridworld_coords_to_state([coords[0], coords[1]])
-    }
-    stochastic_graph_ = nx.DiGraph()
+def gridworld_to_stochastic_graph(
+    gridworld_mdp,
+    stochastic_noise_level=0
+):
+    check.check_stochastic_noise_level(stochastic_noise_level)
 
-    grid_coords_list = [list(grid_coords) for grid_coords in utils.gridworld_coords_to_states(
-        utils.get_states_from_graph(gridworld_mdp))
-    ]
+    stochastic_graph_ = nx.DiGraph()
+    grid_coords_list = utils.gridworld_states_to_coords(utils.get_states_from_graph(gridworld_mdp))
+
+    possible_transitions = {
+        'up': lambda coords: [coords[0] - 1, coords[1]] if (
+            [coords[0] - 1, coords[1]] in grid_coords_list
+        ) else None,
+        'down': lambda coords: [coords[0] + 1, coords[1]] if (
+            [coords[0] + 1, coords[1]] in grid_coords_list
+        ) else None,
+        'left': lambda coords: [coords[0], coords[1] - 1] if (
+            [coords[0], coords[1] - 1] in grid_coords_list
+        ) else None,
+        'right': lambda coords: [coords[0], coords[1] + 1] if (
+            [coords[0], coords[1] + 1] in grid_coords_list
+        ) else None,
+        'stay': lambda coords: coords
+    }
 
     for grid_coords in grid_coords_list:
+        allowed_actions = [action for action, transition in possible_transitions.items() if (
+            transition(grid_coords) is not None
+        )]
+
         stochastic_graph_ = add_state_action(
             stochastic_graph_,
-            utils.gridworld_coords_to_state([grid_coords[0], grid_coords[1]]),
+            utils.gridworld_coords_to_state(grid_coords),
             {
                 action: {
-                    transition(grid_coords, grid_coords_list): 1
-                } for action, transition in allowed_transitions.items() if transition(
-                    grid_coords, grid_coords_list
-                ) is not None
+                    **{
+                        utils.gridworld_coords_to_state(
+                            possible_transitions[allowed_action](grid_coords)
+                        ): (
+                            stochastic_noise_level / len(allowed_actions)
+                        ) for allowed_action in allowed_actions if stochastic_noise_level > 0
+                    },
+                    **{
+                        utils.gridworld_coords_to_state(
+                            possible_transitions[action](grid_coords)
+                        ): (
+                            1 + stochastic_noise_level * (1 / len(allowed_actions) - 1)
+                        )
+                    }
+                } for action in allowed_actions
             }
         )
     
     return stochastic_graph_
+
+def generate_noised_gridworlds(gridworld_mdp, noise_level_list=[]):
+    return [
+        gridworld_to_stochastic_graph(
+            gridworld_mdp, stochastic_noise_level=noise_level
+        ) for noise_level in noise_level_list
+    ]
 
 def view_gridworld(gridworld_mdp):
     viz.plot_sample_means(

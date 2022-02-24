@@ -41,13 +41,18 @@ def generate_sweep_animations(
         ) for anim_value in sweep['parameters'][animation_param]['values']
     ]
 
+    try:
+        mdp_key = sweep['parameters']['mdp_graph']['value']
+    except KeyError:
+        mdp_key = sweep['parameters']['mdp_graph']['values'][0][0]
+
     figure_prefix_list = [figure_prefix] if figure_prefix is not None else [
         'POWER_means',
         'POWER_samples'
     ] + [
         'POWER_correlations_{}'.format(state) for state in utils.get_states_from_graph(
-            data.load_graph_from_dot_file(sweep['parameters']['mdp_graph']['value'])
-        )[:-1]
+            data.load_graph_from_dot_file(mdp_key)
+        )
     ]
 
     animate_full_sweep(sweep_name, run_names, figure_prefix_list, experiment_folder=experiment_folder)

@@ -146,7 +146,7 @@ def save_graph_to_dot_file(mdp_graph, mdp_filename, folder=MDPS_FOLDER):
 
 def create_and_save_mdp_figure(
     mdp_filename,
-    subgraphs_per_row=6,
+    subgraphs_per_row=4,
     fig_name=None,
     mdps_folder=MDPS_FOLDER,
     fig_folder=TEMP_FOLDER,

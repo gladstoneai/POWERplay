@@ -29,16 +29,11 @@ from src import data
 # TODO NEXT: Test setting random seed.
 # - For every part of the code that requires a random number generator.
 # - Ideally you pass in a random number generator for each component.
-# TODO NEXT: Run annealing simulations with stochastic transition functions.
-# - Slight perturbation: add some noise to all actions and you should see POWER go down everywhere.
-#     - Can do annealing: stochasticity increases as you uniformly add noise to all states.
-#     - The delta of POWER between states.
+# TODO NEXT: Add stochastic wind to each state.
 # - Wind, teleporters, irreversible actions / doorways.
-# TODO: Run scaling tests to confirm we can do ~100 state MDPs in stochastic mode.
 
 if __name__ == '__main__':
     pass
-
     # test.test_vanilla()
     # test.test_gridworld()
     # test.test_stochastic()

@@ -59,6 +59,10 @@ def check_stochastic_mdp_closure(stoch_mdp_graph):
                 )
             )
 
+def check_stochastic_noise_level(stochastic_noise_level):
+    if stochastic_noise_level < 0 or stochastic_noise_level > 1:
+        raise Exception('Stochastic noise level must be between 0 and 1.')
+
 def check_mdp_graph(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.MDPS_FOLDER):
     mdp_graph = data.load_graph_from_dot_file(mdp_key, folder=mdps_folder)
     transition_tensor = utils.graph_to_transition_tensor(mdp_graph)

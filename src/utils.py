@@ -140,7 +140,11 @@ def transform_graph_for_plots(mdp_graph):
     )
     nx.set_edge_attributes(
         mdp_graph_,
-        nx.get_edge_attributes(mdp_graph_, 'weight'),
+        {
+            edge: round(weight, 3) for edge, weight in nx.get_edge_attributes(
+                mdp_graph_, 'weight'
+            ).items()
+        },
         name='label'
     )
 
