@@ -2,7 +2,6 @@ from src import test
 from src import launch
 from src import data
 
-# TODO: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 # TODO: Add policy construction and checking methods onto an existing gridworld. Test & document.
 # TODO: Add visualization for gridworld and Agent 2 policy.
 # TODO: Add method to save (gridworld, policy, MDP) triple.
@@ -26,7 +25,7 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Add functions to plot POWER variance as metric of optionality.
+# TODO: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 # TODO NEXT: Document stochastic wind API.
 # - Wind, teleporters, irreversible actions / doorways.
 

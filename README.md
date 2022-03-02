@@ -10,7 +10,7 @@ Investigation of the following MDP (Figure 1 from the paper):
 
 ## Installation, setup, and testing
 
-👉 _This repo will only work with Python 3._
+👉 _This repo has only been tested with Python 3.8.9._
 
 1. Ensure Homebrew and Graphviz are installed to enable MDP visualization. Run:
   

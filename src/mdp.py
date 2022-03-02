@@ -187,7 +187,7 @@ def generate_noised_gridworlds(gridworld_mdp, noise_level_list=[], noise_bias_li
     ]
 
 def view_gridworld(gridworld_mdp):
-    viz.plot_sample_means(
+    viz.plot_sample_aggregations(
         torch.zeros((1, len(list(gridworld_mdp)))),
         [str(state) for state in gridworld_mdp],
         plot_as_gridworld=True,

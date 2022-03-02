@@ -187,7 +187,8 @@ def graph_to_transition_tensor(graph):
     
     else:
         transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(graph)))
-    
+
+# First index is current state s; second index is action a; third index is next state s'.
     return transition_tensor_.to(torch.float)
 
 def clone_run_inputs(runs_data_with_transition_tensor, ignore_terminal_state=False):

@@ -6,17 +6,23 @@ import itertools as it
 from . import data
 from . import utils
 
-def plot_sample_means(
+def plot_sample_aggregations(
     all_samples,
     state_list,
     show=True,
     plot_as_gridworld=False,
     save_handle=None,
+    aggregation='mean',
     sample_quantity='POWER',
     sample_units='reward units',
     save_figure=data.save_figure,
     save_folder=data.EXPERIMENT_FOLDER
 ):
+    if aggregation == 'mean':
+        sample_aggregations = all_samples.mean(axis=0)
+    elif aggregation == 'var':
+        sample_aggregations = all_samples.var(axis=0)
+    
     if plot_as_gridworld:
         row_coords, col_coords = np.array(utils.gridworld_states_to_coords(state_list)).T
         num_rows, num_cols = max(row_coords) + 1, max(col_coords) + 1
@@ -27,7 +33,6 @@ def plot_sample_means(
                 [(row_coord, col_coord) for row_coord, col_coord in zip(row_coords, col_coords)]
             )
         )
-        sample_means = all_samples.mean(axis=0)
 
         fig, ax_ = plt.subplots(figsize=(num_rows, num_cols))
 
@@ -36,19 +41,19 @@ def plot_sample_means(
             np.append(row_coords, [coords[0] for coords in excluded_coords]),
             np.append(col_coords, [coords[1] for coords in excluded_coords]),
             bins=[num_rows, num_cols],
-            weights=np.append(sample_means, np.full(len(excluded_coords), np.nan))
+            weights=np.append(sample_aggregations, np.full(len(excluded_coords), np.nan))
         )
 
         ax_.imshow(heat_map)
         ax_.set_xticks(range(num_cols))
         ax_.set_yticks(range(num_rows))
-        ax_.set_title('{0} means for each gridworld state ({1})'.format(sample_quantity, sample_units))
+        ax_.set_title('{0} {1}s for each gridworld state ({2})'.format(sample_quantity, aggregation, sample_units))
 
         for sample_index in range(len(row_coords)):
             ax_.text(
                 col_coords[sample_index],
                 row_coords[sample_index],
-                round(float(sample_means[sample_index]), 4),
+                round(float(sample_aggregations[sample_index]), 4),
                 ha='center',
                 va='center',
                 color='w'
@@ -59,8 +64,8 @@ def plot_sample_means(
 
         ax_.bar(
             range(len(state_list)),
-            torch.mean(all_samples, axis=0),
-            yerr=torch.std(all_samples, axis=0) / np.sqrt(len(all_samples)),
+            sample_aggregations,
+            yerr=torch.std(all_samples, axis=0) / np.sqrt(len(all_samples)) if aggregation == 'mean' else None,
             align='center',
             ecolor='black',
             capsize=10
@@ -68,12 +73,14 @@ def plot_sample_means(
         ax_.set_ylabel('{0} of state ({1})'.format(sample_quantity, sample_units))
         ax_.set_xticks(range(len(state_list)))
         ax_.set_xticklabels(state_list)
-        ax_.set_title('{} (mean $\pm$ standard error of the mean) for each state'.format(sample_quantity))
+        ax_.set_title('{0} ({1}{2}) for each state'.format(
+            sample_quantity, aggregation, ' $\pm$ standard error of the mean' if aggregation == 'mean' else ''
+        ))
 
     plt.tight_layout()
 
     if callable(save_figure) and save_handle is not None:
-        save_figure(fig, '{0}_means-{1}'.format(sample_quantity, save_handle), folder=save_folder)
+        save_figure(fig, '{0}_{1}s-{2}'.format(sample_quantity, aggregation, save_handle), folder=save_folder)
 
     if show:
         plt.show()
@@ -231,8 +238,11 @@ def render_all_outputs(
 
     return {
         'MDP graph': plot_mdp_graph(mdp_graph, **mdp_kwargs),
-        'POWER means': plot_sample_means(
-            ps_inputs, state_list, sample_quantity='POWER', sample_units='reward units', **kwargs
+        'POWER means': plot_sample_aggregations(
+            ps_inputs, state_list, aggregation='mean', sample_quantity='POWER', sample_units='reward units', **kwargs
+        ),
+        'POWER variances': plot_sample_aggregations(
+            ps_inputs, state_list, aggregation='var', sample_quantity='POWER', sample_units='reward units', **kwargs
         ),
         'Reward samples over states': plot_sample_distributions(
             rs_inputs, state_list, sample_quantity='Reward', sample_units='reward units', **kwargs
