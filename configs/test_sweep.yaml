@@ -43,4 +43,4 @@ parameters:
       10
   random_seed:
     value:
-      null
+      0

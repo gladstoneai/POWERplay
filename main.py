@@ -26,14 +26,12 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Test setting random seed.
-# - For every part of the code that requires a random number generator.
-# - Ideally you pass in a random number generator for each component.
 # TODO NEXT: Add stochastic wind to each state.
 # - Wind, teleporters, irreversible actions / doorways.
 
 if __name__ == '__main__':
-    pass
     # test.test_vanilla()
     # test.test_gridworld()
     # test.test_stochastic()
+
+    pass
