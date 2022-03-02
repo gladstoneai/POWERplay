@@ -63,6 +63,15 @@ def check_stochastic_noise_level(stochastic_noise_level):
     if stochastic_noise_level < 0 or stochastic_noise_level > 1:
         raise Exception('Stochastic noise level must be between 0 and 1.')
 
+def check_noise_bias(noise_bias, stochastic_noise_level):
+    if sum([noise for noise in noise_bias.values()]) > stochastic_noise_level:
+        raise Exception('The total noise bias can\'t be greater than the stochastic_noise_level of {}.'.format(
+            stochastic_noise_level
+        ))
+    
+    if any([noise < 0 for noise in noise_bias.values()]):
+        raise Exception('Every value of the noise bias must be greater than 0.')
+
 def check_mdp_graph(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.MDPS_FOLDER):
     mdp_graph = data.load_graph_from_dot_file(mdp_key, folder=mdps_folder)
     transition_tensor = utils.graph_to_transition_tensor(mdp_graph)

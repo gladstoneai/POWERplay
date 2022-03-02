@@ -26,7 +26,8 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Add stochastic wind to each state.
+# TODO NEXT: Add functions to plot POWER variance as metric of optionality.
+# TODO NEXT: Document stochastic wind API.
 # - Wind, teleporters, irreversible actions / doorways.
 
 if __name__ == '__main__':

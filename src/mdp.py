@@ -49,27 +49,27 @@ def construct_gridworld(num_rows, num_cols, name='custom gridworld', squares_to_
     return mdp_add_self_loops(gridworld_mdp_)
 
 def add_state_action(mdp_graph, state_to_add, action_dict, check_closure=False):
-        check.check_name_for_underscores(state_to_add)
-        check.check_action_dict(action_dict)
+    check.check_name_for_underscores(state_to_add)
+    check.check_action_dict(action_dict)
 
-        mdp_graph_ = cp.deepcopy(mdp_graph)
+    mdp_graph_ = cp.deepcopy(mdp_graph)
 
-        mdp_graph_.add_node(state_to_add)
+    mdp_graph_.add_node(state_to_add)
 
-        for action in action_dict.keys():
-            action_node_id = '__'.join([action, state_to_add])
-            mdp_graph_.add_node(action_node_id)
-            mdp_graph_.add_edge(state_to_add, action_node_id)
+    for action in action_dict.keys():
+        action_node_id = '__'.join([action, state_to_add])
+        mdp_graph_.add_node(action_node_id)
+        mdp_graph_.add_edge(state_to_add, action_node_id)
 
-            for state in action_dict[action].keys():
-                state_node_id = '__'.join([state, action, state_to_add])
-                mdp_graph_.add_node(state_node_id)
-                mdp_graph_.add_edge(action_node_id, state_node_id, weight=action_dict[action][state])
-        
-        if check_closure:
-            check.check_stochastic_mdp_closure(mdp_graph_)
+        for state in action_dict[action].keys():
+            state_node_id = '__'.join([state, action, state_to_add])
+            mdp_graph_.add_node(state_node_id)
+            mdp_graph_.add_edge(action_node_id, state_node_id, weight=action_dict[action][state])
+    
+    if check_closure:
+        check.check_stochastic_mdp_closure(mdp_graph_)
 
-        return mdp_graph_
+    return mdp_graph_
 
 def remove_state_action(mdp_graph, state_to_remove, check_closure=False):
     mdp_graph_ = cp.deepcopy(mdp_graph)
@@ -102,9 +102,11 @@ def mdp_to_stochastic_graph(mdp_graph):
 
 def gridworld_to_stochastic_graph(
     gridworld_mdp,
-    stochastic_noise_level=0
+    stochastic_noise_level=0,
+    noise_bias={}
 ):
     check.check_stochastic_noise_level(stochastic_noise_level)
+    check.check_noise_bias(noise_bias, stochastic_noise_level)
 
     stochastic_graph_ = nx.DiGraph()
     grid_coords_list = utils.gridworld_states_to_coords(utils.get_states_from_graph(gridworld_mdp))
@@ -125,28 +127,50 @@ def gridworld_to_stochastic_graph(
         'stay': lambda coords: coords
     }
 
+    default_transition = 'stay'
+
     for grid_coords in grid_coords_list:
         allowed_actions = [action for action, transition in possible_transitions.items() if (
             transition(grid_coords) is not None
         )]
 
+        allowed_noise_bias_ = {}
+        # If the bias direction is blocked, stack the bias probability from that direction onto the
+        # default_transition direction. So if the bias goes 'left' 0.2 and 'left' is blocked, stack an
+        # extra 0.2 probability on 'stay'.
+        for noise_bias_direction, noise_bias_amount in noise_bias.items():
+            if noise_bias_direction in allowed_actions:
+                allowed_noise_bias_[noise_bias_direction] = noise_bias_amount
+            elif allowed_noise_bias_.get(default_transition) is not None:
+                allowed_noise_bias_[default_transition] += noise_bias_amount
+            else:
+                allowed_noise_bias_[default_transition] = noise_bias_amount
+
+        unbiased_noise = (
+            stochastic_noise_level - sum([noise for noise in allowed_noise_bias_.values()])
+        ) / (len(allowed_actions) - len(allowed_noise_bias_))
+
         stochastic_graph_ = add_state_action(
             stochastic_graph_,
             utils.gridworld_coords_to_state(grid_coords),
             {
-                action: {
+                action: { # These are transition probabilities for states s' that do *not* correspond to the action taken
                     **{
                         utils.gridworld_coords_to_state(
                             possible_transitions[allowed_action](grid_coords)
                         ): (
-                            stochastic_noise_level / len(allowed_actions)
+                            allowed_noise_bias_.get(allowed_action) if (
+                                allowed_action in allowed_noise_bias_.keys()
+                            ) else unbiased_noise
                         ) for allowed_action in allowed_actions if stochastic_noise_level > 0
                     },
-                    **{
+                    **{ # This is the transition probability for the state s' that *does* correspond to the action taken
                         utils.gridworld_coords_to_state(
                             possible_transitions[action](grid_coords)
                         ): (
-                            1 + stochastic_noise_level * (1 / len(allowed_actions) - 1)
+                            1 - stochastic_noise_level + allowed_noise_bias_.get(action) if (
+                                action in allowed_noise_bias_.keys()
+                            ) else 1 - stochastic_noise_level + unbiased_noise
                         )
                     }
                 } for action in allowed_actions
@@ -155,11 +179,11 @@ def gridworld_to_stochastic_graph(
     
     return stochastic_graph_
 
-def generate_noised_gridworlds(gridworld_mdp, noise_level_list=[]):
+def generate_noised_gridworlds(gridworld_mdp, noise_level_list=[], noise_bias_list=[]):
     return [
         gridworld_to_stochastic_graph(
-            gridworld_mdp, stochastic_noise_level=noise_level
-        ) for noise_level in noise_level_list
+            gridworld_mdp, stochastic_noise_level=noise_level, noise_bias=noise_bias
+        ) for noise_level, noise_bias in zip(noise_level_list, noise_bias_list)
     ]
 
 def view_gridworld(gridworld_mdp):
