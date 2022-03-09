@@ -2,6 +2,10 @@ from src import test
 from src import launch
 from src import data
 
+# TODO: Document stochastic wind API and multiagent API and graph formats.
+# TODO: More stochastic experiments.
+# - Wind, teleporters, irreversible actions / doorways.
+# TODO: Refactor codebase to keep all files under 200 lines each.
 # TODO: Add policy construction and checking methods onto an existing gridworld. Test & document.
 # TODO: Add visualization for gridworld and Agent 2 policy.
 # TODO: Add method to save (gridworld, policy, MDP) triple.
@@ -25,9 +29,9 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO: Test simple 3-cell gridworld with 2 agents and a fixed policy.
-# TODO NEXT: Document stochastic wind API.
-# - Wind, teleporters, irreversible actions / doorways.
+# TODO NEXT: Build functions to take the outer product of a stochastic graph and get a multiagent
+# transition tensor.
+# TODO NEXT: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 
 if __name__ == '__main__':
     # test.test_vanilla()

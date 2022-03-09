@@ -21,18 +21,21 @@ def check_num_samples(num_samples, num_workers):
     if num_samples % num_workers != 0:
         raise Exception('The number of reward samples must be an exact multiple of the number of workers.')
 
-def check_name_for_underscores(name):
+def check_stochastic_state_name(name):
     if '__' in name:
         raise Exception(
             'The state or action {} has a double underscore in its name, which is forbidden'.format(name)
         )
+    
+    if ']' in name or '[' in name:
+        raise Exception('The state or action {} can\'t have a [ or ] character in its name.'.format(name))
 
 def check_action_dict(action_dict, tolerance=PROBABILITY_TOLERANCE):
     if action_dict == {}:
         raise Exception('The action_dict can\'t be empty.')
 
     for action in action_dict.keys():
-        check_name_for_underscores(action)
+        check_stochastic_state_name(action)
 
         if action_dict[action] == {}:
             raise Exception('The state dict for action {} can\'t be empty.'.format(action))
@@ -41,11 +44,13 @@ def check_action_dict(action_dict, tolerance=PROBABILITY_TOLERANCE):
             raise Exception('The state transition probabilities for action {} must sum to 1.'.format(action))
         
         for state in action_dict[action].keys():
-            check_name_for_underscores(state)
+            check_stochastic_state_name(state)
 
 def check_stochastic_mdp_closure(stoch_mdp_graph):
     out_states_list = list(set([
-        node.split('__')[0] for node in list(stoch_mdp_graph) if (len(node.split('__')) == 3)
+        utils.decompose_stochastic_graph_node(node)[0] for node in list(
+            stoch_mdp_graph
+        ) if (len(utils.decompose_stochastic_graph_node(node)) == 3)
     ]))
 
     for out_state in out_states_list:

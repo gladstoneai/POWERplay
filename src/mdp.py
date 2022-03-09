@@ -49,22 +49,23 @@ def construct_gridworld(num_rows, num_cols, name='custom gridworld', squares_to_
     return mdp_add_self_loops(gridworld_mdp_)
 
 def add_state_action(mdp_graph, state_to_add, action_dict, check_closure=False):
-    check.check_name_for_underscores(state_to_add)
+    check.check_stochastic_state_name(state_to_add)
     check.check_action_dict(action_dict)
 
     mdp_graph_ = cp.deepcopy(mdp_graph)
+    current_state_node_id = utils.build_stochastic_graph_node(state_to_add)
 
-    mdp_graph_.add_node(state_to_add)
+    mdp_graph_.add_node(current_state_node_id)
 
     for action in action_dict.keys():
-        action_node_id = '__'.join([action, state_to_add])
+        action_node_id = utils.build_stochastic_graph_node(action, state_to_add)
         mdp_graph_.add_node(action_node_id)
-        mdp_graph_.add_edge(state_to_add, action_node_id)
+        mdp_graph_.add_edge(current_state_node_id, action_node_id)
 
         for state in action_dict[action].keys():
-            state_node_id = '__'.join([state, action, state_to_add])
-            mdp_graph_.add_node(state_node_id)
-            mdp_graph_.add_edge(action_node_id, state_node_id, weight=action_dict[action][state])
+            next_state_node_id = utils.build_stochastic_graph_node(state, action, state_to_add)
+            mdp_graph_.add_node(next_state_node_id)
+            mdp_graph_.add_edge(action_node_id, next_state_node_id, weight=action_dict[action][state])
     
     if check_closure:
         check.check_stochastic_mdp_closure(mdp_graph_)
@@ -74,7 +75,9 @@ def add_state_action(mdp_graph, state_to_add, action_dict, check_closure=False):
 def remove_state_action(mdp_graph, state_to_remove, check_closure=False):
     mdp_graph_ = cp.deepcopy(mdp_graph)
     mdp_graph_.remove_nodes_from([
-        stoch_state for stoch_state in mdp_graph_ if stoch_state.split('__')[-1] == state_to_remove
+        stoch_node for stoch_node in mdp_graph_ if (
+            utils.decompose_stochastic_graph_node(stoch_node)[-1] == state_to_remove
+        )
     ])
 
     if check_closure:
