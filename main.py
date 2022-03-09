@@ -29,8 +29,7 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Build functions to take the outer product of a stochastic graph and get a multiagent
-# transition tensor.
+# TODO NEXT: Build functions to create and graph a single-agent policy using NetworkX.
 # TODO NEXT: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 
 if __name__ == '__main__':
