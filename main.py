@@ -29,7 +29,7 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Build pipeline from policy graph to policy matrix.
+# TODO NEXT: Integrate multiagent transitions into full transition tensor in experiment pipeline.
 # TODO NEXT: Document (and refactor?) all relevant policy, multi, and mdp functions.
 # TODO NEXT: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 

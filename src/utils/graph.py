@@ -58,31 +58,6 @@ def transform_graph_for_plots(mdp_or_policy_graph):
 def is_graph_stochastic(mdp_graph):
     return (nx.get_edge_attributes(mdp_graph, 'weight') != {})
 
-def graph_to_transition_tensor(graph):
-    if is_graph_stochastic(graph):
-        state_list, action_list = get_states_from_graph(graph), get_actions_from_graph(graph)
-        transition_tensor_ = torch.zeros(len(state_list), len(action_list), len(state_list))
-
-        for i in range(len(state_list)):
-            for j in range(len(action_list)):
-                for k in range(len(state_list)):
-
-                    try:
-                        transition_tensor_[i][j][k] = graph[
-                            build_stochastic_graph_node(action_list[j], state_list[i])
-                        ][
-                            build_stochastic_graph_node(state_list[k], action_list[j], state_list[i])
-                        ]['weight']
-# Some state-action-state triples don't occur; transition_tensor_ entry remains zero in those cases.
-                    except KeyError:
-                        pass
-    
-    else:
-        transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(graph)))
-
-# First index is current state s; second index is action a; third index is next state s'.
-    return transition_tensor_.to(torch.float)
-
 def get_states_from_graph(graph):
     return [
         decompose_stochastic_graph_node(node)[0] for node in list(graph) if (
@@ -96,3 +71,49 @@ def get_actions_from_graph(graph):
             len(decompose_stochastic_graph_node(node)) == 2
         )
     ])) if is_graph_stochastic(graph) else list(graph)
+
+def graph_to_transition_tensor(mdp_graph):
+    if is_graph_stochastic(mdp_graph):
+        state_list, action_list = get_states_from_graph(mdp_graph), get_actions_from_graph(mdp_graph)
+        transition_tensor_ = torch.zeros(len(state_list), len(action_list), len(state_list))
+
+        for i in range(len(state_list)):
+            for j in range(len(action_list)):
+                for k in range(len(state_list)):
+
+                    try:
+                        transition_tensor_[i][j][k] = mdp_graph[
+                            build_stochastic_graph_node(action_list[j], state_list[i])
+                        ][
+                            build_stochastic_graph_node(state_list[k], action_list[j], state_list[i])
+                        ]['weight']
+
+# Some state-action-state triples don't occur; transition_tensor_ entry remains zero in those cases.
+                    except KeyError:
+                        pass
+    
+    else:
+        transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(mdp_graph)))
+
+# First index is current state s; second index is action a; third index is next state s'.
+    return transition_tensor_.to(torch.float)
+
+def graph_to_policy_tensor(policy_graph):
+    state_list, action_list = get_states_from_graph(policy_graph), get_actions_from_graph(policy_graph)
+    policy_tensor_ = torch.zeros(len(state_list), len(action_list))
+
+    for i in range(len(state_list)):
+        for j in range(len(action_list)):
+
+            try:
+                policy_tensor_[i][j] = policy_graph[
+                    build_stochastic_graph_node(state_list[i])
+                ][
+                    build_stochastic_graph_node(action_list[j], state_list[i])
+                ]['weight']
+
+# Some state-action pairs don't occur; policy_tensor_ entry remains zero in those cases.
+            except KeyError:
+                pass
+    
+    return policy_tensor_.to(torch.float)
