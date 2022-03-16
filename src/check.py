@@ -1,8 +1,8 @@
 import multiprocessing as mps
 import warnings as warn
 
+from .utils import graph
 from . import data
-from . import utils
 
 ################################################################################
 
@@ -48,13 +48,13 @@ def check_action_dict(action_dict, tolerance=PROBABILITY_TOLERANCE):
 
 def check_stochastic_mdp_closure(stoch_mdp_graph):
     out_states_list = list(set([
-        utils.decompose_stochastic_graph_node(node)[0] for node in list(
+        graph.decompose_stochastic_graph_node(node)[0] for node in list(
             stoch_mdp_graph
-        ) if (len(utils.decompose_stochastic_graph_node(node)) == 3)
+        ) if (len(graph.decompose_stochastic_graph_node(node)) == 3)
     ]))
 
     for out_state in out_states_list:
-        if out_state not in utils.get_states_from_graph(stoch_mdp_graph):
+        if out_state not in graph.get_states_from_graph(stoch_mdp_graph):
             warn.warn(
                 'Your MDP is not closed so can\'t yet be used for experiments. '\
                 'State {} exists as an action output but hasn\'t had its accessible actions defined.'.format(
@@ -77,8 +77,8 @@ def check_noise_bias(noise_bias, stochastic_noise_level):
 
 def check_mdp_graph(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.MDPS_FOLDER):
     mdp_graph = data.load_graph_from_dot_file(mdp_key, folder=mdps_folder)
-    transition_tensor = utils.graph_to_transition_tensor(mdp_graph)
-    state_list, action_list = utils.get_states_from_graph(mdp_graph), utils.get_actions_from_graph(mdp_graph)
+    transition_tensor = graph.graph_to_transition_tensor(mdp_graph)
+    state_list, action_list = graph.get_states_from_graph(mdp_graph), graph.get_actions_from_graph(mdp_graph)
 
     if list(transition_tensor.shape) != [len(state_list), len(action_list), len(state_list)]:
         raise Exception('The transition tensor for MDP {0} must have shape [{1}, {2}, {1}]'.format(

@@ -8,7 +8,7 @@ import os
 import json
 import functools as func
 
-from . import utils
+from .utils import misc
 from . import data
 from . import learn
 from . import check
@@ -93,7 +93,7 @@ def launch_sweep(
 
     sweep_name = '{0}-{1}'.format(sweep_local_id, input_sweep_config.get('name'))
 
-    output_sweep_config = utils.build_sweep_config(
+    output_sweep_config = misc.build_sweep_config(
         input_sweep_config=input_sweep_config,
         sweep_name=sweep_name,
         project=project,
@@ -117,7 +117,7 @@ def launch_sweep(
     ], env={
         **environ,
         'LOCAL_SWEEP_NAME': sweep_name,
-        'SWEEP_VARIABLE_PARAMS': json.dumps(utils.get_variable_params(input_sweep_config)),
+        'SWEEP_VARIABLE_PARAMS': json.dumps(misc.get_variable_params(input_sweep_config)),
         'PLOT_AS_GRIDWORLD': str(plot_as_gridworld), # Only str allowed in os.environ
         'PLOT_CORRELATIONS': str(plot_correlations)
     })

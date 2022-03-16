@@ -1,10 +1,21 @@
 import torch
+import torch.distributions as td
 
-from . import data
+from . import misc
+
+################################################################################
+
+DISTRIBUTION_DICT = {
+    'uniform': td.Uniform,
+    'uniform_0_1_manual': misc.pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100),
+    'beta': td.Beta
+}
+
+################################################################################
 
 # A 1d pdf config has the form
-# { 'dist_name': <key for distribution in data.DISTRIBUTION_DICT>, 'params': <params input to that distribution> }
-def config_to_pdf_constructor(distribution_config, distribution_dict=data.DISTRIBUTION_DICT):
+# { 'dist_name': <key for distribution in DISTRIBUTION_DICT>, 'params': <params input to that distribution> }
+def config_to_pdf_constructor(distribution_config, distribution_dict=DISTRIBUTION_DICT):
     raw_distribution = distribution_dict[distribution_config.get('dist_name')](*distribution_config.get('params'))
     # Handle both PyTorch and manual functions built with pdf_sampler_constructor
     return raw_distribution if not hasattr(raw_distribution, 'sample') else raw_distribution.sample
@@ -31,7 +42,7 @@ def reward_distribution_constructor(
 #   <state label 2>: <1d pdf config applied to state 2 that overrides the default dist>
 #   ... etc.
 # } }
-def config_to_reward_distribution(state_list, reward_dist_config, distribution_dict=data.DISTRIBUTION_DICT):
+def config_to_reward_distribution(state_list, reward_dist_config, distribution_dict=DISTRIBUTION_DICT):
     return reward_distribution_constructor(
         state_list,
         default_reward_sampler=config_to_pdf_constructor(

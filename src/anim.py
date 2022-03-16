@@ -1,7 +1,8 @@
 import pathlib as path
 
 from . import data
-from . import utils
+from .utils import misc
+from .utils import graph
 
 def animate_full_sweep(
     sweep_name,
@@ -34,7 +35,7 @@ def generate_sweep_animations(
     sweep = data.load_full_sweep(sweep_name, folder=experiment_folder)
 
     run_names = [
-        utils.build_run_name(
+        misc.build_run_name(
             sweep_name,
             { animation_param: anim_value, **fixed_param_values },
             list(fixed_param_values.keys()) + [animation_param]
@@ -50,7 +51,7 @@ def generate_sweep_animations(
         'POWER_means',
         'POWER_samples'
     ] + [
-        'POWER_correlations_{}'.format(state) for state in utils.get_states_from_graph(
+        'POWER_correlations_{}'.format(state) for state in graph.get_states_from_graph(
             data.load_graph_from_dot_file(mdp_key)
         )
     ]

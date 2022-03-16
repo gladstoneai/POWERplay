@@ -1,7 +1,7 @@
 import networkx as nx
 import copy as cp
 
-from . import utils
+from .utils import graph
 
 def single_agent_to_multiagent_state(
     current_agent_state,
@@ -21,10 +21,10 @@ def single_agent_to_multiagent_graph_node(
     other_agent_state,
     current_agent_is_A=True
 ):
-    states_and_actions_single = utils.decompose_stochastic_graph_node(current_agent_graph_node)
+    states_and_actions_single = graph.decompose_stochastic_graph_node(current_agent_graph_node)
     action_index = 0 if len(states_and_actions_single) == 2 else 1
 
-    return utils.build_stochastic_graph_node(*[
+    return graph.build_stochastic_graph_node(*[
         single_agent_to_multiagent_state(
             states_and_actions_single[i], other_agent_state, current_agent_is_A=current_agent_is_A
         ) if (
@@ -35,7 +35,7 @@ def single_agent_to_multiagent_graph_node(
 def create_multiagent_transition_graph(single_agent_graph, current_agent_is_A=True):
     multiagent_graph_ = nx.DiGraph()
 
-    for other_agent_state in utils.get_states_from_graph(single_agent_graph):
+    for other_agent_state in graph.get_states_from_graph(single_agent_graph):
         multiagent_graph_ = nx.compose(
             multiagent_graph_, nx.relabel_nodes(cp.deepcopy(single_agent_graph), {
                 node: single_agent_to_multiagent_graph_node(

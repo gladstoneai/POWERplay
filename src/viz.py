@@ -3,8 +3,9 @@ import numpy as np
 import torch
 import itertools as it
 
+from .utils import graph
+from .utils import misc
 from . import data
-from . import utils
 
 def plot_sample_aggregations(
     all_samples,
@@ -24,7 +25,7 @@ def plot_sample_aggregations(
         sample_aggregations = all_samples.var(axis=0)
     
     if plot_as_gridworld:
-        row_coords, col_coords = np.array(utils.gridworld_states_to_coords(state_list)).T
+        row_coords, col_coords = np.array(graph.gridworld_states_to_coords(state_list)).T
         num_rows, num_cols = max(row_coords) + 1, max(col_coords) + 1
         excluded_coords = list(
             set(
@@ -106,15 +107,15 @@ def plot_sample_distributions(
     transposed_samples = torch.transpose(all_samples, 0, 1)
 
     if plot_as_gridworld:
-        row_coords, col_coords = np.array(utils.gridworld_states_to_coords(plotted_states)).T
+        row_coords, col_coords = np.array(graph.gridworld_states_to_coords(plotted_states)).T
 
-        fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(
+        fig_cols, fig_rows, fig, axs_plot_ = misc.generate_fig_layout(
             (max(row_coords) + 1, max(col_coords) + 1), sharey=True
         )
         axis_coords_list = list(zip(row_coords, col_coords))
     
     else:
-        fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(len(state_indices), sharey=True)
+        fig_cols, fig_rows, fig, axs_plot_ = misc.generate_fig_layout(len(state_indices), sharey=True)
         axis_coords_list = [(i // fig_cols, i % fig_cols) for i in range(len(state_indices))]
 
     for axis_coords, state, state_index in zip(axis_coords_list, plotted_states, state_indices):
@@ -156,15 +157,15 @@ def plot_sample_correlations(
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
     if plot_as_gridworld:
-        row_coords, col_coords = np.array(utils.gridworld_states_to_coords(state_y_list)).T
+        row_coords, col_coords = np.array(graph.gridworld_states_to_coords(state_y_list)).T
 
-        fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(
+        fig_cols, fig_rows, fig, axs_plot_ = misc.generate_fig_layout(
             (max(row_coords) + 1, max(col_coords) + 1), sharey=False
         )
         axis_coords_list = list(zip(row_coords, col_coords))
 
     else:
-        fig_cols, fig_rows, fig, axs_plot_ = utils.generate_fig_layout(len(state_y_indices), sharey=False)
+        fig_cols, fig_rows, fig, axs_plot_ = misc.generate_fig_layout(len(state_y_indices), sharey=False)
         axis_coords_list = [(i // fig_cols, i % fig_cols) for i in range(len(state_y_indices))]
 
     for axis_coords, state_y, state_y_index in zip(axis_coords_list, state_y_list, state_y_indices):
@@ -198,7 +199,7 @@ def plot_mdp_graph(
     temp_folder=data.TEMP_FOLDER
 ):
 
-    graph_to_plot = utils.transform_graph_for_plots(mdp_graph)
+    graph_to_plot = graph.transform_graph_for_plots(mdp_graph)
 
 # We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
 # rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
@@ -224,7 +225,7 @@ def render_all_outputs(
     plot_correlations=True,
     **kwargs
 ):
-    state_list = utils.get_states_from_graph(mdp_graph)
+    state_list = graph.get_states_from_graph(mdp_graph)
     rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
     ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
     mdp_kwargs = {

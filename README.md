@@ -182,7 +182,7 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
 
     Typical value: `0.1`
   
-  - `reward_distribution`: A list of distributions for the reward of each state. We have one `default_dist`, which defines the default reward distribution and is assumed to be iid over all states, and we also have a list of `state_dists`, which define state-specific reward distributions for all states that do not have the default distribution. Each distribution is defined by a `dist_name`, which is the name of that base distribution as found in `DISTRIBUTION_DICT` in `data.py`; and a `params` list, which is a list of parameters for that distribution.
+  - `reward_distribution`: A list of distributions for the reward of each state. We have one `default_dist`, which defines the default reward distribution and is assumed to be iid over all states, and we also have a list of `state_dists`, which define state-specific reward distributions for all states that do not have the default distribution. Each distribution is defined by a `dist_name`, which is the name of that base distribution as found in `DISTRIBUTION_DICT` in `utils/dist.py`; and a `params` list, which is a list of parameters for that distribution.
 
     Typical value:
 
@@ -278,7 +278,7 @@ An example of a sweep configuration file can be found in `configs/test_sweep.yam
 
   ```
   >>> import networkx as nx
-  >>> petersen_mdp = utils.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')
+  >>> petersen_mdp = mdp.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')
   ```
   (Note that using `quick_graph_to_mdp()` on an undirected graph makes the resulting output graph not just _directed_, but also _acyclic_. It also makes sure that every non-terminal node has at least one outbound edge or self-loop.)
 

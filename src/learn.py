@@ -2,7 +2,7 @@ import torch
 import copy as cp
 import sys
 
-from . import utils
+from .utils import misc
 
 def value_iteration(
     reward_function,
@@ -29,7 +29,7 @@ def value_iteration(
                 torch.sparse.mm(transition_tensor_sparse[state], value_function.unsqueeze(1))
             )
 
-        max_value_change = utils.calculate_value_convergence(old_values, value_function)
+        max_value_change = misc.calculate_value_convergence(old_values, value_function)
 
     return value_function
 

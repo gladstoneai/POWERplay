@@ -1,9 +1,10 @@
 import pathlib as path
 import time
 
+from .utils import graph
+from .utils import misc
 from . import launch
 from . import data
-from . import utils
 from . import viz
 from . import mdp
 
@@ -25,14 +26,14 @@ def augment_runs_data(sweep_runs_data, convert_mdp_to_stochastic=False, plot_as_
             'inputs': {
                 **run_data['inputs'],
                 'mdp_graph_networkx': mdp_graph,
-                'transition_tensor': utils.graph_to_transition_tensor(mdp_graph)
+                'transition_tensor': graph.graph_to_transition_tensor(mdp_graph)
             }
         }
     
     return augmented_runs_data_
 
 def clone_run_inputs(sweep_runs_data, convert_mdp_to_stochastic=False, ignore_terminal_state=False):
-    return utils.clone_run_inputs(
+    return misc.clone_run_inputs(
         augment_runs_data(sweep_runs_data, convert_mdp_to_stochastic=convert_mdp_to_stochastic),
         ignore_terminal_state=ignore_terminal_state
     )
@@ -56,7 +57,7 @@ def run_and_save_sweep_replication(
         convert_mdp_to_stochastic=convert_mdp_to_stochastic,
         plot_as_gridworld=plot_as_gridworld
     )
-    all_run_inputs = utils.clone_run_inputs(
+    all_run_inputs = misc.clone_run_inputs(
         augmented_runs_data, ignore_terminal_state=ignore_terminal_state
     )
 

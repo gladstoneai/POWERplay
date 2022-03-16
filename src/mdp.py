@@ -4,7 +4,7 @@ import itertools as it
 import torch
 import numpy as np
 
-from . import utils
+from .utils import graph
 from . import viz
 from . import check
 
@@ -28,7 +28,7 @@ def mdp_add_self_loops(mdp_graph):
 def delete_gridworld_square(gridworld_mdp_graph, corner1_state, corner2_state):
     gridworld_mdp_graph_ = cp.deepcopy(gridworld_mdp_graph)
 
-    row_coord_lims, col_coord_lims = np.array(utils.gridworld_states_to_coords([corner1_state, corner2_state])).T
+    row_coord_lims, col_coord_lims = np.array(graph.gridworld_states_to_coords([corner1_state, corner2_state])).T
     rows_to_delete = list(range(min(row_coord_lims), max(row_coord_lims) + 1))
     cols_to_delete = list(range(min(col_coord_lims), max(col_coord_lims) + 1))
 
@@ -53,17 +53,17 @@ def add_state_action(mdp_graph, state_to_add, action_dict, check_closure=False):
     check.check_action_dict(action_dict)
 
     mdp_graph_ = cp.deepcopy(mdp_graph)
-    current_state_node_id = utils.build_stochastic_graph_node(state_to_add)
+    current_state_node_id = graph.build_stochastic_graph_node(state_to_add)
 
     mdp_graph_.add_node(current_state_node_id)
 
     for action in action_dict.keys():
-        action_node_id = utils.build_stochastic_graph_node(action, state_to_add)
+        action_node_id = graph.build_stochastic_graph_node(action, state_to_add)
         mdp_graph_.add_node(action_node_id)
         mdp_graph_.add_edge(current_state_node_id, action_node_id)
 
         for state in action_dict[action].keys():
-            next_state_node_id = utils.build_stochastic_graph_node(state, action, state_to_add)
+            next_state_node_id = graph.build_stochastic_graph_node(state, action, state_to_add)
             mdp_graph_.add_node(next_state_node_id)
             mdp_graph_.add_edge(action_node_id, next_state_node_id, weight=action_dict[action][state])
     
@@ -76,7 +76,7 @@ def remove_state_action(mdp_graph, state_to_remove, check_closure=False):
     mdp_graph_ = cp.deepcopy(mdp_graph)
     mdp_graph_.remove_nodes_from([
         stoch_node for stoch_node in mdp_graph_ if (
-            utils.decompose_stochastic_graph_node(stoch_node)[-1] == state_to_remove
+            graph.decompose_stochastic_graph_node(stoch_node)[-1] == state_to_remove
         )
     ])
 
@@ -94,7 +94,7 @@ def update_state_action(mdp_graph, state_to_update, new_action_dict, check_closu
 def mdp_to_stochastic_graph(mdp_graph):
     stochastic_graph_ = nx.DiGraph()
 
-    for state in utils.get_states_from_graph(mdp_graph):
+    for state in graph.get_states_from_graph(mdp_graph):
         stochastic_graph_ = add_state_action(
             stochastic_graph_,
             state,
@@ -112,7 +112,7 @@ def gridworld_to_stochastic_graph(
     check.check_noise_bias(noise_bias, stochastic_noise_level)
 
     stochastic_graph_ = nx.DiGraph()
-    grid_coords_list = utils.gridworld_states_to_coords(utils.get_states_from_graph(gridworld_mdp))
+    grid_coords_list = graph.gridworld_states_to_coords(graph.get_states_from_graph(gridworld_mdp))
 
     possible_transitions = {
         'up': lambda coords: [coords[0] - 1, coords[1]] if (
@@ -155,11 +155,11 @@ def gridworld_to_stochastic_graph(
 
         stochastic_graph_ = add_state_action(
             stochastic_graph_,
-            utils.gridworld_coords_to_state(grid_coords),
+            graph.gridworld_coords_to_state(grid_coords),
             {
                 action: { # These are transition probabilities for states s' that do *not* correspond to the action taken
                     **{
-                        utils.gridworld_coords_to_state(
+                        graph.gridworld_coords_to_state(
                             possible_transitions[allowed_action](grid_coords)
                         ): (
                             allowed_noise_bias_.get(allowed_action) if (
@@ -168,7 +168,7 @@ def gridworld_to_stochastic_graph(
                         ) for allowed_action in allowed_actions if stochastic_noise_level > 0
                     },
                     **{ # This is the transition probability for the state s' that *does* correspond to the action taken
-                        utils.gridworld_coords_to_state(
+                        graph.gridworld_coords_to_state(
                             possible_transitions[action](grid_coords)
                         ): (
                             1 - stochastic_noise_level + allowed_noise_bias_.get(action) if (

@@ -3,14 +3,15 @@ import os
 import json
 import pathlib as path
 
+from src.utils import dist
+from src.utils import misc
+from src. utils import graph
 from src import data
 from src import viz
-from src import dist
 from src import launch
-from src import utils
 
 def cli_experiment_sweep(
-    distribution_dict=data.DISTRIBUTION_DICT,
+    distribution_dict=dist.DISTRIBUTION_DICT,
     local_sweep_name=os.environ.get('LOCAL_SWEEP_NAME'),
     sweep_variable_params=json.loads(os.environ.get('SWEEP_VARIABLE_PARAMS')),
     plot_as_gridworld=(os.environ.get('PLOT_AS_GRIDWORLD') == 'True'),
@@ -24,7 +25,7 @@ def cli_experiment_sweep(
             key: (value[0] if (key in sweep_variable_params) else value) for key, value in run.config.items()
         }
         # Hack to force a specified name for the run in W&B interface
-        run.name = utils.build_run_name(local_sweep_name, run.config, sweep_variable_params)
+        run.name = misc.build_run_name(local_sweep_name, run.config, sweep_variable_params)
 
         num_reward_samples = run_params.get('num_reward_samples')
         num_workers = run_params.get('num_workers')
@@ -33,8 +34,8 @@ def cli_experiment_sweep(
         random_seed = run_params.get('random_seed')
 
         mdp_graph = data.load_graph_from_dot_file(run_params.get('mdp_graph'), folder=mdps_folder)
-        transition_tensor = utils.graph_to_transition_tensor(mdp_graph)
-        state_list = utils.get_states_from_graph(mdp_graph)
+        transition_tensor = graph.graph_to_transition_tensor(mdp_graph)
+        state_list = graph.get_states_from_graph(mdp_graph)
         reward_sampler = dist.config_to_reward_distribution(
             state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict
         )
