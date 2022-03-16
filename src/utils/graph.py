@@ -25,32 +25,32 @@ def build_stochastic_graph_node(*states_and_actions):
 def decompose_stochastic_graph_node(stochastic_graph_node):
     return [node.strip('[').strip(']') for node in stochastic_graph_node.split('__')]
 
-def transform_graph_for_plots(mdp_graph):
-    mdp_graph_ = cp.deepcopy(mdp_graph)
+def transform_graph_for_plots(mdp_or_policy_graph):
+    mdp_or_policy_graph_ = cp.deepcopy(mdp_or_policy_graph)
 
     nx.set_node_attributes(
-        mdp_graph_,
-        { node_id: decompose_stochastic_graph_node(node_id)[0] for node_id in list(mdp_graph_) },
+        mdp_or_policy_graph_,
+        { node_id: decompose_stochastic_graph_node(node_id)[0] for node_id in list(mdp_or_policy_graph_) },
         name='label'
     )
     nx.set_node_attributes( # Boxes are states, circles are actions
-        mdp_graph_,
+        mdp_or_policy_graph_,
         { node_id: (
             'circle' if len(decompose_stochastic_graph_node(node_id)) == 2 else 'box'
-        ) for node_id in list(mdp_graph_) },
+        ) for node_id in list(mdp_or_policy_graph_) },
         name='shape'
     )
     nx.set_edge_attributes(
-        mdp_graph_,
+        mdp_or_policy_graph_,
         {
             edge: round(weight, 3) for edge, weight in nx.get_edge_attributes(
-                mdp_graph_, 'weight'
+                mdp_or_policy_graph_, 'weight'
             ).items()
         },
         name='label'
     )
 
-    return mdp_graph_
+    return mdp_or_policy_graph_
 
 # Return True if graph is in stochastic format, False otherwise. Currently this just checks whether
 # some edges in the graph have weights. If none have weights, we conclude the graph is not in

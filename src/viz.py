@@ -190,16 +190,17 @@ def plot_sample_correlations(
     
     return fig
 
-def plot_mdp_graph(
-    mdp_graph,
+def plot_mdp_or_policy(
+    mdp_or_policy_graph,
     show=True,
     subgraphs_per_row=4,
     save_handle='temp',
+    graph_type='mdp_graph',
     save_folder=data.TEMP_FOLDER,
     temp_folder=data.TEMP_FOLDER
 ):
 
-    graph_to_plot = graph.transform_graph_for_plots(mdp_graph)
+    graph_to_plot = graph.transform_graph_for_plots(mdp_or_policy_graph)
 
 # We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
 # rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
@@ -208,7 +209,7 @@ def plot_mdp_graph(
     fig = data.create_and_save_mdp_figure(
         save_handle,
         subgraphs_per_row=subgraphs_per_row,
-        fig_name='mdp_graph-{}'.format(save_handle),
+        fig_name='{0}-{1}'.format(graph_type, save_handle),
         mdps_folder=temp_folder,
         fig_folder=save_folder,
         show=show
@@ -238,7 +239,7 @@ def render_all_outputs(
     print('Rendering plots...')
 
     return {
-        'MDP graph': plot_mdp_graph(mdp_graph, **mdp_kwargs),
+        'MDP graph': plot_mdp_or_policy(mdp_graph, **mdp_kwargs),
         'POWER means': plot_sample_aggregations(
             ps_inputs, state_list, aggregation='mean', sample_quantity='POWER', sample_units='reward units', **kwargs
         ),

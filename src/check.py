@@ -21,6 +21,26 @@ def check_num_samples(num_samples, num_workers):
     if num_samples % num_workers != 0:
         raise Exception('The number of reward samples must be an exact multiple of the number of workers.')
 
+def check_state_in_graph_states(policy_graph, state):
+    if state not in graph.get_states_from_graph(policy_graph):
+        raise Exception('The state {} isn\'t in your policy graph.'.format(state))
+
+def check_policy_actions(policy_graph, state, policy_actions, tolerance=PROBABILITY_TOLERANCE):
+    if set(
+        policy_actions.keys()
+    ) != set(
+        [graph.decompose_stochastic_graph_node(node)[0] for node in policy_graph.successors(
+            graph.build_stochastic_graph_node(state)
+        )]
+    ):
+        raise Exception(
+            'The actions in the update set for state {} ' \
+            'must be identical to that state\'s action set in the original policy.'.format(state)
+        )
+    
+    if abs(sum(policy_actions.values()) - 1) > tolerance:
+        raise Exception('The probabilities of all actions from state {} must sum to 1.'.format(state))
+
 def check_stochastic_state_name(name):
     if '__' in name:
         raise Exception(
