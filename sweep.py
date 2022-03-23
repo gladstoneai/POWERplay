@@ -17,7 +17,8 @@ def cli_experiment_sweep(
     plot_as_gridworld=(os.environ.get('PLOT_AS_GRIDWORLD') == 'True'),
     plot_correlations=(os.environ.get('PLOT_CORRELATIONS') == 'True'),
     experiment_folder=data.EXPERIMENT_FOLDER,
-    mdps_folder=data.MDPS_FOLDER
+    mdps_folder=data.MDPS_FOLDER,
+    policies_folder=data.POLICIES_FOLDER
 ):
 
     with wb.init() as run:
@@ -32,9 +33,19 @@ def cli_experiment_sweep(
         discount_rate = run_params.get('discount_rate')
         convergence_threshold = run_params.get('convergence_threshold')
         random_seed = run_params.get('random_seed')
-
         mdp_graph = data.load_graph_from_dot_file(run_params.get('mdp_graph'), folder=mdps_folder)
-        transition_tensor = graph.graph_to_transition_tensor(mdp_graph)
+
+        if run_params.get('mdp_graph_agent_B') is None or run_params.get('policy_graph_agent_B') is None:
+            transition_tensor = graph.graph_to_transition_tensor(mdp_graph)
+
+        else:
+            mdp_graph_B = data.load_graph_from_dot_file(run_params.get('mdp_graph_B'), folder=mdps_folder)
+            policy_graph_B = data.load_graph_from_dot_file(run_params.get('policy_graph_B'), folder=policies_folder)
+
+            transition_tensor = graph.graphs_to_multiagent_transition_tensor(
+                mdp_graph, mdp_graph_B, policy_graph_B
+            )
+
         state_list = graph.get_states_from_graph(mdp_graph)
         reward_sampler = dist.config_to_reward_distribution(
             state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict

@@ -28,11 +28,10 @@ def check_state_in_graph_states(policy_graph, state):
 def check_policy_actions(policy_graph, state, policy_actions, tolerance=PROBABILITY_TOLERANCE):
     if set(
         policy_actions.keys()
-    ) != set(
-        [graph.decompose_stochastic_graph_node(node)[0] for node in policy_graph.successors(
-            graph.build_stochastic_graph_node(state)
-        )]
-    ):
+    ) != set([
+        graph.decompose_stochastic_graph_node(node)[0] for node in policy_graph.successors(
+            graph.build_stochastic_graph_node(state))
+        ]):
         raise Exception(
             'The actions in the update set for state {} ' \
             'must be identical to that state\'s action set in the original policy.'.format(state)
@@ -40,6 +39,28 @@ def check_policy_actions(policy_graph, state, policy_actions, tolerance=PROBABIL
     
     if abs(sum(policy_actions.values()) - 1) > tolerance:
         raise Exception('The probabilities of all actions from state {} must sum to 1.'.format(state))
+
+def check_policy_mdp_compatibility(policy_graph, mdp_graph):
+    if graph.get_states_from_graph(policy_graph) != graph.get_states_from_graph(mdp_graph):
+        raise Exception('The policy graph must have the same state set as the mdp graph.')
+    
+    if graph.get_actions_from_graph(policy_graph) != graph.get_actions_from_graph(mdp_graph):
+        raise Exception('The policy graph must have the same action set as the mdp graph.')
+    
+    for state in graph.get_states_from_graph(policy_graph):
+        if set([
+            graph.decompose_stochastic_graph_node(node)[0] for node in policy_graph.successors(
+                graph.build_stochastic_graph_node(state)
+            )
+        ]) != set([
+            graph.decompose_stochastic_graph_node(node)[0] for node in mdp_graph.successors(
+                graph.build_stochastic_graph_node(state)
+            )
+        ]):
+            raise Exception(
+                'The policy actions must be identical to the MDP actions at state {}.'.format(state)
+            )
+    
 
 def check_stochastic_state_name(name):
     if '__' in name:
@@ -164,6 +185,8 @@ def check_sweep_param(param_name, value_dict, checker_function):
 def check_sweep_params(sweep_params):
     all_param_checkers = {
         'mdp_graph': check_mdp_graph,
+        'mdp_graph_B': noop,
+        'policy_graph_B': noop,
         'discount_rate': check_discount_rate,
         'reward_distribution': noop,
         'num_reward_samples': noop,

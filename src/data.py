@@ -14,6 +14,7 @@ from .utils import misc
 SWEEP_CONFIGS_FOLDER = 'configs'
 EXPERIMENT_FOLDER = 'expts'
 MDPS_FOLDER = 'mdps'
+POLICIES_FOLDER = 'policies'
 TEMP_FOLDER = 'temp'
 
 SETTINGS_FILENAME = 'settings.json'

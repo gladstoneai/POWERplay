@@ -59,11 +59,11 @@ def is_graph_stochastic(mdp_graph):
     return (nx.get_edge_attributes(mdp_graph, 'weight') != {})
 
 def get_states_from_graph(graph):
-    return [
+    return sorted([
         decompose_stochastic_graph_node(node)[0] for node in list(graph) if (
             len(decompose_stochastic_graph_node(node)) == 1
         )
-    ] if is_graph_stochastic(graph) else list(graph)
+    ]) if is_graph_stochastic(graph) else list(graph)
 
 def get_actions_from_graph(graph):
     return sorted(set([
@@ -117,3 +117,26 @@ def graph_to_policy_tensor(policy_graph):
                 pass
     
     return policy_tensor_.to(torch.float)
+
+def graphs_to_multiagent_transition_tensor(mdp_graph_A, mdp_graph_B, policy_graph_B):
+    transition_tensor_A = graph_to_transition_tensor(mdp_graph_A)
+    transition_tensor_B = graph_to_transition_tensor(mdp_graph_B)
+    policy_tensor_B = graph_to_policy_tensor(policy_graph_B)
+
+    num_states = len(get_states_from_graph(mdp_graph_A))
+    num_actions_A = len(get_actions_from_graph(mdp_graph_A))
+    num_actions_B = len(get_actions_from_graph(mdp_graph_B))
+
+    agent_B_state_mapping = (transition_tensor_B * policy_tensor_B.unsqueeze(-1).expand(
+        num_states, num_actions_B, num_states
+    )).sum(dim=1)
+
+    return ((
+        agent_B_state_mapping.unsqueeze(0).unsqueeze(0).expand(
+            num_states, num_actions_A, num_states, num_states
+        )
+    ) * (
+        transition_tensor_A.unsqueeze(-1).expand(
+            num_states, num_actions_A, num_states, num_states
+        )
+    )).sum(dim=2)

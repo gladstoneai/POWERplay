@@ -29,7 +29,14 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Integrate multiagent transitions into full transition tensor in experiment pipeline.
+# TODO NEXT: Do a deep investigation of the multiagent case.
+# - We're seeing an error (bug or possible conceptual confusion) in the 1x3 gridworld multiagent case.
+# - We can try debugging by making the Agent B policy asymmetrical. (Maybe make it non-stochastic.)
+# - Write a Google doc for deep investigation.
+# TODO NEXT: Convert the reduced agent A tensor to a standard stochastic MDP graph for visualization / debugging.
+# - Make sure this is what gets visualized in the experiment pipeline.
+# TODO NEXT: Create a test function to run multiagent in a 1x3 gridworld.
+# TODO NEXT: Check compatibility of policy and tensor (for multiagent) up front in launch.py param checker.
 # TODO NEXT: Document (and refactor?) all relevant policy, multi, and mdp functions.
 # TODO NEXT: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 
@@ -37,5 +44,5 @@ if __name__ == '__main__':
     # test.test_vanilla()
     # test.test_gridworld()
     # test.test_stochastic()
-
+    
     pass
