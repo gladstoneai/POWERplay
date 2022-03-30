@@ -60,7 +60,6 @@ def check_policy_mdp_compatibility(policy_graph, mdp_graph):
             raise Exception(
                 'The policy actions must be identical to the MDP actions at state {}.'.format(state)
             )
-    
 
 def check_stochastic_state_name(name):
     if '__' in name:
@@ -185,8 +184,9 @@ def check_sweep_param(param_name, value_dict, checker_function):
 def check_sweep_params(sweep_params):
     all_param_checkers = {
         'mdp_graph': check_mdp_graph,
-        'mdp_graph_B': noop,
-        'policy_graph_B': noop,
+        'mdp_graph_agent_A': check_mdp_graph,
+        'mdp_graph_agent_B': noop,
+        'policy_graph_agent_B': noop,
         'discount_rate': check_discount_rate,
         'reward_distribution': noop,
         'num_reward_samples': noop,

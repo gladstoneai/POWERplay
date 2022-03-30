@@ -221,12 +221,12 @@ def plot_mdp_or_policy(
 def render_all_outputs(
     reward_samples,
     power_samples,
-    mdp_graph,
+    graphs_to_plot,
     sample_filter=None,
     plot_correlations=True,
     **kwargs
 ):
-    state_list = graph.get_states_from_graph(mdp_graph)
+    state_list = graph.get_states_from_graph(graphs_to_plot[0])
     rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
     ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
     mdp_kwargs = {
@@ -239,7 +239,6 @@ def render_all_outputs(
     print('Rendering plots...')
 
     return {
-        'MDP graph': plot_mdp_or_policy(mdp_graph, **mdp_kwargs),
         'POWER means': plot_sample_aggregations(
             ps_inputs, state_list, aggregation='mean', sample_quantity='POWER', sample_units='reward units', **kwargs
         ),
@@ -256,5 +255,12 @@ def render_all_outputs(
             'POWER correlations, state {}'.format(state): plot_sample_correlations(
                 ps_inputs, state_list, state, sample_quantity='POWER', sample_units='reward units', **kwargs
             ) for state in state_list
-        } if plot_correlations else {})
+        } if plot_correlations else {}),
+        **({
+            'MDP graph': plot_mdp_or_policy(graphs_to_plot[0], **mdp_kwargs) # Single agent case
+        } if (len(graphs_to_plot) == 1) else {
+            mdp_name: plot_mdp_or_policy(graph_to_plot, **mdp_kwargs) for mdp_name, graph_to_plot in zip(
+                ['MDP graph for agent A', 'MDP graph for agent B', 'Policy graph for agent B'], graphs_to_plot # Mulitagent case
+            )
+        })
     }

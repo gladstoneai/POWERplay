@@ -32,7 +32,9 @@ from src import data
 # TODO NEXT: Do a deep investigation of the multiagent case.
 # - We're seeing an error (bug or possible conceptual confusion) in the 1x3 gridworld multiagent case.
 # - We can try debugging by making the Agent B policy asymmetrical. (Maybe make it non-stochastic.)
-# - Write a Google doc for deep investigation.
+# Improve visualization of the MDP graph for the integrated transition tensor.
+# Add sanity checks to policy / MDP inputs for the multiagent case.
+# Create gridworld visualizations for the multiagent case.
 # TODO NEXT: Convert the reduced agent A tensor to a standard stochastic MDP graph for visualization / debugging.
 # - Make sure this is what gets visualized in the experiment pipeline.
 # TODO NEXT: Create a test function to run multiagent in a 1x3 gridworld.
