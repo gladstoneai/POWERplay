@@ -2,6 +2,20 @@ from src import test
 from src import launch
 from src import data
 
+# TODO: Update get_sweep_state_list to handle the multiagent case and return all the MDPs and policies
+# in that case.
+# TODO: Improve visualization of the MDP graph for the integrated transition tensor.
+# TODO: Add sanity checks to policy / MDP inputs for the multiagent case.
+# TODO: Create gridworld visualizations for the multiagent case.
+# TODO: What happens when Agent B goes around in circles.
+# TODO: Convert the reduced agent A tensor to a standard stochastic MDP graph for visualization / debugging.
+# - Make sure this is what gets visualized in the experiment pipeline.
+# TODO: Create a test function to run multiagent in a 1x3 gridworld.
+# TODO: Check compatibility of policy and tensor (for multiagent) up front in launch.py param checker.
+# TODO: Document (and refactor?) all relevant policy, multi, and mdp functions.
+# TODO: Test simple 3-cell gridworld with 2 agents and a fixed policy.
+# TODO: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
+# - This would be for one reward sample.
 # TODO: Document stochastic wind API and multiagent API and graph formats.
 # TODO: More stochastic experiments.
 # - Wind, teleporters, irreversible actions / doorways.
@@ -29,22 +43,13 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Do a deep investigation of the multiagent case.
-# - We're seeing an error (bug or possible conceptual confusion) in the 1x3 gridworld multiagent case.
-# - We can try debugging by making the Agent B policy asymmetrical. (Maybe make it non-stochastic.)
-# Improve visualization of the MDP graph for the integrated transition tensor.
-# Add sanity checks to policy / MDP inputs for the multiagent case.
-# Create gridworld visualizations for the multiagent case.
-# TODO NEXT: Convert the reduced agent A tensor to a standard stochastic MDP graph for visualization / debugging.
-# - Make sure this is what gets visualized in the experiment pipeline.
-# TODO NEXT: Create a test function to run multiagent in a 1x3 gridworld.
-# TODO NEXT: Check compatibility of policy and tensor (for multiagent) up front in launch.py param checker.
-# TODO NEXT: Document (and refactor?) all relevant policy, multi, and mdp functions.
-# TODO NEXT: Test simple 3-cell gridworld with 2 agents and a fixed policy.
+
+# TODO NEXT: Run actual multiagent experiments to replicate the 1x3 and 1x4 multiagent gridworlds.
+# TODO NEXT: Document all new functions (in MDP, stochastic wind, and new MDP inputs in the sweep yaml file; see sweep.py)
 
 if __name__ == '__main__':
     # test.test_vanilla()
     # test.test_gridworld()
     # test.test_stochastic()
-    
+
     pass

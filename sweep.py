@@ -46,6 +46,8 @@ def cli_experiment_sweep(
             state_list = graph.get_states_from_graph(mdp_graph)
             graphs_to_plot = [mdp_graph]
 
+# TODO: Document new MDP parameter names for the single-agent and multiagent cases.
+
         else: # Multiagent case
             mdp_graph_A = data.load_graph_from_dot_file(
                 run_params.get('mdp_graph_agent_A'), folder=mdps_folder

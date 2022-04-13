@@ -63,7 +63,7 @@ def plot_sample_aggregations(
     else:
         fig, ax_ = plt.subplots()
 
-        ax_.bar(
+        bars = ax_.bar(
             range(len(state_list)),
             sample_aggregations,
             yerr=torch.std(all_samples, axis=0) / np.sqrt(len(all_samples)) if aggregation == 'mean' else None,
@@ -73,10 +73,11 @@ def plot_sample_aggregations(
         )
         ax_.set_ylabel('{0} of state ({1})'.format(sample_quantity, sample_units))
         ax_.set_xticks(range(len(state_list)))
-        ax_.set_xticklabels(state_list)
+        ax_.set_xticklabels(state_list, rotation='vertical')
         ax_.set_title('{0} ({1}{2}) for each state'.format(
             sample_quantity, aggregation, ' $\pm$ standard error of the mean' if aggregation == 'mean' else ''
         ))
+        ax_.bar_label(bars, rotation='vertical', label_type='center')
 
     plt.tight_layout()
 

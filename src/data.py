@@ -6,8 +6,10 @@ import networkx as nx
 import PIL as pil
 import graphviz as gv
 import subprocess as sp
+import os
 
 from .utils import misc
+from .utils import graph
 
 ################################################################################
 
@@ -159,3 +161,45 @@ def create_and_save_mdp_figure(
         gv.view(fig_filepath)
 
     return load_png_figure(fig_filepath.stem, fig_filepath.parent)
+
+def get_full_sweep_name_from_id(sweep_id, folder=EXPERIMENT_FOLDER):
+    return [name for name in os.listdir(folder) if (
+        name[:len(sweep_id)] == sweep_id
+    )][0]
+
+# TODO: Document this function. Lets you quickly retrieve inputs or outputs of an experiment based on
+# the sweep_id (i.e., date & time hash, which should be unique) and the suffix for the run within
+# the experiment sweep.
+def get_sweep_run_results(sweep_id, run_suffix, folder=EXPERIMENT_FOLDER):
+    sweep_name = get_full_sweep_name_from_id(sweep_id, folder=folder)
+
+    return load_full_sweep(
+        sweep_name, folder=folder
+    )['all_runs_data']['{0}-{1}'.format(sweep_name, run_suffix)]['outputs']
+
+# TODO: Document this function. This is another convenience function that lets you quickly retrieve
+# the state_list for a sweep. IMPORTANT: This assumes that the state_list will be the same for all
+# runs in the sweep, even though the MDP itself may change. This seems sensible, since if you're sweeping
+# across runs you'll generally only be changing the transition probabilities of the MDP as opposed to the
+# list of states itself, but I'm not 100% sure if this is true. Inputs are
+# the sweep_id (i.e., date & time hash, which should be unique) and the suffix for the run within
+# the experiment sweep.
+def get_sweep_state_list(sweep_id, folder=EXPERIMENT_FOLDER):
+    mdp_graph_param = load_full_sweep(
+        get_full_sweep_name_from_id(sweep_id, folder=folder), folder=folder
+    ).get('parameters').get('mdp_graph')
+
+    if mdp_graph_param.get('value'):
+        state_list = graph.get_states_from_graph(load_graph_from_dot_file(mdp_graph_param['value']))
+    
+    else:
+        all_state_lists = [
+            graph.get_states_from_graph(
+                load_graph_from_dot_file(mdp_pair[0])
+            ) for mdp_pair in mdp_graph_param['values']
+        ]
+        if all(all_state_lists[0] == item for item in all_state_lists):
+            state_list = all_state_lists[0]
+
+    return state_list
+
