@@ -11,11 +11,18 @@ configs/*
 !configs/test_sweep.yaml
 !configs/test_sweep_gridworld.yaml
 !configs/test_sweep_stochastic.yaml
+!configs/test_run_multi_simulated.yaml
+!configs/test_run_multi_actual.yaml
 
 mdps/*
 
 !mdps/gridworld_selfloop_3x3.gv
 !mdps/stochastic_graph_4_states.gv
 !mdps/mdp_from_paper.gv
+!mdps/stoch_1x3_gridworld_with_agent_B_moving_left_simulated.gv
+!mdps/stoch_gridworld_1x3_agent_A.gv
+!mdps/stoch_gridworld_1x3_agent_B.gv
 
 policies/*
+
+!policies/stoch_gridworld_1x3_agent_B_move_left.gv

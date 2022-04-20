@@ -1,0 +1,35 @@
+name: test_run_multi_actual
+description: "A single run with (discount rate 0.1) on the 1x3 multiagent gridworld, with an Agent B policy that always moves to the left."
+program: sweep.py
+parameters:
+  mdp_graph_agent_A:
+    value:
+      "stoch_gridworld_1x3_agent_A"
+  mdp_graph_agent_B:
+    value:
+      "stoch_gridworld_1x3_agent_B"
+  policy_graph_agent_B:
+    value:
+      "stoch_gridworld_1x3_agent_B_move_left"
+  discount_rate:
+    value:
+      0.1
+  reward_distribution:
+    value:
+      default_dist:
+        dist_name:
+          "uniform"
+        params:
+          [0, 1]
+  num_reward_samples:
+    value:
+      10000
+  convergence_threshold:
+    value:
+      0.0001
+  num_workers:
+    value:
+      10
+  random_seed:
+    value:
+      0

@@ -1,0 +1,29 @@
+name: test_run_multi_simulated
+description: "A single run with (discount rate 0.1) on the 1x3 gridworld, with a simulated Agent B that has an always-move-left policy."
+program: sweep.py
+parameters:
+  mdp_graph:
+    value:
+      "stoch_1x3_gridworld_with_agent_B_moving_left_simulated"
+  discount_rate:
+    value:
+      0.1
+  reward_distribution:
+    value:
+      default_dist:
+        dist_name:
+          "uniform"
+        params:
+          [0, 1]
+  num_reward_samples:
+    value:
+      10000
+  convergence_threshold:
+    value:
+      0.0001
+  num_workers:
+    value:
+      10
+  random_seed:
+    value:
+      0

@@ -9,7 +9,6 @@ from src import data
 # TODO: Add sanity checks to policy / MDP inputs for the multiagent case. In particular, add checks that both
 # MDPs and the policy have the same state and action sets.
 # TODO: Create gridworld visualizations for the multiagent case.
-# TODO: What happens when Agent B goes around in circles.
 # TODO: Convert the reduced agent A tensor to a standard stochastic MDP graph for visualization / debugging.
 # - Make sure this is what gets visualized in the experiment pipeline.
 # TODO: Check compatibility of policy and tensor (for multiagent) up front in launch.py param checker.
@@ -42,15 +41,15 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-
-# TODO NEXT: Create a test function to run multiagent in a 1x3 gridworld.
-# - We want to compare the simulated multiagent to an actual multiagent run.
+# TODO: What happens when Agent B goes around in circles.
 # TODO NEXT: Document all new functions (in MDP, stochastic wind, and new MDP inputs in the sweep yaml file; see sweep.py)
 # - Also: how to prepare the MDPs and policies for multiagent before running a sweep.
+
 
 if __name__ == '__main__':
     # test.test_vanilla()
     # test.test_gridworld()
     # test.test_stochastic()
+    # test.test_multiagent()
 
     pass

@@ -123,3 +123,15 @@ def test_stochastic():
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         project='uncategorized'
     )
+
+def test_multiagent():
+    launch.launch_sweep(
+        'test_run_multi_simulated.yaml',
+        entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        project='uncategorized'
+    )
+    launch.launch_sweep(
+        'test_run_multi_actual.yaml',
+        entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        project='uncategorized'
+    )
