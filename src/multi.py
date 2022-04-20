@@ -34,7 +34,8 @@ def single_agent_to_multiagent_graph_node(
 
 # TODO: Document this function. The idea is to go from a single-agent MDP to an MDP from the
 # perspective of agent A or agent B. Those MDPs then get "chained" together in the form of a
-# transition tensor.
+# transition tensor. Input should be an MDP graph in *stochastic* format. So for a gridworld,
+# you should first run mdp.gridworld_to_stochastic_graph().
 def create_multiagent_transition_graph(single_agent_graph, current_agent_is_A=True):
     multiagent_graph_ = nx.DiGraph()
 

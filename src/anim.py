@@ -28,11 +28,13 @@ def animate_full_sweep(
 def generate_sweep_animations(
     sweep_name,
     animation_param,
+    is_multiagent=False,
     figure_prefix=None,
     fixed_param_values={},
     experiment_folder=data.EXPERIMENT_FOLDER
 ):
     sweep = data.load_full_sweep(sweep_name, folder=experiment_folder)
+    mdp_param_key = 'mdp_graph_agent_A' if is_multiagent else 'mdp_graph'
 
     run_names = [
         misc.build_run_name(
@@ -43,9 +45,10 @@ def generate_sweep_animations(
     ]
 
     try:
-        mdp_key = sweep['parameters']['mdp_graph']['value']
+
+        mdp_key = sweep['parameters'][mdp_param_key]['value']
     except KeyError:
-        mdp_key = sweep['parameters']['mdp_graph']['values'][0][0]
+        mdp_key = sweep['parameters'][mdp_param_key]['values'][0][0]
 
     figure_prefix_list = [figure_prefix] if figure_prefix is not None else [
         'POWER_means',

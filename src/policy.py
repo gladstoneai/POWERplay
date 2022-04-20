@@ -8,6 +8,8 @@ from . import check
 # Transforms a stochastic-format MDP to a policy by
 # 1) Deleting the s' states, and
 # 2) adding equal weights to the s -> a edges, representing a random policy on the MDP.
+# This means your input should be an MDP *from the point of view of one of the agents* (A or B),
+# *not* the original MDP that doesn't have the joint state description for the 2 agents.
 def quick_mdp_to_policy(mdp_graph):
     policy_graph_ = cp.deepcopy(mdp_graph)
 

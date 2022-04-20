@@ -5,7 +5,6 @@ from src import data
 # TODO: Check why beep_when_done doesn't work.
 # TODO: Update get_sweep_state_list to handle the multiagent case and return all the MDPs and policies
 # in that case.
-# TODO: Improve visualization of the MDP graph for the integrated transition tensor.
 # TODO: Add sanity checks to policy / MDP inputs for the multiagent case. In particular, add checks that both
 # MDPs and the policy have the same state and action sets.
 # TODO: Create gridworld visualizations for the multiagent case.
@@ -41,9 +40,9 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO: What happens when Agent B goes around in circles.
 # TODO NEXT: Document all new functions (in MDP, stochastic wind, and new MDP inputs in the sweep yaml file; see sweep.py)
 # - Also: how to prepare the MDPs and policies for multiagent before running a sweep.
+# TODO: Add visualization of the MDP graph for the integrated transition tensor.
 
 
 if __name__ == '__main__':
