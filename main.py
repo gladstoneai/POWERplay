@@ -2,18 +2,17 @@ from src import test
 from src import launch
 from src import data
 
+# TODO: Check why beep_when_done doesn't work.
 # TODO: Update get_sweep_state_list to handle the multiagent case and return all the MDPs and policies
 # in that case.
 # TODO: Improve visualization of the MDP graph for the integrated transition tensor.
-# TODO: Add sanity checks to policy / MDP inputs for the multiagent case.
+# TODO: Add sanity checks to policy / MDP inputs for the multiagent case. In particular, add checks that both
+# MDPs and the policy have the same state and action sets.
 # TODO: Create gridworld visualizations for the multiagent case.
 # TODO: What happens when Agent B goes around in circles.
 # TODO: Convert the reduced agent A tensor to a standard stochastic MDP graph for visualization / debugging.
 # - Make sure this is what gets visualized in the experiment pipeline.
-# TODO: Create a test function to run multiagent in a 1x3 gridworld.
 # TODO: Check compatibility of policy and tensor (for multiagent) up front in launch.py param checker.
-# TODO: Document (and refactor?) all relevant policy, multi, and mdp functions.
-# TODO: Test simple 3-cell gridworld with 2 agents and a fixed policy.
 # TODO: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
 # - This would be for one reward sample.
 # TODO: Document stochastic wind API and multiagent API and graph formats.
@@ -44,8 +43,10 @@ from src import data
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
 
-# TODO NEXT: Run actual multiagent experiments to replicate the 1x3 and 1x4 multiagent gridworlds.
+# TODO NEXT: Create a test function to run multiagent in a 1x3 gridworld.
+# - We want to compare the simulated multiagent to an actual multiagent run.
 # TODO NEXT: Document all new functions (in MDP, stochastic wind, and new MDP inputs in the sweep yaml file; see sweep.py)
+# - Also: how to prepare the MDPs and policies for multiagent before running a sweep.
 
 if __name__ == '__main__':
     # test.test_vanilla()

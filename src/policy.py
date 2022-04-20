@@ -4,6 +4,7 @@ import networkx as nx
 from .utils import graph
 from . import check
 
+# TODO: Document this function
 # Transforms a stochastic-format MDP to a policy by
 # 1) Deleting the s' states, and
 # 2) adding equal weights to the s -> a edges, representing a random policy on the MDP.
@@ -25,6 +26,7 @@ def quick_mdp_to_policy(mdp_graph):
 
     return policy_graph_
 
+# TODO: Document this function
 # new_policy_actions is a dict of the form
 # { action_1: prob_1, action_2: prob_2, ... }
 def update_state_actions(policy_graph, state, new_policy_actions):

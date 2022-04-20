@@ -44,7 +44,9 @@ def cli_experiment_sweep(
 
             transition_tensor = graph.graph_to_transition_tensor(mdp_graph)
             state_list = graph.get_states_from_graph(mdp_graph)
-            graphs_to_plot = [mdp_graph]
+            graphs_to_plot = [
+                { 'graph_name': 'MDP graph', 'graph_type': 'mdp_graph', 'graph_data': mdp_graph }
+            ]
 
 # TODO: Document new MDP parameter names for the single-agent and multiagent cases.
 
@@ -70,10 +72,24 @@ def cli_experiment_sweep(
             )
 
             transition_tensor = graph.graphs_to_multiagent_transition_tensor(
-                mdp_graph, mdp_graph_B, policy_graph_B
+                mdp_graph_A, mdp_graph_B, policy_graph_B
             )
             state_list = graph.get_states_from_graph(mdp_graph_A)
-            graphs_to_plot = [mdp_graph_A, mdp_graph_B, policy_graph_B]
+            graphs_to_plot = [
+                {
+                    'graph_name': 'MDP graph for agent A',
+                    'graph_type': 'mdp_graph_agent_A',
+                    'graph_data': mdp_graph_A
+                }, {
+                    'graph_name': 'MDP graph for agent B',
+                    'graph_type': 'mdp_graph_agent_B',
+                    'graph_data': mdp_graph_B
+                }, {
+                    'graph_name': 'Policy graph for agent B',
+                    'graph_type': 'policy_graph_agent_B',
+                    'graph_data': policy_graph_B
+                }
+            ]
 
         reward_sampler = dist.config_to_reward_distribution(
             state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict

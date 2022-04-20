@@ -87,7 +87,14 @@ def get_settings_value(settings_key_path, settings_filename=SETTINGS_FILENAME):
     return value
 
 def load_png_figure(figure_name, folder):
-    return pil.Image.open(path.Path()/folder/'{}.png'.format(figure_name))
+    # We have to load the image and close the context manager (using the with block)
+    # explicitly, because otherwise when saving multiple images to wandb the wb.Image()
+    # function crashes due to lazy loading by PIL. See
+    # https://pillow.readthedocs.io/en/stable/reference/open_files.html#file-handling
+    with pil.Image.open(path.Path()/folder/'{}.png'.format(figure_name)) as img:
+        img.load()
+    
+    return img
 
 def save_gif_from_frames(frames_list, gif_name, folder):
     frames_list[0].save(

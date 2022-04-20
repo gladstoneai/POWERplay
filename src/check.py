@@ -30,8 +30,9 @@ def check_policy_actions(policy_graph, state, policy_actions, tolerance=PROBABIL
         policy_actions.keys()
     ) != set([
         graph.decompose_stochastic_graph_node(node)[0] for node in policy_graph.successors(
-            graph.build_stochastic_graph_node(state))
-        ]):
+            graph.build_stochastic_graph_node(state)
+        )
+    ]):
         raise Exception(
             'The actions in the update set for state {} ' \
             'must be identical to that state\'s action set in the original policy.'.format(state)
