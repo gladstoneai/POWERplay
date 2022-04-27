@@ -80,3 +80,34 @@ def power_sample_calculator_mps(state_action_matrix, discount_rate, reward_sampl
         **kwargs,
         **{ 'worker_id': worker_id }
     })
+
+# Note: in our setting, the reward r depends only on the current state s, not directly on the action a.
+# This means we can simplify the argmax expression for the policy (see the last line of the Value Iteration algorithm
+# in Section 4.4 of Sutton & Barto) to eliminate the r term and the gamma factor. i.e., we can find the optimal
+# policy from the optimal value function by simply taking \argmax_a \sum_{s'} p(s' | s, a) V(s').
+def compute_optimal_policy_tensor(
+    reward_function,
+    discount_rate,
+    transition_tensor,
+    value_initialization=None,
+    convergence_threshold=1e-4
+):
+    return torch.sparse_coo_tensor(
+        torch.stack((
+            torch.arange(transition_tensor.shape[0]),
+            torch.argmax(
+                torch.matmul(
+                    transition_tensor,
+                    value_iteration(
+                        reward_function,
+                        discount_rate,
+                        transition_tensor,
+                        value_initialization=value_initialization,
+                        convergence_threshold=convergence_threshold
+                    ).unsqueeze(1)
+                ), dim=1
+            ).flatten()
+        )),
+        torch.ones(transition_tensor.shape[0]),
+        size=tuple(transition_tensor.shape[:2])
+    ).to_dense()

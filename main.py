@@ -39,6 +39,16 @@ from src import data
 
 # TODO NEXT: Run a single-agent 2x2 gridworld and compare to the clockwise policy.
 # TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
+# - Start with the MDP version, because it's more general and you can see where the rewards are.
+# -- Then, build a function that takes the resulting policy tensor and converts it to a policy *graph*, so we can visualize it (see TODO NEXT in graph.py)
+# -- Make A the rows and B the columns; they won't always have an orthogonal action set, but when they do, this will make it easier to see who is doing what.
+# -- Start by plotting just the state set and not the transitions.
+# --- Then maybe plot the transitions as arrows of different colors for the two agents?
+# -- Show the reward values for Agent A at each joint state
+# --- Maybe plot these as bars rather than numbers for visual impact?
+# -- Produce a series of plots (not an animation yet) highlighting the current state at each step of the rollout; input should be the number of steps in the rollout
+# -- Show which agent has JUST moved (initial state should be marked "initial")
+# -- Then create an animation of the full rollout
 # - This would be for one reward sample.
 # - Can do a gridworld version & an MDP version. (MDP, you can see where the rewards are.)
 # - Maybe a midlevel version between aggregates and individual runs?
