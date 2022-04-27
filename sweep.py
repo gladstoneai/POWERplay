@@ -48,8 +48,6 @@ def cli_experiment_sweep(
                 { 'graph_name': 'MDP graph', 'graph_type': 'mdp_graph', 'graph_data': mdp_graph }
             ]
 
-# TODO: Document new MDP parameter names for the single-agent and multiagent cases.
-
         else: # Multiagent case
             mdp_graph_A = data.load_graph_from_dot_file(
                 run_params.get('mdp_graph_agent_A'), folder=mdps_folder

@@ -2,6 +2,7 @@ from src import test
 from src import launch
 from src import data
 
+# TODO: Add visualization of the MDP graph for the integrated transition tensor.
 # TODO: Check why beep_when_done doesn't work.
 # TODO: Update get_sweep_state_list to handle the multiagent case and return all the MDPs and policies
 # in that case.
@@ -11,13 +12,9 @@ from src import data
 # TODO: Convert the reduced agent A tensor to a standard stochastic MDP graph for visualization / debugging.
 # - Make sure this is what gets visualized in the experiment pipeline.
 # TODO: Check compatibility of policy and tensor (for multiagent) up front in launch.py param checker.
-# TODO: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
-# - This would be for one reward sample.
-# TODO: Document stochastic wind API and multiagent API and graph formats.
 # TODO: More stochastic experiments.
 # - Wind, teleporters, irreversible actions / doorways.
 # TODO: Refactor codebase to keep all files under 200 lines each.
-# TODO: Add policy construction and checking methods onto an existing gridworld. Test & document.
 # TODO: Add visualization for gridworld and Agent 2 policy.
 # TODO: Add method to save (gridworld, policy, MDP) triple.
 # TODO: Do profiling and see which parts are the slowest.
@@ -40,10 +37,11 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Document all new functions (in MDP, stochastic wind, and new MDP inputs in the sweep yaml file; see sweep.py)
-# - Also: how to prepare the MDPs and policies for multiagent before running a sweep.
-# TODO: Add visualization of the MDP graph for the integrated transition tensor.
-
+# TODO NEXT: Run a single-agent 2x2 gridworld and compare to the clockwise policy.
+# TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
+# - This would be for one reward sample.
+# - Can do a gridworld version & an MDP version. (MDP, you can see where the rewards are.)
+# - Maybe a midlevel version between aggregates and individual runs?
 
 if __name__ == '__main__':
     # test.test_vanilla()
