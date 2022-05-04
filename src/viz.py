@@ -1,10 +1,7 @@
 import matplotlib.pyplot as plt
-import numpy as np
-import torch
-import itertools as it
 
 from .utils import graph
-from .utils import misc
+from .utils import render
 from . import data
 
 def plot_sample_aggregations(
@@ -19,67 +16,23 @@ def plot_sample_aggregations(
     save_figure=data.save_figure,
     save_folder=data.EXPERIMENT_FOLDER
 ):
-    if aggregation == 'mean':
-        sample_aggregations = all_samples.mean(axis=0)
-    elif aggregation == 'var':
-        sample_aggregations = all_samples.var(axis=0)
-    
     if plot_as_gridworld:
-        row_coords, col_coords = np.array(graph.gridworld_states_to_coords(state_list)).T
-        num_rows, num_cols = max(row_coords) + 1, max(col_coords) + 1
-        excluded_coords = list(
-            set(
-                it.product(range(num_rows), range(num_cols))
-            ) - set(
-                [(row_coord, col_coord) for row_coord, col_coord in zip(row_coords, col_coords)]
-            )
+        fig = render.render_gridworld_aggregations(
+            all_samples,
+            state_list,
+            aggregation=aggregation,
+            sample_quantity=sample_quantity,
+            sample_units=sample_units
         )
-
-        fig, ax_ = plt.subplots(figsize=(num_rows, num_cols))
-
-        # Fill excluded coords with nan values to maximize contrast for non-nan entries
-        heat_map, _, _ = np.histogram2d(
-            np.append(row_coords, [coords[0] for coords in excluded_coords]),
-            np.append(col_coords, [coords[1] for coords in excluded_coords]),
-            bins=[num_rows, num_cols],
-            weights=np.append(sample_aggregations, np.full(len(excluded_coords), np.nan))
-        )
-
-        ax_.imshow(heat_map)
-        ax_.set_xticks(range(num_cols))
-        ax_.set_yticks(range(num_rows))
-        ax_.set_title('{0} {1}s for each gridworld state ({2})'.format(sample_quantity, aggregation, sample_units))
-
-        for sample_index in range(len(row_coords)):
-            ax_.text(
-                col_coords[sample_index],
-                row_coords[sample_index],
-                round(float(sample_aggregations[sample_index]), 4),
-                ha='center',
-                va='center',
-                color='w'
-            )
 
     else:
-        fig, ax_ = plt.subplots()
-
-        bars = ax_.bar(
-            range(len(state_list)),
-            sample_aggregations,
-            yerr=torch.std(all_samples, axis=0) / np.sqrt(len(all_samples)) if aggregation == 'mean' else None,
-            align='center',
-            ecolor='black',
-            capsize=10
+        fig = render.render_standard_aggregations(
+            all_samples,
+            state_list,
+            aggregation=aggregation,
+            sample_quantity=sample_quantity,
+            sample_units=sample_units
         )
-        ax_.set_ylabel('{0} of state ({1})'.format(sample_quantity, sample_units))
-        ax_.set_xticks(range(len(state_list)))
-        ax_.set_xticklabels(state_list, rotation='vertical')
-        ax_.set_title('{0} ({1}{2}) for each state'.format(
-            sample_quantity, aggregation, ' $\pm$ standard error of the mean' if aggregation == 'mean' else ''
-        ))
-        ax_.bar_label(bars, rotation='vertical', label_type='center')
-
-    plt.tight_layout()
 
     if callable(save_figure) and save_handle is not None:
         save_figure(fig, '{0}_{1}s-{2}'.format(sample_quantity, aggregation, save_handle), folder=save_folder)
@@ -105,31 +58,17 @@ def plot_sample_distributions(
 ):
     plotted_states = state_list if (states_to_plot is None) else states_to_plot
     state_indices = [state_list.index(state_label) for state_label in plotted_states]
-    transposed_samples = torch.transpose(all_samples, 0, 1)
-
-    if plot_as_gridworld:
-        row_coords, col_coords = np.array(graph.gridworld_states_to_coords(plotted_states)).T
-
-        fig_cols, fig_rows, fig, axs_plot_ = misc.generate_fig_layout(
-            (max(row_coords) + 1, max(col_coords) + 1), sharey=True
-        )
-        axis_coords_list = list(zip(row_coords, col_coords))
     
-    else:
-        fig_cols, fig_rows, fig, axs_plot_ = misc.generate_fig_layout(len(state_indices), sharey=True)
-        axis_coords_list = [(i // fig_cols, i % fig_cols) for i in range(len(state_indices))]
-
-    for axis_coords, state, state_index in zip(axis_coords_list, plotted_states, state_indices):
-        # The hist function hangs unless we convert to numpy first
-        axs_plot_[axis_coords[0]][axis_coords[1]].hist(
-            np.array(transposed_samples[state_index]),
-            bins=np.linspace(
-                (transposed_samples[:-1]).min(), (transposed_samples[:-1]).max(), number_of_bins # HERE: Why do we not look at the last sample?
-            ) if normalize_auc else number_of_bins
-        )
-        axs_plot_[axis_coords[0]][axis_coords[1]].title.set_text(state)
-    
-    fig.text(0.5, 0.01 / fig_rows, '{0} samples ({1})'.format(sample_quantity, sample_units))
+    fig = render.render_distributions(
+        all_samples,
+        plotted_states,
+        state_indices,
+        plot_as_gridworld=plot_as_gridworld,
+        number_of_bins=number_of_bins,
+        normalize_auc=normalize_auc,
+        sample_quantity=sample_quantity,
+        sample_units=sample_units
+    )
 
     if callable(save_figure) and save_handle is not None:
         save_figure(fig, '{0}_samples-{1}'.format(sample_quantity, save_handle), folder=save_folder)
@@ -157,29 +96,17 @@ def plot_sample_correlations(
     state_x_index = state_list.index(state_x)
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
-    if plot_as_gridworld:
-        row_coords, col_coords = np.array(graph.gridworld_states_to_coords(state_y_list)).T
-
-        fig_cols, fig_rows, fig, axs_plot_ = misc.generate_fig_layout(
-            (max(row_coords) + 1, max(col_coords) + 1), sharey=False
-        )
-        axis_coords_list = list(zip(row_coords, col_coords))
-
-    else:
-        fig_cols, fig_rows, fig, axs_plot_ = misc.generate_fig_layout(len(state_y_indices), sharey=False)
-        axis_coords_list = [(i // fig_cols, i % fig_cols) for i in range(len(state_y_indices))]
-
-    for axis_coords, state_y, state_y_index in zip(axis_coords_list, state_y_list, state_y_indices):
-        axs_plot_[axis_coords[0]][axis_coords[1]].hist2d(
-            np.array(torch.transpose(all_samples, 0, 1)[state_x_index]),
-            np.array(torch.transpose(all_samples, 0, 1)[state_y_index]),
-            bins=number_of_bins
-        )
-        axs_plot_[axis_coords[0]][axis_coords[1]].set_ylabel(
-            '{0} sample of state {1} ({2})'.format(sample_quantity, state_y, sample_units)
-        )
-
-    fig.text(0.5, 0.01 / fig_rows, '{0} sample of state {1} ({2})'.format(sample_quantity, state_x, sample_units))
+    fig = render.render_correlations(
+        all_samples,
+        state_x,
+        state_x_index,
+        state_y_list,
+        state_y_indices,
+        plot_as_gridworld=plot_as_gridworld,
+        number_of_bins=number_of_bins,
+        sample_quantity=sample_quantity,
+        sample_units=sample_units
+    )
 
     if callable(save_figure) and save_handle is not None:
         save_figure(
@@ -219,7 +146,7 @@ def plot_mdp_or_policy(
     return fig
 
 # Here sample_filter is, e.g., reward_samples[:, 3] < reward_samples[:, 4]
-def render_all_outputs(
+def plot_all_outputs(
     reward_samples,
     power_samples,
     graphs_to_plot,

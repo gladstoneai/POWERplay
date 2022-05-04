@@ -111,7 +111,7 @@ def cli_experiment_sweep(
             }
         }, folder=save_folder)
 
-        run.log({ fig_name: wb.Image(fig) for fig_name, fig in viz.render_all_outputs(
+        run.log({ fig_name: wb.Image(fig) for fig_name, fig in viz.plot_all_outputs(
             reward_samples,
             power_samples,
             graphs_to_plot,

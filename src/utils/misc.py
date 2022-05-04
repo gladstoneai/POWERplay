@@ -1,8 +1,6 @@
 import torch
 import functools as func
 import operator as op
-import math
-import matplotlib.pyplot as plt
 
 ################################################################################
 
@@ -67,32 +65,6 @@ def pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100):
         return pdf_sampler
     
     return constructor_l2
-
-def generate_fig_layout(subplots, sharey=True):
-    # If layout is for a gridworld, subplots will be a 2-tuple
-    if isinstance(subplots, tuple) and len(subplots) == 2:
-        fig_rows, fig_cols = subplots
-    else:
-        fig_cols = min(subplots, 4)
-        fig_rows = math.ceil(subplots / fig_cols)
-
-    fig, axs = plt.subplots(
-        fig_rows,
-        fig_cols,
-        sharex=True,
-        sharey=sharey,
-        tight_layout=True,
-        figsize=(4 * fig_cols, 4 * fig_rows)
-    )
-
-    axs_rows = axs if fig_cols > 1 else [axs]
-
-    return (
-        fig_cols,
-        fig_rows,
-        fig,
-        axs_rows if fig_rows > 1 else [axs_rows]
-    )
 
 def build_run_name(local_sweep_name, run_config, sweep_variable_params):
     return '-'.join([local_sweep_name] + [ # sorted() ensures naming is always consistent

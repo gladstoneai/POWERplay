@@ -38,6 +38,7 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
+# TODO NEXT: Improve visualizations of multiagent gridworld POWERs.
 # TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
 # - Start with the MDP version, because it's more general and you can see where the rewards are.
 # -- Then, build a function that takes the resulting policy tensor and converts it to a policy *graph*, so we can visualize it

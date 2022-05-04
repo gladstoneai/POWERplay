@@ -90,7 +90,7 @@ def run_and_save_sweep_replication(
             }
         }, folder=save_folder)
 
-        viz.render_all_outputs(
+        viz.plot_all_outputs(
             run_inputs['args'][0],
             power_samples,
             augmented_run_data['inputs']['mdp_graph_networkx'],
