@@ -155,12 +155,12 @@ def gridworld_to_stochastic_graph(
 
         stochastic_graph_ = add_state_action(
             stochastic_graph_,
-            graph.gridworld_coords_to_state(grid_coords),
+            graph.gridworld_coords_to_state(*grid_coords),
             {
                 action: { # These are transition probabilities for states s' that do *not* correspond to the action taken
                     **{
                         graph.gridworld_coords_to_state(
-                            possible_transitions[allowed_action](grid_coords)
+                            *possible_transitions[allowed_action](grid_coords)
                         ): (
                             allowed_noise_bias_.get(allowed_action) if (
                                 allowed_action in allowed_noise_bias_.keys()
@@ -169,7 +169,7 @@ def gridworld_to_stochastic_graph(
                     },
                     **{ # This is the transition probability for the state s' that *does* correspond to the action taken
                         graph.gridworld_coords_to_state(
-                            possible_transitions[action](grid_coords)
+                            *possible_transitions[action](grid_coords)
                         ): (
                             1 - stochastic_noise_level + allowed_noise_bias_.get(action) if (
                                 action in allowed_noise_bias_.keys()

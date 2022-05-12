@@ -38,7 +38,6 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT: Improve visualizations of multiagent gridworld POWERs.
 # TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
 # - Start with the MDP version, because it's more general and you can see where the rewards are.
 # -- Then, build a function that takes the resulting policy tensor and converts it to a policy *graph*, so we can visualize it
@@ -52,7 +51,7 @@ def policy_tensor_to_graph(policy_tensor, state_list=None, action_list=None):
         i for i in range(policy_tensor.shape[1])
     ] if (action_list is None) else action_list
 
-    '''
+'''
 # -- Make A the rows and B the columns; they won't always have an orthogonal action set, but when they do, this will make it easier to see who is doing what.
 # -- Start by plotting just the state set and not the transitions.
 # --- Then maybe plot the transitions as arrows of different colors for the two agents?

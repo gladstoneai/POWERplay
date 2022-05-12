@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import collections as col
 
 from .utils import graph
 from .utils import render
@@ -59,7 +60,7 @@ def plot_sample_distributions(
     plotted_states = state_list if (states_to_plot is None) else states_to_plot
     state_indices = [state_list.index(state_label) for state_label in plotted_states]
     
-    fig = render.render_distributions(
+    all_figs = render.render_distributions(
         all_samples,
         plotted_states,
         state_indices,
@@ -71,12 +72,19 @@ def plot_sample_distributions(
     )
 
     if callable(save_figure) and save_handle is not None:
-        save_figure(fig, '{0}_samples-{1}'.format(sample_quantity, save_handle), folder=save_folder)
+        for fig in all_figs:
+            save_figure(fig, '{0}_samples{1}-{2}'.format(
+                sample_quantity,
+                '_agent_B_state_{}'.format(fig.agent_B_state) if (
+                    hasattr(fig, 'agent_B_state')
+                ) else '',
+                save_handle
+            ), folder=save_folder)
     
     if show:
         plt.show()
     
-    return fig
+    return all_figs
 
 def plot_sample_correlations(
     all_samples,
@@ -96,7 +104,7 @@ def plot_sample_correlations(
     state_x_index = state_list.index(state_x)
     state_y_indices = [state_list.index(state_label) for state_label in state_y_list]
 
-    fig = render.render_correlations(
+    all_figs = render.render_correlations(
         all_samples,
         state_x,
         state_x_index,
@@ -109,14 +117,22 @@ def plot_sample_correlations(
     )
 
     if callable(save_figure) and save_handle is not None:
-        save_figure(
-            fig, '{0}_correlations_{1}-{2}'.format(sample_quantity, state_x, save_handle), folder=save_folder
-        )
+        for fig in all_figs:
+            save_figure(
+                fig, '{0}_correlations_{1}{2}-{3}'.format(
+                    sample_quantity,
+                    state_x,
+                    '_agent_B_state{}'.format(fig.agent_B_state) if (
+                        hasattr(fig, 'agent_B_state')
+                    ) else '',
+                    save_handle
+                ), folder=save_folder
+            )
 
     if show:
         plt.show()
     
-    return fig
+    return all_figs
 
 def plot_mdp_or_policy(
     mdp_or_policy_graph,
@@ -173,17 +189,27 @@ def plot_all_outputs(
         'POWER variances': plot_sample_aggregations(
             ps_inputs, state_list, aggregation='var', sample_quantity='POWER', sample_units='reward units', **kwargs
         ),
-        'Reward samples over states': plot_sample_distributions(
-            rs_inputs, state_list, sample_quantity='Reward', sample_units='reward units', **kwargs
-        ),
-        'POWER samples over states': plot_sample_distributions(
-            ps_inputs, state_list, sample_quantity='POWER', sample_units='reward units', **kwargs
-        ),
-        **({
-            'POWER correlations, state {}'.format(state): plot_sample_correlations(
-                ps_inputs, state_list, state, sample_quantity='POWER', sample_units='reward units', **kwargs
-            ) for state in state_list
-        } if plot_correlations else {}),
+        **{
+            'Reward samples over states{}'.format(
+                ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
+            ): fig for fig in plot_sample_distributions(
+                rs_inputs, state_list, sample_quantity='Reward', sample_units='reward units', **kwargs
+            )
+        },
+        **{
+            'POWER samples over states{}'.format(
+                ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
+            ): fig for fig in plot_sample_distributions(
+                ps_inputs, state_list, sample_quantity='POWER', sample_units='reward units', **kwargs
+            )
+        },
+        **(dict(col.ChainMap(*[{
+                'POWER correlations, state {0}{1}'.format(
+                    state, ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
+                ): fig for fig in plot_sample_correlations(
+                    ps_inputs, state_list, state, sample_quantity='POWER', sample_units='reward units', **kwargs
+                )
+            } for state in state_list])) if plot_correlations else {}),
         **{
             graph_to_plot['graph_name']: plot_mdp_or_policy(
                 graph_to_plot['graph_data'], **{ **mdp_kwargs, 'graph_type': graph_to_plot['graph_type'] }

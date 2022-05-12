@@ -1,6 +1,7 @@
 import networkx as nx
 import copy as cp
 import torch
+import re
 
 def gridworld_state_to_coords(gridworld_state):
     return [int(coord) for coord in str(gridworld_state)[1:-1].split(',')]
@@ -8,11 +9,31 @@ def gridworld_state_to_coords(gridworld_state):
 def gridworld_states_to_coords(gridworld_state_list):
     return [gridworld_state_to_coords(state) for state in gridworld_state_list]
 
-def gridworld_coords_to_state(gridworld_coords):
-    return '({0}, {1})'.format(gridworld_coords[0], gridworld_coords[1])
+def gridworld_coords_to_state(gridworld_row_coord, gridworld_col_coord):
+    return '({0}, {1})'.format(gridworld_row_coord, gridworld_col_coord)
 
 def gridworld_coords_to_states(gridworld_coords_list):
-    return [gridworld_coords_to_state(coords) for coords in gridworld_coords_list]
+    return [gridworld_coords_to_state(*coords) for coords in gridworld_coords_list]
+
+def single_agent_states_to_multiagent_state(agent_A_state, agent_B_state):
+    return '{0}_A^{1}_B'.format(agent_A_state, agent_B_state)
+
+def single_agent_states_to_multiagent_states(single_agent_states_list):
+    return [
+        single_agent_states_to_multiagent_state(
+            *single_agent_states
+        ) for single_agent_states in single_agent_states_list
+    ]
+
+def multiagent_state_to_single_agent_states(multiagent_state):
+    return [state.split('_')[0] for state in multiagent_state.split('^')]
+
+def multiagent_states_to_single_agent_states(multiagent_state_list):
+    return [
+        multiagent_state_to_single_agent_states(
+            multiagent_state
+        ) for multiagent_state in multiagent_state_list
+    ]
 
 # Builds a correctly formatted node in the stochastic graph. Input should be either:
 # 1) state1
@@ -55,22 +76,30 @@ def transform_graph_for_plots(mdp_or_policy_graph):
 # Return True if graph is in stochastic format, False otherwise. Currently this just checks whether
 # some edges in the graph have weights. If none have weights, we conclude the graph is not in
 # stochastic format.
-def is_graph_stochastic(mdp_graph):
-    return (nx.get_edge_attributes(mdp_graph, 'weight') != {})
+def is_graph_stochastic(input_graph):
+    return (nx.get_edge_attributes(input_graph, 'weight') != {})
 
-def get_states_from_graph(graph):
+def get_states_from_graph(input_graph):
     return sorted([
-        decompose_stochastic_graph_node(node)[0] for node in list(graph) if (
+        decompose_stochastic_graph_node(node)[0] for node in list(input_graph) if (
             len(decompose_stochastic_graph_node(node)) == 1
         )
-    ]) if is_graph_stochastic(graph) else list(graph)
+    ]) if is_graph_stochastic(input_graph) else list(input_graph)
 
-def get_actions_from_graph(graph):
+def get_actions_from_graph(input_graph):
     return sorted(set([
-        decompose_stochastic_graph_node(node)[0] for node in list(graph) if (
+        decompose_stochastic_graph_node(node)[0] for node in list(input_graph) if (
             len(decompose_stochastic_graph_node(node)) == 2
         )
-    ])) if is_graph_stochastic(graph) else list(graph)
+    ])) if is_graph_stochastic(input_graph) else list(input_graph)
+
+def are_graph_states_multiagent(state_list):
+    return all([
+        bool(re.fullmatch(r'\(\d+, \d+\)_A\^\(\d+, \d+\)_B', state)) for state in state_list
+    ])
+
+def is_graph_multiagent(input_graph):
+    return are_graph_states_multiagent(get_states_from_graph(input_graph))
 
 def graph_to_transition_tensor(mdp_graph):
     if is_graph_stochastic(mdp_graph):

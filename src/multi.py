@@ -3,19 +3,6 @@ import copy as cp
 
 from .utils import graph
 
-def single_agent_to_multiagent_state(
-    current_agent_state,
-    other_agent_state,
-    current_agent_is_A=True
-): 
-    return '{0}_A^{1}_B'.format(
-        *([
-            current_agent_state, other_agent_state
-        ] if current_agent_is_A else [
-            other_agent_state, current_agent_state
-        ])
-    )
-
 def single_agent_to_multiagent_graph_node(
     current_agent_graph_node,
     other_agent_state,
@@ -25,9 +12,11 @@ def single_agent_to_multiagent_graph_node(
     action_index = 0 if len(states_and_actions_single) == 2 else 1
 
     return graph.build_stochastic_graph_node(*[
-        single_agent_to_multiagent_state(
-            states_and_actions_single[i], other_agent_state, current_agent_is_A=current_agent_is_A
-        ) if (
+        graph.single_agent_states_to_multiagent_state(*([
+            states_and_actions_single[i], other_agent_state
+        ] if current_agent_is_A else [
+            other_agent_state, states_and_actions_single[i]
+        ])) if (
             i != action_index
         ) else states_and_actions_single[i] for i in range(len(states_and_actions_single))
     ])

@@ -78,7 +78,7 @@ def load_full_sweep(sweep_name, folder=EXPERIMENT_FOLDER):
 
 def save_figure(figure, fig_name, folder=EXPERIMENT_FOLDER):
     create_folder(folder)
-    figure.savefig(path.Path()/folder/'{}.png'.format(fig_name), transparent=True)
+    figure.savefig(path.Path()/folder/'{}.png'.format(fig_name), transparent=False)
 
 def get_settings_value(settings_key_path, settings_filename=SETTINGS_FILENAME):
     with open(path.Path()/settings_filename, 'rb') as f:
@@ -192,9 +192,10 @@ def get_sweep_run_results(sweep_id, run_suffix, folder=EXPERIMENT_FOLDER):
 # the sweep_id (i.e., date & time hash, which should be unique) and the suffix for the run within
 # the experiment sweep.
 def get_sweep_state_list(sweep_id, folder=EXPERIMENT_FOLDER):
-    mdp_graph_param = load_full_sweep(
+    parameters = load_full_sweep(
         get_full_sweep_name_from_id(sweep_id, folder=folder), folder=folder
-    ).get('parameters').get('mdp_graph')
+    ).get('parameters')
+    mdp_graph_param = parameters.get('mdp_graph', parameters.get('mdp_graph_agent_A'))
 
     if mdp_graph_param.get('value'):
         state_list = graph.get_states_from_graph(load_graph_from_dot_file(mdp_graph_param['value']))
