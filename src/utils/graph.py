@@ -46,33 +46,6 @@ def build_stochastic_graph_node(*states_and_actions):
 def decompose_stochastic_graph_node(stochastic_graph_node):
     return [node.strip('[').strip(']') for node in stochastic_graph_node.split('__')]
 
-def transform_graph_for_plots(mdp_or_policy_graph):
-    mdp_or_policy_graph_ = cp.deepcopy(mdp_or_policy_graph)
-
-    nx.set_node_attributes(
-        mdp_or_policy_graph_,
-        { node_id: decompose_stochastic_graph_node(node_id)[0] for node_id in list(mdp_or_policy_graph_) },
-        name='label'
-    )
-    nx.set_node_attributes( # Boxes are states, circles are actions
-        mdp_or_policy_graph_,
-        { node_id: (
-            'circle' if len(decompose_stochastic_graph_node(node_id)) == 2 else 'box'
-        ) for node_id in list(mdp_or_policy_graph_) },
-        name='shape'
-    )
-    nx.set_edge_attributes(
-        mdp_or_policy_graph_,
-        {
-            edge: round(weight, 3) for edge, weight in nx.get_edge_attributes(
-                mdp_or_policy_graph_, 'weight'
-            ).items()
-        },
-        name='label'
-    )
-
-    return mdp_or_policy_graph_
-
 # Return True if graph is in stochastic format, False otherwise. Currently this just checks whether
 # some edges in the graph have weights. If none have weights, we conclude the graph is not in
 # stochastic format.
@@ -107,6 +80,55 @@ def are_graph_states_multiagent(state_list):
 
 def is_graph_multiagent(input_graph):
     return are_graph_states_multiagent(get_states_from_graph(input_graph))
+
+def transform_graph_for_plots(mdp_or_policy_graph, reward_to_plot=None, discount_rate_to_plot=None):
+    mdp_or_policy_graph_ = cp.deepcopy(mdp_or_policy_graph)
+
+    nx.set_node_attributes(
+        mdp_or_policy_graph_,
+        { node_id: decompose_stochastic_graph_node(node_id)[0] for node_id in list(mdp_or_policy_graph_) },
+        name='label'
+    )
+    nx.set_node_attributes( # Boxes are states, circles are actions
+        mdp_or_policy_graph_,
+        { node_id: (
+            'circle' if len(decompose_stochastic_graph_node(node_id)) == 2 else 'box'
+        ) for node_id in list(mdp_or_policy_graph_) },
+        name='shape'
+    )
+    nx.set_edge_attributes(
+        mdp_or_policy_graph_,
+        {
+            edge: round(weight, 3) for edge, weight in nx.get_edge_attributes(
+                mdp_or_policy_graph_, 'weight'
+            ).items()
+        },
+        name='label'
+    )
+
+    if reward_to_plot is not None:
+        nx.set_node_attributes(
+            mdp_or_policy_graph_,
+            {
+                node_id: 'Reward: {0}'.format(
+                    round(float(reward_to_plot[
+                        get_states_from_graph(mdp_or_policy_graph_).index(
+                            decompose_stochastic_graph_node(node_id)[0]
+                        )
+                    ]), 4)
+                ) for node_id in list(mdp_or_policy_graph_) if (
+                    len(decompose_stochastic_graph_node(node_id)) == 1
+                )
+            },
+            name='xlabel'
+        )
+    
+    if discount_rate_to_plot is not None:
+        mdp_or_policy_graph_.graph['graph'] = {
+            'label': 'gamma = {0}'.format(discount_rate_to_plot), 'labelloc': 't'
+        }
+
+    return mdp_or_policy_graph_
 
 def graph_to_transition_tensor(mdp_graph):
     if is_graph_stochastic(mdp_graph):

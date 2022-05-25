@@ -4,6 +4,9 @@ import collections as col
 from .utils import graph
 from .utils import render
 from . import data
+from . import calc
+from . import learn
+from . import policy
 
 def plot_sample_aggregations(
     all_samples,
@@ -138,13 +141,17 @@ def plot_mdp_or_policy(
     mdp_or_policy_graph,
     show=True,
     subgraphs_per_row=4,
+    reward_to_plot=None,
+    discount_rate_to_plot=None,
     save_handle='temp',
     graph_type='mdp_graph',
     save_folder=data.TEMP_FOLDER,
     temp_folder=data.TEMP_FOLDER
 ):
 
-    graph_to_plot = graph.transform_graph_for_plots(mdp_or_policy_graph)
+    graph_to_plot = graph.transform_graph_for_plots(
+        mdp_or_policy_graph, reward_to_plot=reward_to_plot, discount_rate_to_plot=discount_rate_to_plot
+    )
 
 # We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
 # rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
@@ -160,6 +167,60 @@ def plot_mdp_or_policy(
     )
 
     return fig
+
+# TODO: Document.
+def plot_policy_sample_from_run(
+    sweep_id,
+    run_suffix,
+    reward_sample_index=0,
+    show=True,
+    subgraphs_per_row=4,
+    save_handle='temp',
+    save_folder=data.TEMP_FOLDER,
+    temp_folder=data.TEMP_FOLDER,
+    mdps_folder=data.MDPS_FOLDER,
+    policies_folder=data.POLICIES_FOLDER
+):
+    inputs = data.get_sweep_run_results(sweep_id, run_suffix, results_type='inputs')
+    outputs = data.get_sweep_run_results(sweep_id, run_suffix, results_type='outputs')
+
+    reward_function = outputs['reward_samples'][reward_sample_index]
+    discount_rate = inputs['discount_rate']
+    convergence_threshold = inputs['convergence_threshold']
+
+    transition_tensor, graphs_output = calc.compute_transition_tensor(
+        inputs, mdps_folder=mdps_folder, policies_folder=policies_folder
+    )
+    
+    fig = plot_mdp_or_policy(
+        policy.policy_tensor_to_graph(
+            learn.compute_optimal_policy_tensor(
+                reward_function,
+                discount_rate,
+                transition_tensor,
+                value_initialization=None,
+                convergence_threshold=convergence_threshold
+            ),
+            graphs_output[0]
+        ), # NOTE: This works for the agent of a single-agent system, OR for Agent A of a multi-agent system,
+        show=show,
+        subgraphs_per_row=subgraphs_per_row,
+        reward_to_plot=reward_function,
+        discount_rate_to_plot=discount_rate,
+        save_handle=save_handle,
+        graph_type='policy_reward_sample',
+        save_folder=save_folder,
+        temp_folder=temp_folder
+    )
+
+    return [
+        fig,
+        {
+            'reward_function': reward_function,
+            'discount_rate': discount_rate,
+            'convergence_threshold': convergence_threshold
+        }
+    ]
 
 # Here sample_filter is, e.g., reward_samples[:, 3] < reward_samples[:, 4]
 def plot_all_outputs(

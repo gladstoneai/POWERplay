@@ -4,6 +4,7 @@ import time
 from .utils import graph
 from .utils import misc
 from . import launch
+from . import calc
 from . import data
 from . import viz
 from . import mdp
@@ -75,7 +76,7 @@ def run_and_save_sweep_replication(
         print(run_name)
         print()
 
-        power_samples = launch.rewards_to_powers(*run_inputs['args'], **run_inputs['kwargs'])
+        power_samples = calc.rewards_to_powers(*run_inputs['args'], **run_inputs['kwargs'])
 
         data.save_experiment({
             'name': replication_prefix + run_name,

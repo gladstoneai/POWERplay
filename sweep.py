@@ -8,7 +8,7 @@ from src.utils import misc
 from src.utils import graph
 from src import data
 from src import viz
-from src import launch
+from src import calc
 
 def cli_experiment_sweep(
     distribution_dict=dist.DISTRIBUTION_DICT,
@@ -36,28 +36,21 @@ def cli_experiment_sweep(
         discount_rate = run_params.get('discount_rate')
         convergence_threshold = run_params.get('convergence_threshold')
         random_seed = run_params.get('random_seed')
+        transition_tensor, graphs_output = calc.compute_transition_tensor(
+            run_params, mdps_folder=mdps_folder, policies_folder=policies_folder
+        )
 
-        if run_params.get('mdp_graph') is not None: # Single agent case
-            mdp_graph = data.load_graph_from_dot_file(run_params.get('mdp_graph'), folder=mdps_folder)
+        if len(graphs_output) == 1: # Single agent case
+            mdp_graph = graphs_output[0]
 
             data.save_graph_to_dot_file(mdp_graph, 'mdp_graph-{}'.format(run.name), folder=save_folder)
-
-            transition_tensor = graph.graph_to_transition_tensor(mdp_graph)
             state_list = graph.get_states_from_graph(mdp_graph)
             graphs_to_plot = [
                 { 'graph_name': 'MDP graph', 'graph_type': 'mdp_graph', 'graph_data': mdp_graph }
             ]
 
         else: # Multiagent case
-            mdp_graph_A = data.load_graph_from_dot_file(
-                run_params.get('mdp_graph_agent_A'), folder=mdps_folder
-            )
-            mdp_graph_B = data.load_graph_from_dot_file(
-                run_params.get('mdp_graph_agent_B'), folder=mdps_folder
-            )
-            policy_graph_B = data.load_graph_from_dot_file(
-                run_params.get('policy_graph_agent_B'), folder=policies_folder
-            )
+            mdp_graph_A, mdp_graph_B, policy_graph_B = graphs_output
 
             data.save_graph_to_dot_file(
                 mdp_graph_A, 'mdp_graph_agent_A-{}'.format(run.name), folder=save_folder
@@ -67,10 +60,6 @@ def cli_experiment_sweep(
             )
             data.save_graph_to_dot_file(
                 policy_graph_B, 'policy_graph_agent_B-{}'.format(run.name), folder=save_folder
-            )
-
-            transition_tensor = graph.graphs_to_multiagent_transition_tensor(
-                mdp_graph_A, mdp_graph_B, policy_graph_B
             )
             state_list = graph.get_states_from_graph(mdp_graph_A)
             graphs_to_plot = [
@@ -93,7 +82,7 @@ def cli_experiment_sweep(
             state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict
         )
 
-        reward_samples, power_samples = launch.run_one_experiment(
+        reward_samples, power_samples = calc.run_one_experiment(
             transition_tensor,
             discount_rate,
             reward_sampler,

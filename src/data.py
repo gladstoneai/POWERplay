@@ -176,13 +176,13 @@ def get_full_sweep_name_from_id(sweep_id, folder=EXPERIMENT_FOLDER):
 
 # TODO: Document this function. Lets you quickly retrieve inputs or outputs of an experiment based on
 # the sweep_id (i.e., date & time hash, which should be unique) and the suffix for the run within
-# the experiment sweep.
-def get_sweep_run_results(sweep_id, run_suffix, folder=EXPERIMENT_FOLDER):
+# the experiment sweep. Returns outputs by default. For inputs, set results_type='inputs'.
+def get_sweep_run_results(sweep_id, run_suffix, results_type='outputs', folder=EXPERIMENT_FOLDER):
     sweep_name = get_full_sweep_name_from_id(sweep_id, folder=folder)
 
     return load_full_sweep(
         sweep_name, folder=folder
-    )['all_runs_data']['{0}-{1}'.format(sweep_name, run_suffix)]['outputs']
+    )['all_runs_data']['{0}-{1}'.format(sweep_name, run_suffix)][results_type]
 
 # TODO: Document this function. This is another convenience function that lets you quickly retrieve
 # the state_list for a sweep. IMPORTANT: This assumes that the state_list will be the same for all
