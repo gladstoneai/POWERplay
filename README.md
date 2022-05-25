@@ -598,13 +598,13 @@ Here's an example of launching a real sweep, assuming you've got a project calle
 
 ```
 launch.launch_sweep(
-        'sweep-2x3_GRIDWORLD_MULTIAGENT_CLOCKWISE_MOVING_POLICY_GAMMA_SWEEP-distribution_uniform_0t1-samples_40k.yaml',
-        entity=data.get_settings_value('public.WANDB_COLLAB_ENTITY'),
-        project='power-project',
-        plot_as_gridworld=False,
-        plot_correlations=False,
-        beep_when_done=True
-    )
+      'sweep-2x3_GRIDWORLD_MULTIAGENT_CLOCKWISE_MOVING_POLICY_GAMMA_SWEEP-distribution_uniform_0t1-samples_40k.yaml',
+      entity=data.get_settings_value('public.WANDB_COLLAB_ENTITY'),
+      project='power-project',
+      plot_as_gridworld=False,
+      plot_correlations=False,
+      beep_when_done=True
+  )
 ```
 
 ### Creating multiagent policies at scale
@@ -628,4 +628,11 @@ pol = policy.update_state_actions(pol, '(1, 1)', { 'stay': 0, 'right': 0, 'up': 
 pol = policy.update_state_actions(pol, '(1, 2)', { 'stay': 0, 'up': 0, 'left': 1 })
 
 pol_b = multi.create_multiagent_graph(pol, current_agent_is_A=False)
+```
+
+You can then create the multiagent MDPs as usual from the basic stochastic gridworld above:
+
+```
+mdp_a = multi.create_multiagent_graph(st_gw, current_agent_is_A=True)
+mdp_b = multi.create_multiagent_graph(st_gw, current_agent_is_A=False)
 ```

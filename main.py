@@ -38,20 +38,12 @@ from src import data
 #   using the contiguous memory storage format is likely the most efficient approach."
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
+# compute_optimal_policy_tensor() computes the optimal policy for Agent A. We can use this over
+#   multiagent MDPs (i.e., MDPs over which the positions of Agents A and B are explicitly defined).
+# policy_tensor_to_graph() converts a policy tensor to a policy graph.
+
 # TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
 # - Start with the MDP version, because it's more general and you can see where the rewards are.
-# -- Then, build a function that takes the resulting policy tensor and converts it to a policy *graph*, so we can visualize it
-# i.e., Complete this function
-'''
-def policy_tensor_to_graph(policy_tensor, state_list=None, action_list=None):
-    output_state_list = [
-        i for i in range(policy_tensor.shape[0])
-    ] if (state_list is None) else state_list
-    output_action_list = [
-        i for i in range(policy_tensor.shape[1])
-    ] if (action_list is None) else action_list
-
-'''
 # -- Make A the rows and B the columns; they won't always have an orthogonal action set, but when they do, this will make it easier to see who is doing what.
 # -- Start by plotting just the state set and not the transitions.
 # --- Then maybe plot the transitions as arrows of different colors for the two agents?
@@ -71,5 +63,5 @@ if __name__ == '__main__':
     # test.test_gridworld()
     # test.test_stochastic()
     # test.test_multiagent()
-
+    
     pass

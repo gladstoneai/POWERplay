@@ -93,6 +93,13 @@ def get_actions_from_graph(input_graph):
         )
     ])) if is_graph_stochastic(input_graph) else list(input_graph)
 
+def get_available_actions_from_graph_state(input_graph, state):
+    return [
+        decompose_stochastic_graph_node(
+            action_node
+        )[0] for action_node in input_graph.neighbors(build_stochastic_graph_node(state))
+    ]
+
 def are_graph_states_multiagent(state_list):
     return all([
         bool(re.fullmatch(r'\(\d+, \d+\)_A\^\(\d+, \d+\)_B', state)) for state in state_list

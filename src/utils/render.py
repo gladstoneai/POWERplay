@@ -7,8 +7,11 @@ import math
 
 from . import graph
 
+################################################################################
+
 FIGURE_SIZE_SCALING_FACTOR = 4
 
+################################################################################
 
 def calculate_sample_aggregations(all_samples, aggregation='mean'):
     if aggregation == 'mean':

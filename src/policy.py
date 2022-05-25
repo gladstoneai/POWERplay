@@ -40,3 +40,17 @@ def update_state_actions(policy_graph, state, new_policy_actions):
 
     return policy_graph_
 
+# Note: associated_mdp_graph must be in stochastic format, and have state
+def policy_tensor_to_graph(policy_tensor, associated_mdp_graph):
+    policy_graph_ = quick_mdp_to_policy(associated_mdp_graph)
+    state_list = graph.get_states_from_graph(associated_mdp_graph)
+    action_list = graph.get_actions_from_graph(associated_mdp_graph)
+
+    for state in state_list:
+        policy_graph_ = update_state_actions(policy_graph_, state, {
+            action: float(
+                policy_tensor[state_list.index(state)][action_list.index(action)]
+            ) for action in graph.get_available_actions_from_graph_state(associated_mdp_graph, state)
+        })
+
+    return policy_graph_

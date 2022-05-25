@@ -5,7 +5,7 @@ import pathlib as path
 
 from src.utils import dist
 from src.utils import misc
-from src. utils import graph
+from src.utils import graph
 from src import data
 from src import viz
 from src import launch
