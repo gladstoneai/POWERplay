@@ -3,12 +3,12 @@ import os
 import json
 import pathlib as path
 
-from src.utils import dist
-from src.utils import misc
-from src.utils import graph
-from src import data
+from src.lib.utils import dist
+from src.lib.utils import misc
+from src.lib.utils import graph
+from src.lib import data
+from src.lib import calc
 from src import viz
-from src import calc
 
 def cli_experiment_sweep(
     distribution_dict=dist.DISTRIBUTION_DICT,

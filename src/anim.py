@@ -1,8 +1,8 @@
 import pathlib as path
 
-from . import data
-from .utils import misc
-from .utils import graph
+from .lib import data
+from .lib.utils import misc
+from .lib.utils import graph
 
 def animate_full_sweep(
     sweep_name,

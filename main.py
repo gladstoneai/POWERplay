@@ -1,6 +1,6 @@
+from src.lib import data
 from src import test
 from src import launch
-from src import data
 
 # TODO: Add visualization of the MDP graph for the integrated transition tensor.
 # TODO: Add a run.py file to implement higher-level workflows for MDP and policy graph construction.
@@ -42,21 +42,14 @@ from src import data
 #   multiagent MDPs (i.e., MDPs over which the positions of Agents A and B are explicitly defined).
 # policy_tensor_to_graph() converts a policy tensor to a policy graph.
 
-# TODO NEXT: Refactor file structure to put check, data, learn, and run in their own folder with utils inside that folder
+# TODO NEXT:
+# -- Split viz into viz for graphs and viz for plots
 # TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
-# - Start with the MDP version, because it's more general and you can see where the rewards are.
-# -- Start by plotting just the state set and not the transitions.
-# --- Then maybe plot the transitions as arrows of different colors for the two agents?
-# -- Show the reward values for Agent A at each joint state
-# -- [Nice to have] Make A the rows and B the columns; they won't always have an orthogonal action set, but when they do, this will make it easier to see who is doing what.
-# -- At each step, you can maybe show just the edges from the current state (i.e., the "possible moves")
-# -- Produce a series of plots (not an animation yet) highlighting the current state at each step of the rollout; input should be the number of steps in the rollout
-# -- Show which agent has JUST moved (initial state should be marked "initial")
-# -- Then create an animation of the full rollout
-# - This would be for one reward sample.
-# - Can do a gridworld version & an MDP version. (MDP, you can see where the rewards are.)
-# - Then do the gridworld version
-# - Maybe a midlevel version between aggregates and individual runs?
+# - Start with the gridwolrd version
+# -- Only show the single states with 2 agents, not the joint states
+# --- We won't be able to visualize the rewards yet because of the joint states, but as MVP it should work
+# -- Try a couple of different initializations for the actors
+# -- Plot the reward and the POWER sample for that reward
 
 if __name__ == '__main__':
     # test.test_vanilla()

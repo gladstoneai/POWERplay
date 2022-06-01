@@ -5,9 +5,9 @@ import re
 import os
 import json
 
-from .utils import misc
-from . import data
-from . import check
+from .lib.utils import misc
+from .lib import data
+from .lib import check
 
 def launch_sweep(
     sweep_config_filename,

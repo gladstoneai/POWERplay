@@ -4,9 +4,9 @@ import itertools as it
 import torch
 import numpy as np
 
-from .utils import graph
+from .lib.utils import graph
+from .lib import check
 from . import viz
-from . import check
 
 # Converts an undirected graph into a digraph and adds self-loops to all "absorbing" states.
 # Basically, a quick and dirty way to convert default NetworkX graphs into graphs compatible with our MDP

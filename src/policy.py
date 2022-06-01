@@ -1,8 +1,8 @@
 import copy as cp
 import networkx as nx
 
-from .utils import graph
-from . import check
+from .lib.utils import graph
+from .lib import check
 
 def quick_mdp_to_policy(mdp_graph):
     policy_graph_ = cp.deepcopy(mdp_graph)

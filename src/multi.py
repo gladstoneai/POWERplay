@@ -1,7 +1,7 @@
 import networkx as nx
 import copy as cp
 
-from .utils import graph
+from .lib.utils import graph
 
 def single_agent_to_multiagent_graph_node(
     current_agent_graph_node,

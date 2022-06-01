@@ -1,11 +1,11 @@
 import pathlib as path
 import time
 
-from .utils import graph
-from .utils import misc
+from .lib.utils import graph
+from .lib.utils import misc
+from .lib import calc
+from .lib import data
 from . import launch
-from . import calc
-from . import data
 from . import viz
 from . import mdp
 

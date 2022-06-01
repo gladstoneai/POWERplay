@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 import collections as col
 
-from .utils import graph
-from .utils import render
-from . import data
-from . import calc
-from . import learn
+from .lib.utils import graph
+from .lib.utils import render
+from .lib import data
+from .lib import calc
+from .lib import learn
 from . import policy
 
 def plot_sample_aggregations(
