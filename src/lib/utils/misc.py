@@ -95,3 +95,10 @@ def clone_run_inputs(runs_data_with_transition_tensor, ignore_terminal_state=Fal
             }
          } for run_data in runs_data_with_transition_tensor.values()
     }
+
+def set_global_random_seed(random_seed):
+    if random_seed is None:
+        torch.seed()
+    else:
+        torch.manual_seed(random_seed)
+        torch.cuda.manual_seed(random_seed)

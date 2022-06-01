@@ -46,10 +46,7 @@ from src import launch
 # TODO NEXT:
 # -- Split viz into viz for graphs and viz for plots
 # TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
-# - Finish function in policy.py
 # - Start with the gridwolrd version
-# -- Inputs: policy A, policy B, starting state A, starting state B, number of steps to run
-# -- Check that the 2 policies operate on the same state space
 # -- Check that the state space is indeed a multiagent gridworld state space
 # -- Extract base gridworld coordinates from one of the policies
 # -- run policies one after the other and output list of coordinates
@@ -66,3 +63,7 @@ if __name__ == '__main__':
     # test.test_multiagent()
 
     pass
+
+
+
+    

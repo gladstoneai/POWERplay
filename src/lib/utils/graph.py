@@ -2,6 +2,7 @@ import networkx as nx
 import copy as cp
 import torch
 import re
+import torch.nn.functional as tf
 
 def gridworld_state_to_coords(gridworld_state):
     return [int(coord) for coord in str(gridworld_state)[1:-1].split(',')]
@@ -176,10 +177,10 @@ def graph_to_policy_tensor(policy_graph):
     
     return policy_tensor_.to(torch.float)
 
-def graphs_to_multiagent_transition_tensor(mdp_graph_A, mdp_graph_B, policy_graph_B):
+def graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_graph_B):
     transition_tensor_A = graph_to_transition_tensor(mdp_graph_A)
-    transition_tensor_B = graph_to_transition_tensor(mdp_graph_B)
     policy_tensor_B = graph_to_policy_tensor(policy_graph_B)
+    transition_tensor_B = graph_to_transition_tensor(mdp_graph_B)
 
     num_states = len(get_states_from_graph(mdp_graph_A))
     num_actions_A = len(get_actions_from_graph(mdp_graph_A))
@@ -205,3 +206,15 @@ def any_graphs_to_transition_tensor(*transition_graphs):
 
     else: # Multiagent case
         return graphs_to_multiagent_transition_tensor(*transition_graphs)
+
+# Calculation details here:
+# https://drive.google.com/file/d/1t3wx0P-j3IBKZfD7td9Cewz2-sO5zzDz/view
+def one_step_rollout(state_vector, policy_tensor, transition_tensor):
+    return ( 
+        transition_tensor
+        * torch.tile(policy_tensor, (policy_tensor.shape[0], 1, 1)).transpose(0, 1).transpose(1, 2)
+        * torch.tile(state_vector, (policy_tensor.shape[0], policy_tensor.shape[1], 1)).transpose(0, 2)
+    ).sum(dim=[0, 1])
+
+def state_to_vector(state, state_list):
+    return tf.one_hot(torch.tensor(state_list.index(state)), num_classes=len(state_list))

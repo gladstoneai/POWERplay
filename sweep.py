@@ -52,7 +52,7 @@ def cli_experiment_sweep(
             ]
 
         else: # Multiagent case
-            mdp_graph_A, mdp_graph_B, policy_graph_B = transition_graphs
+            mdp_graph_A, policy_graph_B, mdp_graph_B = transition_graphs
 
             data.save_graph_to_dot_file(
                 mdp_graph_A, 'mdp_graph_agent_A-{}'.format(run.name), folder=save_folder

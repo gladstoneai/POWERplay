@@ -40,6 +40,9 @@ def get_sweep_state_list(sweep_id, folder=data.EXPERIMENT_FOLDER):
 
     return state_list
 
+# TODO: Document.
+# NOTE: The output of get_sweep_run_results(sweep_id, run_suffix, results_type='inputs')
+# can be used as the run_params input here.
 def get_transition_graphs(
     run_params,
     mdps_folder=data.MDPS_FOLDER,
@@ -54,10 +57,10 @@ def get_transition_graphs(
                 run_params.get('mdp_graph_agent_A'), folder=mdps_folder
             ),
             data.load_graph_from_dot_file(
-                run_params.get('mdp_graph_agent_B'), folder=mdps_folder
+                run_params.get('policy_graph_agent_B'), folder=policies_folder
             ),
             data.load_graph_from_dot_file(
-                run_params.get('policy_graph_agent_B'), folder=policies_folder
+                run_params.get('mdp_graph_agent_B'), folder=mdps_folder
             )
         ]
 
@@ -69,7 +72,7 @@ def get_properties_from_run(
 ):
     inputs = get_sweep_run_results(sweep_id, run_suffix, results_type='inputs')
     outputs = get_sweep_run_results(sweep_id, run_suffix, results_type='outputs')
-    
+
     return {
         'reward_samples': outputs['reward_samples'],
         'discount_rate': inputs['discount_rate'],

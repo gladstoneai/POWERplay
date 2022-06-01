@@ -21,9 +21,9 @@ def check_num_samples(num_samples, num_workers):
     if num_samples % num_workers != 0:
         raise Exception('The number of reward samples must be an exact multiple of the number of workers.')
 
-def check_state_in_graph_states(policy_graph, state):
-    if state not in graph.get_states_from_graph(policy_graph):
-        raise Exception('The state {} isn\'t in your policy graph.'.format(state))
+def check_state_in_graph_states(input_graph, state):
+    if state not in graph.get_states_from_graph(input_graph):
+        raise Exception('The state {} isn\'t in your input_graph graph.'.format(state))
 
 def check_policy_actions(policy_graph, state, policy_actions, tolerance=PROBABILITY_TOLERANCE):
     if set(
@@ -45,6 +45,10 @@ def check_policy_actions(policy_graph, state, policy_actions, tolerance=PROBABIL
 def check_graph_state_compatibility(graph_1, graph_2):
     if graph.get_states_from_graph(graph_1) != graph.get_states_from_graph(graph_2):
         raise Exception('The two input graphs must have the same state set.')
+
+# graph_1 and graph_2 could be policy or MDP graphs
+def check_full_graph_compatibility(graph_1, graph_2):
+    check_graph_state_compatibility(graph_1, graph_2)
     
     if graph.get_actions_from_graph(graph_1) != graph.get_actions_from_graph(graph_2):
         raise Exception('The two input graphs must have the same action set.')

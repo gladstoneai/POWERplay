@@ -122,11 +122,7 @@ def run_one_experiment(
     convergence_threshold=1e-4,
     random_seed=None
 ):
-    if random_seed is None:
-        torch.seed()
-    else:
-        torch.manual_seed(random_seed)
-        torch.cuda.manual_seed(random_seed)
+    misc.set_global_random_seed(random_seed)
     
     # When the number of samples doesn't divide evenly into the available workers, truncate the samples
     reward_samples = reward_sampler(num_workers * (num_reward_samples // num_workers))

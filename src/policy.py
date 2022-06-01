@@ -2,6 +2,8 @@ import copy as cp
 import networkx as nx
 
 from .lib.utils import graph
+from .lib.utils import dist
+from .lib.utils import misc
 from .lib import data
 from .lib import check
 from .lib import get
@@ -76,21 +78,69 @@ def sample_optimal_policy_from_run(
         run_properties['convergence_threshold']
     )
 
-    return [
-        policy_tensor_to_graph(
-            learn.compute_optimal_policy_tensor(
-                reward_function,
-                discount_rate,
-                graph.any_graphs_to_transition_tensor(*transition_graphs),
-                value_initialization=None,
-                convergence_threshold=convergence_threshold
-            ),
-            transition_graphs[0]
-        ), # NOTE: This works for the agent of a single-agent system, OR for Agent A of a multi-agent system.
-        reward_function,
-        discount_rate
-    ] 
+    multiagent_dict = {} if len(transition_graphs) == 1 else {
+        'policy_graph_B': transition_graphs[1],
+        'mdp_graph_B': transition_graphs[2]
+    }
 
-# TODO: Finish this function
-def simulate_policy_rollout(policy_graph_A, policy_graph_B, initial_state, number_of_steps=20):
-    check.check_graph_state_compatibility(policy_graph_A, policy_graph_B)
+    return {
+        'inputs': {
+            'mdp_graph_A': transition_graphs[0],
+            'reward_function': reward_function,
+            'discount_rate': discount_rate,
+            'convergence_threshold': convergence_threshold,
+            **multiagent_dict
+        },
+        'outputs': {
+            'policy_graph_A': policy_tensor_to_graph(
+                learn.compute_optimal_policy_tensor(
+                    reward_function,
+                    discount_rate,
+                    graph.any_graphs_to_transition_tensor(*transition_graphs),
+                    value_initialization=None,
+                    convergence_threshold=convergence_threshold
+                ), # NOTE: This works for the agent of a single-agent system, OR for Agent A of a multi-agent system.
+                transition_graphs[0]
+            )
+        }
+    }
+
+def next_state_rollout(current_state, policy_graph, mdp_graph):
+    state_list = graph.get_states_from_graph(policy_graph)
+    return dist.sample_from_state_list(
+        state_list,
+        graph.one_step_rollout(
+            graph.state_to_vector(current_state, state_list),
+            graph.graph_to_policy_tensor(policy_graph),
+            graph.graph_to_transition_tensor(mdp_graph)
+        )
+    )
+
+def simulate_policy_rollout(
+    initial_state,
+    policy_graph_A,
+    mdp_graph_A,
+    policy_graph_B=None,
+    mdp_graph_B=None,
+    number_of_steps=20,
+    random_seed=0
+):
+    check.check_full_graph_compatibility(policy_graph_A, mdp_graph_A)
+    check.check_state_in_graph_states(mdp_graph_A, initial_state)
+
+    if policy_graph_B is not None:
+        check.check_full_graph_compatibility(policy_graph_B, mdp_graph_B)
+        check.check_graph_state_compatibility(mdp_graph_A, mdp_graph_B)
+    
+    misc.set_global_random_seed(random_seed)
+    
+    state_rollout_ = [initial_state]
+    
+    for _ in range(number_of_steps):
+        state_rollout_ += [next_state_rollout(state_rollout_[-1], policy_graph_A, mdp_graph_A)]
+
+        if policy_graph_B is not None:
+            state_rollout_ += [next_state_rollout(state_rollout_[-1], policy_graph_B, mdp_graph_B)]
+    
+    return state_rollout_
+    

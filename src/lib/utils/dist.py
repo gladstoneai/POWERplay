@@ -54,3 +54,6 @@ def config_to_reward_distribution(state_list, reward_dist_config, distribution_d
                 ) for state in reward_dist_config.get('state_dists', {})
             }
     )
+
+def sample_from_state_list(state_list, distribution_vector):
+    return state_list[td.Categorical(distribution_vector).sample().item()]
