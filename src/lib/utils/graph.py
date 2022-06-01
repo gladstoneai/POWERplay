@@ -198,3 +198,10 @@ def graphs_to_multiagent_transition_tensor(mdp_graph_A, mdp_graph_B, policy_grap
             num_states, num_actions_A, num_states, num_states
         )
     )).sum(dim=2)
+
+def any_graphs_to_transition_tensor(*transition_graphs):
+    if len(transition_graphs) == 1: # Single agent case
+        return graph_to_transition_tensor(transition_graphs[0])
+
+    else: # Multiagent case
+        return graphs_to_multiagent_transition_tensor(*transition_graphs)

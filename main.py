@@ -1,4 +1,5 @@
 from src.lib import data
+from src.lib import get
 from src import test
 from src import launch
 
@@ -45,7 +46,14 @@ from src import launch
 # TODO NEXT:
 # -- Split viz into viz for graphs and viz for plots
 # TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
+# - Finish function in policy.py
 # - Start with the gridwolrd version
+# -- Inputs: policy A, policy B, starting state A, starting state B, number of steps to run
+# -- Check that the 2 policies operate on the same state space
+# -- Check that the state space is indeed a multiagent gridworld state space
+# -- Extract base gridworld coordinates from one of the policies
+# -- run policies one after the other and output list of coordinates
+# - Then actually plot the movement on a gridworld
 # -- Only show the single states with 2 agents, not the joint states
 # --- We won't be able to visualize the rewards yet because of the joint states, but as MVP it should work
 # -- Try a couple of different initializations for the actors

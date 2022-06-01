@@ -4,7 +4,7 @@ import collections as col
 from .lib.utils import graph
 from .lib.utils import render
 from .lib import data
-from .lib import calc
+from .lib import get
 from .lib import learn
 from . import policy
 
@@ -169,40 +169,18 @@ def plot_mdp_or_policy(
     return fig
 
 # TODO: Document.
-def plot_policy_sample_from_run(
-    sweep_id,
-    run_suffix,
-    reward_sample_index=0,
+def plot_policy_sample(
+    policy_graph,
+    reward_function,
+    discount_rate,
     show=True,
     subgraphs_per_row=4,
     save_handle='temp',
     save_folder=data.TEMP_FOLDER,
     temp_folder=data.TEMP_FOLDER,
-    mdps_folder=data.MDPS_FOLDER,
-    policies_folder=data.POLICIES_FOLDER
 ):
-    inputs = data.get_sweep_run_results(sweep_id, run_suffix, results_type='inputs')
-    outputs = data.get_sweep_run_results(sweep_id, run_suffix, results_type='outputs')
-
-    reward_function = outputs['reward_samples'][reward_sample_index]
-    discount_rate = inputs['discount_rate']
-    convergence_threshold = inputs['convergence_threshold']
-
-    transition_tensor, graphs_output = calc.compute_transition_tensor(
-        inputs, mdps_folder=mdps_folder, policies_folder=policies_folder
-    )
-    
-    fig = plot_mdp_or_policy(
-        policy.policy_tensor_to_graph(
-            learn.compute_optimal_policy_tensor(
-                reward_function,
-                discount_rate,
-                transition_tensor,
-                value_initialization=None,
-                convergence_threshold=convergence_threshold
-            ),
-            graphs_output[0]
-        ), # NOTE: This works for the agent of a single-agent system, OR for Agent A of a multi-agent system,
+    return plot_mdp_or_policy(
+        policy_graph,
         show=show,
         subgraphs_per_row=subgraphs_per_row,
         reward_to_plot=reward_function,
@@ -212,15 +190,6 @@ def plot_policy_sample_from_run(
         save_folder=save_folder,
         temp_folder=temp_folder
     )
-
-    return [
-        fig,
-        {
-            'reward_function': reward_function,
-            'discount_rate': discount_rate,
-            'convergence_threshold': convergence_threshold
-        }
-    ]
 
 # Here sample_filter is, e.g., reward_samples[:, 3] < reward_samples[:, 4]
 def plot_all_outputs(

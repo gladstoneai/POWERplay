@@ -7,7 +7,8 @@ from src.lib.utils import dist
 from src.lib.utils import misc
 from src.lib.utils import graph
 from src.lib import data
-from src.lib import calc
+from src.lib import get
+from src.lib import learn
 from src import viz
 
 def cli_experiment_sweep(
@@ -36,12 +37,13 @@ def cli_experiment_sweep(
         discount_rate = run_params.get('discount_rate')
         convergence_threshold = run_params.get('convergence_threshold')
         random_seed = run_params.get('random_seed')
-        transition_tensor, graphs_output = calc.compute_transition_tensor(
+        transition_graphs = get.get_transition_graphs(
             run_params, mdps_folder=mdps_folder, policies_folder=policies_folder
         )
+        transition_tensor = graph.any_graphs_to_transition_tensor(*transition_graphs)
 
-        if len(graphs_output) == 1: # Single agent case
-            mdp_graph = graphs_output[0]
+        if len(transition_graphs) == 1: # Single agent case
+            mdp_graph = transition_graphs[0]
 
             data.save_graph_to_dot_file(mdp_graph, 'mdp_graph-{}'.format(run.name), folder=save_folder)
             state_list = graph.get_states_from_graph(mdp_graph)
@@ -50,7 +52,7 @@ def cli_experiment_sweep(
             ]
 
         else: # Multiagent case
-            mdp_graph_A, mdp_graph_B, policy_graph_B = graphs_output
+            mdp_graph_A, mdp_graph_B, policy_graph_B = transition_graphs
 
             data.save_graph_to_dot_file(
                 mdp_graph_A, 'mdp_graph_agent_A-{}'.format(run.name), folder=save_folder
@@ -82,7 +84,7 @@ def cli_experiment_sweep(
             state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict
         )
 
-        reward_samples, power_samples = calc.run_one_experiment(
+        reward_samples, power_samples = learn.run_one_experiment(
             transition_tensor,
             discount_rate,
             reward_sampler,

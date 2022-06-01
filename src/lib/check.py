@@ -41,25 +41,26 @@ def check_policy_actions(policy_graph, state, policy_actions, tolerance=PROBABIL
     if abs(sum(policy_actions.values()) - 1) > tolerance:
         raise Exception('The probabilities of all actions from state {} must sum to 1.'.format(state))
 
-def check_policy_mdp_compatibility(policy_graph, mdp_graph):
-    if graph.get_states_from_graph(policy_graph) != graph.get_states_from_graph(mdp_graph):
-        raise Exception('The policy graph must have the same state set as the mdp graph.')
+# graph_1 and graph_2 could be policy or MDP graphs
+def check_graph_state_compatibility(graph_1, graph_2):
+    if graph.get_states_from_graph(graph_1) != graph.get_states_from_graph(graph_2):
+        raise Exception('The two input graphs must have the same state set.')
     
-    if graph.get_actions_from_graph(policy_graph) != graph.get_actions_from_graph(mdp_graph):
-        raise Exception('The policy graph must have the same action set as the mdp graph.')
+    if graph.get_actions_from_graph(graph_1) != graph.get_actions_from_graph(graph_2):
+        raise Exception('The two input graphs must have the same action set.')
     
-    for state in graph.get_states_from_graph(policy_graph):
+    for state in graph.get_states_from_graph(graph_1):
         if set([
-            graph.decompose_stochastic_graph_node(node)[0] for node in policy_graph.successors(
+            graph.decompose_stochastic_graph_node(node)[0] for node in graph_1.successors(
                 graph.build_stochastic_graph_node(state)
             )
         ]) != set([
-            graph.decompose_stochastic_graph_node(node)[0] for node in mdp_graph.successors(
+            graph.decompose_stochastic_graph_node(node)[0] for node in graph_2.successors(
                 graph.build_stochastic_graph_node(state)
             )
         ]):
             raise Exception(
-                'The policy actions must be identical to the MDP actions at state {}.'.format(state)
+                'The action set for graph_1 and graph_2 must be identical at state {}.'.format(state)
             )
 
 def check_stochastic_state_name(name):

@@ -636,3 +636,19 @@ You can then create the multiagent MDPs as usual from the basic stochastic gridw
 mdp_a = multi.create_multiagent_graph(st_gw, current_agent_is_A=True)
 mdp_b = multi.create_multiagent_graph(st_gw, current_agent_is_A=False)
 ```
+
+### Plotting a policy sample
+
+Sometimes, you'll want to plot a particular optimal policy that corresponds to a particular reward function sample. You can do this by chaining together `policy.sample_optimal_policy_from_run()` (which takes in a run identifier and the index of the reward sample you're interested in) and `viz.plot_policy_sample()` (which plots the policy sample along with its reward function at each state).
+
+For example, here's how you might plot the optimal policy for the third reward sample of a run with `sweep_id` of `'20220525090545'` and `run_suffix` of `'discount_rate__0p1'`:
+
+  ```
+  sweep_id = '20220525090545'
+  run_suffix = 'discount_rate__0p1'
+
+  policy_graph, reward_function, discount_rate = policy.sample_optimal_policy_from_run(sweep_id, run_suffix)
+  viz.plot_policy_sample(policy_graph, reward_function, discount_rate)
+  ```
+
+Note that if you're investigating a single-agent run, this will plot the optimal policy of the single agent; but if you're investigating a multiagent run, this will plot the optimal policy for **Agent A**. (The Agent B policy in multiagent is already given, so you can feed that into `viz.plot_mdp_or_policy()` directly.)

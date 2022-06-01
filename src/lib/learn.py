@@ -1,8 +1,11 @@
 import torch
 import copy as cp
 import sys
+import functools as func
+import multiprocessing as mps
 
 from .utils import misc
+from . import check
 
 def value_iteration(
     reward_function,
@@ -80,6 +83,69 @@ def power_sample_calculator_mps(state_action_matrix, discount_rate, reward_sampl
         **kwargs,
         **{ 'worker_id': worker_id }
     })
+
+def rewards_to_powers(
+    reward_samples,
+    transition_tensor,
+    discount_rate,
+    num_workers=1,
+    convergence_threshold=1e-4
+):
+    check.check_num_samples(len(reward_samples), num_workers)
+
+    power_calculator = func.partial(
+        power_sample_calculator_mps,
+        transition_tensor,
+        discount_rate,
+        convergence_threshold=convergence_threshold,
+        value_initializations=None,
+        worker_pool_size=num_workers
+    )
+
+    with mps.Pool(num_workers) as pool:
+        power_samples_list = pool.starmap(
+            power_calculator,
+            zip(
+                torch.split(reward_samples, len(reward_samples) // num_workers, dim=0),
+                range(num_workers)
+            )
+        )
+    
+    return torch.cat(power_samples_list, axis=0)
+
+def run_one_experiment(
+    transition_tensor,
+    discount_rate,
+    reward_sampler,
+    num_reward_samples=10000,
+    num_workers=1,
+    convergence_threshold=1e-4,
+    random_seed=None
+):
+    if random_seed is None:
+        torch.seed()
+    else:
+        torch.manual_seed(random_seed)
+        torch.cuda.manual_seed(random_seed)
+    
+    # When the number of samples doesn't divide evenly into the available workers, truncate the samples
+    reward_samples = reward_sampler(num_workers * (num_reward_samples // num_workers))
+
+    power_samples = rewards_to_powers(
+        reward_samples,
+        transition_tensor,
+        discount_rate,
+        num_workers=num_workers,
+        convergence_threshold=convergence_threshold
+    )
+
+    print()
+    print('Run complete.')
+
+    return (
+        reward_samples,
+        power_samples
+    )
 
 # Note: in our setting, the reward r depends only on the current state s, not directly on the action a.
 # This means we can simplify the argmax expression for the policy (see the last line of the Value Iteration algorithm

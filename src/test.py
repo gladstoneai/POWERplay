@@ -3,7 +3,7 @@ import time
 
 from .lib.utils import graph
 from .lib.utils import misc
-from .lib import calc
+from .lib import learn
 from .lib import data
 from . import launch
 from . import viz
@@ -76,7 +76,7 @@ def run_and_save_sweep_replication(
         print(run_name)
         print()
 
-        power_samples = calc.rewards_to_powers(*run_inputs['args'], **run_inputs['kwargs'])
+        power_samples = learn.rewards_to_powers(*run_inputs['args'], **run_inputs['kwargs'])
 
         data.save_experiment({
             'name': replication_prefix + run_name,

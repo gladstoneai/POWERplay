@@ -2,7 +2,10 @@ import copy as cp
 import networkx as nx
 
 from .lib.utils import graph
+from .lib import data
 from .lib import check
+from .lib import get
+from .lib import learn
 
 def quick_mdp_to_policy(mdp_graph):
     policy_graph_ = cp.deepcopy(mdp_graph)
@@ -54,3 +57,40 @@ def policy_tensor_to_graph(policy_tensor, associated_mdp_graph):
         })
 
     return policy_graph_
+
+# TODO: Document.
+def sample_optimal_policy_from_run(
+    sweep_id,
+    run_suffix,
+    reward_sample_index=0,
+    mdps_folder=data.MDPS_FOLDER,
+    policies_folder=data.POLICIES_FOLDER
+):
+    run_properties = get.get_properties_from_run(
+        sweep_id, run_suffix, mdps_folder=mdps_folder, policies_folder=policies_folder
+    )
+    reward_function, discount_rate, transition_graphs, convergence_threshold = (
+        run_properties['reward_samples'][reward_sample_index],
+        run_properties['discount_rate'],
+        run_properties['transition_graphs'],
+        run_properties['convergence_threshold']
+    )
+
+    return [
+        policy_tensor_to_graph(
+            learn.compute_optimal_policy_tensor(
+                reward_function,
+                discount_rate,
+                graph.any_graphs_to_transition_tensor(*transition_graphs),
+                value_initialization=None,
+                convergence_threshold=convergence_threshold
+            ),
+            transition_graphs[0]
+        ), # NOTE: This works for the agent of a single-agent system, OR for Agent A of a multi-agent system.
+        reward_function,
+        discount_rate
+    ] 
+
+# TODO: Finish this function
+def simulate_policy_rollout(policy_graph_A, policy_graph_B, initial_state, number_of_steps=20):
+    check.check_graph_state_compatibility(policy_graph_A, policy_graph_B)
