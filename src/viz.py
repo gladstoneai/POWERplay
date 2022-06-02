@@ -4,9 +4,32 @@ import collections as col
 from .lib.utils import graph
 from .lib.utils import render
 from .lib import data
-from .lib import get
-from .lib import learn
-from . import policy
+from . import anim
+
+def plot_gridworld_rollout(
+    state_list,
+    state_rollout,
+    show=True,
+    save_handle='gridworld_rollout',
+    save_folder=data.TEMP_FOLDER
+):
+    all_figs_ = []
+    for i in range(len(state_rollout)):
+        all_figs_ += [render.render_gridworld_rollout_snapshot(state_list, state_rollout[i])]
+        data.save_figure(all_figs_[-1], '{0}-{1}'.format(save_handle, i), folder=save_folder)
+
+    anim.animate_rollout(
+        save_handle,
+        len(state_rollout),
+        output_filename='{}-animation'.format(save_handle),
+        input_folder=save_folder,
+        output_folder=save_folder
+    )
+
+    if show:
+        plt.show()
+
+    return all_figs_
 
 def plot_sample_aggregations(
     all_samples,

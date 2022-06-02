@@ -44,17 +44,20 @@ from src import launch
 # policy_tensor_to_graph() converts a policy tensor to a policy graph.
 
 # TODO NEXT:
-# -- Split viz into viz for graphs and viz for plots
+# - What happens if you correlate Agent B's policy and make it dependent on Agent A's position
+# -- For example, have Agent B follow Agent A
+# -- Forbid the agents from being in the same square
+# -- Try using different reward function distributions like a Jeffries prior
+#     (a fat tail prior might give a stronger incentive to fight; the real world has sparser reward than uniform)
+# --- You can try this in a single agent setting too
+# - Remove code to handle correlation plots for multiagent in render
+# - Create a new file for high-level workflows
+# - Split viz into viz for graphs and viz for plots
+# - Clean up render_gridworld_rollout_snapshot()
 # TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
-# - Start with the gridwolrd version
-# -- Check that the state space is indeed a multiagent gridworld state space
-# -- Extract base gridworld coordinates from one of the policies
-# -- run policies one after the other and output list of coordinates
-# - Then actually plot the movement on a gridworld
-# -- Only show the single states with 2 agents, not the joint states
-# --- We won't be able to visualize the rewards yet because of the joint states, but as MVP it should work
-# -- Try a couple of different initializations for the actors
-# -- Plot the reward and the POWER sample for that reward
+# - Improve visualization for rollouts
+# -- Show heatmap in the rollout at each timestep as agent B moves
+# TODO NEXT: Start building correlated reward functions
 
 if __name__ == '__main__':
     # test.test_vanilla()

@@ -8,6 +8,7 @@ from .lib import data
 from .lib import check
 from .lib import get
 from .lib import learn
+from . import viz
 
 def quick_mdp_to_policy(mdp_graph):
     policy_graph_ = cp.deepcopy(mdp_graph)
@@ -143,4 +144,29 @@ def simulate_policy_rollout(
             state_rollout_ += [next_state_rollout(state_rollout_[-1], policy_graph_B, mdp_graph_B)]
     
     return state_rollout_
-    
+
+# TODO: Move to high-level workflow file
+def visualize_full_gridworld_rollout(
+    sweep_id,
+    run_suffix,
+    initial_state='(0, 0)_A^(0, 0)_B',
+    reward_sample_index=0,
+    number_of_steps=20
+):
+    policy_data = sample_optimal_policy_from_run(
+        sweep_id,
+        run_suffix,
+        reward_sample_index=reward_sample_index
+    )
+
+    viz.plot_gridworld_rollout(
+        graph.get_states_from_graph(policy_data['outputs']['policy_graph_A']),
+        simulate_policy_rollout(
+            initial_state,
+            policy_data['outputs']['policy_graph_A'],
+            policy_data['inputs']['mdp_graph_A'],
+            policy_graph_B=policy_data['inputs'].get('policy_graph_B'),
+            mdp_graph_B = policy_data['inputs'].get('mdp_graph_B'),
+            number_of_steps=number_of_steps
+        )
+    )

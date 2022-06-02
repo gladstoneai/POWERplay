@@ -4,6 +4,40 @@ from .lib import data
 from .lib.utils import misc
 from .lib.utils import graph
 
+def animate_from_filenames(
+    list_of_filenames,
+    output_gif_filename,
+    input_folder_or_list=data.TEMP_FOLDER,
+    output_folder=data.TEMP_FOLDER
+):
+    input_folder_list = input_folder_or_list if (
+        isinstance(input_folder_or_list, list)
+    ) else [input_folder_or_list] * len(list_of_filenames)
+
+    data.save_gif_from_frames(
+        [
+            data.load_png_figure(
+                filename, input_folder
+            ) for filename, input_folder in zip(list_of_filenames, input_folder_list)
+        ],
+        output_gif_filename,
+        output_folder
+    )
+
+def animate_rollout(
+    rollout_handle,
+    number_of_steps,
+    output_filename='rollout_animation',
+    input_folder=data.TEMP_FOLDER,
+    output_folder=data.TEMP_FOLDER
+):
+    animate_from_filenames(
+        ['{0}-{1}'.format(rollout_handle, i) for i in range(number_of_steps)],
+        output_filename,
+        input_folder_or_list=input_folder,
+        output_folder=output_folder
+    )
+
 def animate_full_sweep(
     sweep_name,
     run_names,
@@ -12,19 +46,14 @@ def animate_full_sweep(
 ):
 
     for figure_prefix in figure_prefix_list:
-        
-        png_frames = [
-            data.load_png_figure(
-                '-'.join([figure_prefix, run_name]), path.Path()/experiment_folder/sweep_name/run_name
-            ) for run_name in run_names
-        ]
 
-        data.save_gif_from_frames(
-            png_frames,
+        animate_from_filenames(
+            ['-'.join([figure_prefix, run_name]) for run_name in run_names],
             '-'.join(['animation', figure_prefix, sweep_name]),
-            path.Path()/experiment_folder/sweep_name
+            input_folder_or_list=[path.Path()/experiment_folder/sweep_name/run_name for run_name in run_names],
+            output_folder=path.Path()/experiment_folder/sweep_name
         )
-
+        
 def generate_sweep_animations(
     sweep_name,
     animation_param,

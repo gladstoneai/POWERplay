@@ -88,6 +88,54 @@ def generate_standard_fig_data(state_indices, sharey=False):
         [(i // fig_cols, i % fig_cols) for i in range(len(state_indices))]
     ]
 
+def render_gridworld_rollout_snapshot(state_list, current_state):
+
+    if graph.are_graph_states_multiagent(state_list):
+        agent_A_states, _ = np.array(graph.multiagent_states_to_single_agent_states(state_list)).T
+    else:
+        agent_A_states = np.array(state_list)
+    
+    agent_A_unique_states = sorted(list(set(agent_A_states)))
+    agent_A_rows, agent_A_cols = np.array(graph.gridworld_states_to_coords(agent_A_states)).T
+
+    _, fig_, axs_plot_, _ = generate_gridworld_fig_data(
+        states_per_subplot=agent_A_unique_states, states_to_subplot=np.array(['(0, 0)'])
+    )
+
+    num_rows, num_cols = max(agent_A_rows) + 1, max(agent_A_cols) + 1
+    excluded_coords = list(
+        set(
+            it.product(range(num_rows), range(num_cols))
+        ) - set(
+            [(row_coord, col_coord) for row_coord, col_coord in zip(agent_A_rows, agent_A_cols)]
+        )
+    )
+
+    # Fill excluded coords with nan values to maximize contrast for non-nan entries
+    heat_map, _, _ = np.histogram2d(
+        np.append(agent_A_rows, [coords[0] for coords in excluded_coords]),
+        np.append(agent_A_cols, [coords[1] for coords in excluded_coords]),
+        bins=[num_rows, num_cols],
+        weights=np.append([0] * len(agent_A_rows), np.full(len(excluded_coords), np.nan))
+    )
+
+    axs_plot_[0][0].imshow(heat_map)
+    axs_plot_[0][0].set_xticks(range(num_cols))
+    axs_plot_[0][0].set_yticks(range(num_rows))
+
+    if graph.are_graph_states_multiagent([current_state]):
+        agent_A_coords, agent_B_coords = graph.gridworld_states_to_coords(
+            (graph.multiagent_state_to_single_agent_states(current_state))
+        )
+        axs_plot_[0][0].add_patch(
+            pat.Rectangle((agent_A_coords[1] - 0.5, agent_A_coords[0] - 0.5), 1, 1, fill=False, edgecolor='cyan', lw=12)
+        )
+        axs_plot_[0][0].add_patch(
+            pat.Rectangle((agent_B_coords[1] - 0.5, agent_B_coords[0] - 0.5), 1, 1, fill=False, edgecolor='red', lw=6)
+        )
+    
+    return fig_
+
 def render_gridworld_aggregations(
     all_samples,
     state_list,
