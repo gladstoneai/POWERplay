@@ -9,13 +9,16 @@ from . import anim
 def plot_gridworld_rollout(
     state_list,
     state_rollout,
+    reward_function=None,
     show=True,
     save_handle='gridworld_rollout',
     save_folder=data.TEMP_FOLDER
 ):
     all_figs_ = []
     for i in range(len(state_rollout)):
-        all_figs_ += [render.render_gridworld_rollout_snapshot(state_list, state_rollout[i])]
+        all_figs_ += [render.render_gridworld_rollout_snapshot(
+            state_list, state_rollout[i], reward_function=reward_function
+        )]
         data.save_figure(all_figs_[-1], '{0}-{1}'.format(save_handle, i), folder=save_folder)
 
     anim.animate_rollout(

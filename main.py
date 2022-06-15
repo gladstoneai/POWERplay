@@ -44,6 +44,9 @@ from src import launch
 # policy_tensor_to_graph() converts a policy tensor to a policy graph.
 
 # TODO NEXT:
+# - Try using different reward function distributions like a Jeffries prior in a single agent setting
+# - Are the POWER centers more extreme? They should be
+# TODO NEXT:
 # - What happens if you correlate Agent B's policy and make it dependent on Agent A's position
 # -- For example, have Agent B follow Agent A
 # -- Forbid the agents from being in the same square
@@ -54,9 +57,6 @@ from src import launch
 # - Create a new file for high-level workflows
 # - Split viz into viz for graphs and viz for plots
 # - Clean up render_gridworld_rollout_snapshot()
-# TODO NEXT: Have an animation of what the policy for Agent B does. (Visualizing joint rollouts between A and B.)
-# - Improve visualization for rollouts
-# -- Show heatmap in the rollout at each timestep as agent B moves
 # TODO NEXT: Start building correlated reward functions
 
 if __name__ == '__main__':
