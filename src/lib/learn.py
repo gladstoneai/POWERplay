@@ -41,34 +41,37 @@ def value_iteration(
 # This means we can simplify the argmax expression for the policy (see the last line of the Value Iteration algorithm
 # in Section 4.4 of Sutton & Barto) to eliminate the r term and the gamma factor. i.e., we can find the optimal
 # policy from the optimal value function by simply taking \argmax_a \sum_{s'} p(s' | s, a) V(s').
-def compute_optimal_policy_tensor(
+def compute_optimal_policy_tensor(_, optimal_values, __, transition_tensor):
+    return torch.sparse_coo_tensor(
+        torch.stack((
+            torch.arange(transition_tensor.shape[0]),
+            torch.argmax(torch.matmul(transition_tensor, optimal_values.unsqueeze(1)), dim=1).flatten()
+        )),
+        torch.ones(transition_tensor.shape[0]),
+        size=tuple(transition_tensor.shape[:2])
+    ).to_dense()
+
+def evaluate_optimal_policy(
     reward_function,
     discount_rate,
     transition_tensor,
     value_initialization=None,
     convergence_threshold=1e-4
 ):
-    return torch.sparse_coo_tensor(
-        torch.stack((
-            torch.arange(transition_tensor.shape[0]),
-            torch.argmax(
-                torch.matmul(
-                    transition_tensor,
-                    value_iteration(
-                        reward_function,
-                        discount_rate,
-                        transition_tensor,
-                        value_initialization=value_initialization,
-                        convergence_threshold=convergence_threshold
-                    ).unsqueeze(1)
-                ), dim=1
-            ).flatten()
-        )),
-        torch.ones(transition_tensor.shape[0]),
-        size=tuple(transition_tensor.shape[:2])
-    ).to_dense()
+    return compute_optimal_policy_tensor(
+        reward_function,
+        value_iteration(
+            reward_function,
+            discount_rate,
+            transition_tensor,
+            value_initialization=value_initialization,
+            convergence_threshold=convergence_threshold
+        ),
+        discount_rate,
+        transition_tensor
+    )
 
-def compute_power_values(reward_sample, optimal_values, discount_rate):
+def compute_power_values(reward_sample, optimal_values, discount_rate, _):
     return ((1 - discount_rate) / discount_rate) * torch.tensor(
         [(optimal_values[state] - reward_sample[state]) for state in range(len(optimal_values))]
     )
@@ -107,7 +110,9 @@ def output_sample_calculator(
             convergence_threshold=convergence_threshold
         )
 
-        all_output_samples_ += [compute_output_quantity(reward_samples[i], optimal_values, discount_rate)]
+        all_output_samples_ += [
+            compute_output_quantity(reward_samples[i], optimal_values, discount_rate, transition_tensors[i])
+        ]
 
     if worker_id == 0:
         print() # Jump to newline after stdout.flush()

@@ -93,7 +93,7 @@ def sample_optimal_policy_from_run(
         },
         'outputs': {
             'policy_graph_A': policy_tensor_to_graph(
-                learn.compute_optimal_policy_tensor(
+                learn.evaluate_optimal_policy(
                     reward_function,
                     discount_rate,
                     graph.any_graphs_to_transition_tensor(*transition_graphs),
