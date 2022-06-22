@@ -59,3 +59,9 @@ def config_to_reward_distribution(state_list, reward_dist_config, distribution_d
 
 def sample_from_state_list(state_list, distribution_vector):
     return state_list[td.Categorical(distribution_vector).sample().item()]
+
+# agent_A_samples: Output of reward_distribution_constructor(state_list)(num_samples), a tensor
+# of size num_samples x len(state_list)
+# single_agent_reward_dist: Output of reward_distribution_constructor(state_list)
+def generate_correlated_reward_samples(single_agent_reward_dist, agent_A_samples, correlation=1, noise=0):
+    return (1 - noise) * (correlation * agent_A_samples) + noise * (single_agent_reward_dist(len(agent_A_samples)))

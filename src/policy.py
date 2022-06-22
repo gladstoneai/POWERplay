@@ -8,7 +8,6 @@ from .lib import data
 from .lib import check
 from .lib import get
 from .lib import learn
-from . import viz
 
 def quick_mdp_to_policy(mdp_graph):
     policy_graph_ = cp.deepcopy(mdp_graph)

@@ -43,10 +43,11 @@ from src import launch
 # policy_tensor_to_graph() converts a policy tensor to a policy graph.
 
 # TODO NEXT:
+# - Investigate possible bug in code associated with sweep 20220622080554. (See the POWER means graphs across discount rates.) 
 # - What happens if you correlate Agent B's policy and make it dependent on Agent A's position
 # -- Forbid the agents from being in the same square
 # -- Try using different reward function distributions like a Jeffries prior
-#     (a fat tail prior might give a stronger incentive to fight; the real world has sparser reward than uniform)
+#    (a fat tail prior might give a stronger incentive to fight; the real world has sparser reward than uniform)
 # --- You can try this in a single agent setting too
 # - Remove code to handle correlation plots for multiagent in render
 # - Split viz into viz for graphs and viz for plots
