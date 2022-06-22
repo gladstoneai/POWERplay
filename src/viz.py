@@ -170,7 +170,7 @@ def plot_mdp_or_policy(
     reward_to_plot=None,
     discount_rate_to_plot=None,
     save_handle='temp',
-    graph_type='mdp_graph',
+    graph_type='mdp_graph_A',
     save_folder=data.TEMP_FOLDER,
     temp_folder=data.TEMP_FOLDER
 ):

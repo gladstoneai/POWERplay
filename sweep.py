@@ -8,6 +8,7 @@ from src.lib.utils import misc
 from src.lib.utils import graph
 from src.lib import data
 from src.lib import get
+from src.lib import save
 from src.lib import learn
 from src import viz
 
@@ -19,7 +20,8 @@ def cli_experiment_sweep(
     plot_correlations=(os.environ.get('PLOT_CORRELATIONS') == 'True'),
     experiment_folder=data.EXPERIMENT_FOLDER,
     mdps_folder=data.MDPS_FOLDER,
-    policies_folder=data.POLICIES_FOLDER
+    policies_folder=data.POLICIES_FOLDER,
+    graph_descriptions=save.ALL_GRAPH_DESCRIPTIONS
 ):
 
     with wb.init() as run:
@@ -45,65 +47,13 @@ def cli_experiment_sweep(
             run_params, sweep_type, mdps_folder=mdps_folder, policies_folder=policies_folder
         )
 
-        if sweep_type == 'single_agent':
-            mdp_graph = transition_graphs[0]
-
-            data.save_graph_to_dot_file(mdp_graph, 'mdp_graph-{}'.format(run.name), folder=save_folder)
-            state_list = graph.get_states_from_graph(mdp_graph)
-            graphs_to_plot = [
-                { 'graph_name': 'MDP graph', 'graph_type': 'mdp_graph', 'graph_data': mdp_graph }
-            ]
-        
-        elif sweep_type == 'multiagent_fixed_policy':
-            mdp_graph_A, policy_graph_B, mdp_graph_B = transition_graphs
-
-            data.save_graph_to_dot_file(
-                mdp_graph_A, 'mdp_graph_agent_A-{}'.format(run.name), folder=save_folder
-            )
-            data.save_graph_to_dot_file(
-                mdp_graph_B, 'mdp_graph_agent_B-{}'.format(run.name), folder=save_folder
-            )
-            data.save_graph_to_dot_file(
-                policy_graph_B, 'policy_graph_agent_B-{}'.format(run.name), folder=save_folder
-            )
-            state_list = graph.get_states_from_graph(mdp_graph_A)
-            graphs_to_plot = [
-                {
-                    'graph_name': 'MDP graph for agent A',
-                    'graph_type': 'mdp_graph_agent_A',
-                    'graph_data': mdp_graph_A
-                }, {
-                    'graph_name': 'MDP graph for agent B',
-                    'graph_type': 'mdp_graph_agent_B',
-                    'graph_data': mdp_graph_B
-                }, {
-                    'graph_name': 'Policy graph for agent B',
-                    'graph_type': 'policy_graph_agent_B',
-                    'graph_data': policy_graph_B
-                }
-            ]
-        
-        elif sweep_type == 'multiagent_with_reward':
-            mdp_graph_A, mdp_graph_B = transition_graphs
-
-            data.save_graph_to_dot_file(
-                mdp_graph_A, 'mdp_graph_agent_A-{}'.format(run.name), folder=save_folder
-            )
-            data.save_graph_to_dot_file(
-                mdp_graph_B, 'mdp_graph_agent_B-{}'.format(run.name), folder=save_folder
-            )
-            state_list = graph.get_states_from_graph(mdp_graph_A)
-            graphs_to_plot = [
-                {
-                    'graph_name': 'MDP graph for agent A',
-                    'graph_type': 'mdp_graph_agent_A',
-                    'graph_data': mdp_graph_A
-                }, {
-                    'graph_name': 'MDP graph for agent B',
-                    'graph_type': 'mdp_graph_agent_B',
-                    'graph_data': mdp_graph_B
-                }
-            ]
+        state_list, graphs_to_plot = save.save_graphs_and_generate_data_from_sweep_type(
+            transition_graphs,
+            run.name,
+            sweep_type,
+            save_folder=save_folder,
+            graph_descriptions=graph_descriptions
+        )
 
         reward_sampler = dist.config_to_reward_distribution(
             state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict
