@@ -18,7 +18,7 @@ def launch_sweep(
     output_folder_local=data.EXPERIMENT_FOLDER,
     plot_as_gridworld=False,
     plot_correlations=True,
-    beep_when_done=False,
+    announce_when_done=False,
     environ=os.environ
 ):
     input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=sweep_config_folder)
@@ -55,7 +55,5 @@ def launch_sweep(
         'PLOT_CORRELATIONS': str(plot_correlations)
     })
 
-    if beep_when_done:
-        print('\a')
-        print('\a')
-        print('\a')
+    if announce_when_done:
+        sp.run(['say', '"Run complete"'])

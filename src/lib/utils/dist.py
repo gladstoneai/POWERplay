@@ -8,7 +8,9 @@ from . import misc
 DISTRIBUTION_DICT = {
     'uniform': td.Uniform,
     'uniform_0_1_manual': misc.pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100),
-    'beta': td.Beta
+    'jaynes_prior': misc.pdf_sampler_constructor(pdf=lambda x: 1/(x * (1 - x)), interval=(0, 1), resolution=100),
+    'beta': td.Beta,
+    'pareto': td.Pareto
 }
 
 ################################################################################

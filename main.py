@@ -5,7 +5,6 @@ from src import launch
 
 # TODO: Add visualization of the MDP graph for the integrated transition tensor.
 # TODO: Add a run.py file to implement higher-level workflows for MDP and policy graph construction.
-# TODO: Check why beep_when_done doesn't work.
 # TODO: Update get_sweep_state_list to handle the multiagent case and return all the MDPs and policies
 # in that case.
 # TODO: Add sanity checks to policy / MDP inputs for the multiagent case. In particular, add checks that both
@@ -44,20 +43,22 @@ from src import launch
 # policy_tensor_to_graph() converts a policy tensor to a policy graph.
 
 # TODO NEXT:
-# - Try using different reward function distributions like a Jeffries prior in a single agent setting
-# - Are the POWER centers more extreme? They should be
-# TODO NEXT:
 # - What happens if you correlate Agent B's policy and make it dependent on Agent A's position
-# -- For example, have Agent B follow Agent A
 # -- Forbid the agents from being in the same square
 # -- Try using different reward function distributions like a Jeffries prior
 #     (a fat tail prior might give a stronger incentive to fight; the real world has sparser reward than uniform)
 # --- You can try this in a single agent setting too
 # - Remove code to handle correlation plots for multiagent in render
-# - Create a new file for high-level workflows
 # - Split viz into viz for graphs and viz for plots
 # - Clean up render_gridworld_rollout_snapshot()
 # TODO NEXT: Start building correlated reward functions
+# - Basic expt with random uniform initial Agent A policy and "optimal" agent B policy against the random A policy; then look at A's POWER in that context
+# -- Try different reward function correlations: perfectly correlated; anticorrelated; random noise in-between
+# - Go back and forth: do 1 iteration of value iteration for B, 1 for A, etc. and stop at some predefined number
+# - Give B more or fewer iterations than A
+# - Start misaligning the reward functions; at what point does A "prefer" a less capable B vs a more capable B
+# -- HYPOTHESIS: you don't need to be that misaligned to get adversarial behavior
+# -- Maybe test out different initializations for Agent A policy (other than just random uniform), maybe sample a random policy for each reward sample
 
 if __name__ == '__main__':
     # test.test_vanilla()
@@ -66,7 +67,5 @@ if __name__ == '__main__':
     # test.test_multiagent()
 
     pass
-
-
 
     

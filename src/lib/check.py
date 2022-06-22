@@ -26,13 +26,7 @@ def check_state_in_graph_states(input_graph, state):
         raise Exception('The state {} isn\'t in your input_graph graph.'.format(state))
 
 def check_policy_actions(policy_graph, state, policy_actions, tolerance=PROBABILITY_TOLERANCE):
-    if set(
-        policy_actions.keys()
-    ) != set([
-        graph.decompose_stochastic_graph_node(node)[0] for node in policy_graph.successors(
-            graph.build_stochastic_graph_node(state)
-        )
-    ]):
+    if set(policy_actions.keys()) != set(graph.get_available_actions_from_graph_state(policy_graph, state)):
         raise Exception(
             'The actions in the update set for state {} ' \
             'must be identical to that state\'s action set in the original policy.'.format(state)

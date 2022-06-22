@@ -164,7 +164,7 @@ The YAML file is the canonical description of the sweep for your experiment, and
 
   Typical value: `False`
 
-- `beep_when_done [bool] (False)`: Exactly what it sounds like.
+- `announce_when_done [bool] (False)`: Exactly what it sounds like.
 
   Typical value: `False`
 
@@ -603,7 +603,7 @@ launch.launch_sweep(
       project='power-project',
       plot_as_gridworld=False,
       plot_correlations=False,
-      beep_when_done=True
+      announce_when_done=True
   )
 ```
 
