@@ -4,6 +4,7 @@ import sys
 import functools as func
 import multiprocessing as mps
 
+from src.lib.utils import graph
 from .utils import misc
 from .utils import dist
 from . import check
@@ -158,9 +159,10 @@ def rewards_to_outputs(
     return torch.cat(output_samples_list, axis=0)
 
 def run_one_experiment(
-    base_transition_tensor,
+    transition_graphs,
     discount_rate,
     reward_sampler,
+    sweep_type='single_agent',
     num_reward_samples=10000,
     num_workers=1,
     convergence_threshold=1e-4,
@@ -173,16 +175,45 @@ def run_one_experiment(
     # When the number of samples doesn't divide evenly into the available workers, truncate the samples
     reward_samples_agent_A = reward_sampler(num_workers * (num_reward_samples // num_workers))
 
-    if reward_correlation is None or reward_noise is None:
-        all_transition_tensors = torch.tile(base_transition_tensor, (len(reward_samples_agent_A), 1, 1, 1))
+    if sweep_type == 'single_agent':
+
+        mdp_graph_A = transition_graphs[0]
+        all_transition_tensors = torch.tile(
+            graph.graph_to_transition_tensor(mdp_graph_A),
+            (len(reward_samples_agent_A), 1, 1, 1)
+        )
     
-    else:
+    elif sweep_type == 'multiagent_fixed_policy':
+
+        mdp_graph_A, policy_graph_B, mdp_graph_B = transition_graphs
+        all_transition_tensors = torch.tile(
+            graph.graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_graph_B),
+            (len(reward_samples_agent_A), 1, 1, 1)
+        )
+    
+    elif sweep_type == 'multiagent_with_reward':
+
+        mdp_graph_A, mdp_graph_B = transition_graphs
         reward_samples_agent_B = dist.generate_correlated_reward_samples(
             reward_sampler, reward_samples_agent_A, correlation=reward_correlation, noise=reward_noise
         )
-        # TODO: Refactor compute_optimal_policy_tensor() to match the signature of compute_power_values()
-        # TODO: Add code to compute the optimal policy tensor for Agent B
+
+        print('Computing Agent B policies:')
+        print()
+        '''
+        policies_agent_B = rewards_to_outputs(
+            reward_samples_agent_B,
+            base_transition_tensors, # TODO: Compute the multiagent transition tensor from mdp_graph_A, mdp_graph_B, plus the agent A uniform random policy
+            discount_rate,
+            compute_output_quantity=compute_optimal_policy_tensor,
+            num_workers=num_workers,
+            convergence_threshold=convergence_threshold
+        )
+        '''
         # TODO: Add code to combine the Agent B policy tensor with the base_transition_tensor to get the full transition tensor list
+
+    print('Computing POWER samples:')
+    print()
 
     power_samples = rewards_to_outputs(
         reward_samples_agent_A,
@@ -197,6 +228,6 @@ def run_one_experiment(
     print('Run complete.')
 
     return (
-        reward_samples_agent_A,
+        reward_samples_agent_A, # TODO: Return Agent B reward samples and Agent B policies
         power_samples
     )

@@ -45,19 +45,30 @@ def get_sweep_state_list(sweep_id, folder=data.EXPERIMENT_FOLDER):
 # can be used as the run_params input here.
 def get_transition_graphs(
     run_params,
+    sweep_type,
     mdps_folder=data.MDPS_FOLDER,
     policies_folder=data.POLICIES_FOLDER
 ):
-    if run_params.get('mdp_graph') is not None: # Single agent case
+    if sweep_type == 'single_agent':
         return [data.load_graph_from_dot_file(run_params.get('mdp_graph'), folder=mdps_folder)]
-
-    else: # Multiagent case
+    
+    elif sweep_type == 'multiagent_fixed_policy':
         return [
             data.load_graph_from_dot_file(
                 run_params.get('mdp_graph_agent_A'), folder=mdps_folder
             ),
             data.load_graph_from_dot_file(
                 run_params.get('policy_graph_agent_B'), folder=policies_folder
+            ),
+            data.load_graph_from_dot_file(
+                run_params.get('mdp_graph_agent_B'), folder=mdps_folder
+            )
+        ]
+    
+    elif sweep_type == 'multiagent_with_reward':
+        return [
+            data.load_graph_from_dot_file(
+                run_params.get('mdp_graph_agent_A'), folder=mdps_folder
             ),
             data.load_graph_from_dot_file(
                 run_params.get('mdp_graph_agent_B'), folder=mdps_folder

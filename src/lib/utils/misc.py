@@ -102,3 +102,30 @@ def set_global_random_seed(random_seed):
     else:
         torch.manual_seed(random_seed)
         torch.cuda.manual_seed(random_seed)
+
+def determine_sweep_type(run_params):
+    if 'mdp_graph' in run_params:
+        return 'single_agent'
+    
+    elif (
+        'mdp_graph_agent_A' in run_params
+    ) and (
+        'mdp_graph_agent_B' in run_params
+    ) and (
+        'policy_graph_agent_B' in run_params
+    ):
+        return 'multiagent_fixed_policy'
+    
+    elif (
+        'mdp_graph_agent_A' in run_params
+    ) and (
+        'mdp_graph_agent_B' in run_params
+    ) and (
+        'reward_correlation' in run_params
+    ) and (
+        'reward_noise' in run_params
+    ):
+        return 'multiagent_with_reward'
+    
+    else:
+        raise Exception('Unknown sweep type.')

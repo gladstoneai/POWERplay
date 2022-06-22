@@ -28,6 +28,7 @@ def cli_experiment_sweep(
         }
         # Hack to force a specified name for the run in W&B interface
         run.name = misc.build_run_name(local_sweep_name, run.config, sweep_variable_params)
+        sweep_type = misc.determine_sweep_type(run_params)
 
         save_folder = path.Path(experiment_folder)/local_sweep_name/run.name
         data.create_folder(save_folder)
@@ -37,12 +38,14 @@ def cli_experiment_sweep(
         discount_rate = run_params.get('discount_rate')
         convergence_threshold = run_params.get('convergence_threshold')
         random_seed = run_params.get('random_seed')
-        transition_graphs = get.get_transition_graphs(
-            run_params, mdps_folder=mdps_folder, policies_folder=policies_folder
-        )
-        transition_tensor = graph.any_graphs_to_transition_tensor(*transition_graphs)
+        reward_correlation = run_params.get('reward_correlation')
+        reward_noise = run_params.get('reward_noise')
 
-        if len(transition_graphs) == 1: # Single agent case
+        transition_graphs = get.get_transition_graphs(
+            run_params, sweep_type, mdps_folder=mdps_folder, policies_folder=policies_folder
+        )
+
+        if sweep_type == 'single_agent':
             mdp_graph = transition_graphs[0]
 
             data.save_graph_to_dot_file(mdp_graph, 'mdp_graph-{}'.format(run.name), folder=save_folder)
@@ -50,8 +53,8 @@ def cli_experiment_sweep(
             graphs_to_plot = [
                 { 'graph_name': 'MDP graph', 'graph_type': 'mdp_graph', 'graph_data': mdp_graph }
             ]
-
-        else: # Multiagent case
+        
+        elif sweep_type == 'multiagent_fixed_policy':
             mdp_graph_A, policy_graph_B, mdp_graph_B = transition_graphs
 
             data.save_graph_to_dot_file(
@@ -79,19 +82,44 @@ def cli_experiment_sweep(
                     'graph_data': policy_graph_B
                 }
             ]
+        
+        elif sweep_type == 'multiagent_with_reward':
+            mdp_graph_A, mdp_graph_B = transition_graphs
+
+            data.save_graph_to_dot_file(
+                mdp_graph_A, 'mdp_graph_agent_A-{}'.format(run.name), folder=save_folder
+            )
+            data.save_graph_to_dot_file(
+                mdp_graph_B, 'mdp_graph_agent_B-{}'.format(run.name), folder=save_folder
+            )
+            state_list = graph.get_states_from_graph(mdp_graph_A)
+            graphs_to_plot = [
+                {
+                    'graph_name': 'MDP graph for agent A',
+                    'graph_type': 'mdp_graph_agent_A',
+                    'graph_data': mdp_graph_A
+                }, {
+                    'graph_name': 'MDP graph for agent B',
+                    'graph_type': 'mdp_graph_agent_B',
+                    'graph_data': mdp_graph_B
+                }
+            ]
 
         reward_sampler = dist.config_to_reward_distribution(
             state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict
         )
 
         reward_samples, power_samples = learn.run_one_experiment(
-            transition_tensor,
+            transition_graphs,
             discount_rate,
             reward_sampler,
+            sweep_type=sweep_type,
             num_reward_samples=num_reward_samples,
             num_workers=num_workers,
             convergence_threshold=convergence_threshold,
-            random_seed=random_seed
+            random_seed=random_seed,
+            reward_correlation=reward_correlation,
+            reward_noise=reward_noise
         )
 
         data.save_experiment({
