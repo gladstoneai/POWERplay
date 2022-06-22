@@ -38,7 +38,7 @@ def value_iteration(
 
 def power_sample_calculator(
     reward_samples,
-    transition_tensor,
+    transition_tensors,
     discount_rate,
     convergence_threshold=1e-4,
     value_initializations=None,
@@ -64,7 +64,7 @@ def power_sample_calculator(
         optimal_values = value_iteration(
             reward_samples[i],
             discount_rate,
-            transition_tensor,
+            transition_tensors[i],
             value_initialization=all_value_initializations[i],
             convergence_threshold=convergence_threshold
         )
@@ -78,24 +78,24 @@ def power_sample_calculator(
 
     return torch.stack(all_power_samples_)
 
-def power_sample_calculator_mps(state_action_matrix, discount_rate, reward_samples, worker_id, **kwargs):
-    return power_sample_calculator(reward_samples, state_action_matrix, discount_rate, **{
+def power_sample_calculator_mps(discount_rate, reward_samples, transition_tensors, worker_id, **kwargs):
+    return power_sample_calculator(reward_samples, transition_tensors, discount_rate, **{
         **kwargs,
         **{ 'worker_id': worker_id }
     })
 
 def rewards_to_powers(
     reward_samples,
-    transition_tensor,
+    all_transition_tensors,
     discount_rate,
     num_workers=1,
     convergence_threshold=1e-4
 ):
     check.check_num_samples(len(reward_samples), num_workers)
+    check.check_num_samples(len(all_transition_tensors), num_workers)
 
     power_calculator = func.partial(
         power_sample_calculator_mps,
-        transition_tensor,
         discount_rate,
         convergence_threshold=convergence_threshold,
         value_initializations=None,
@@ -107,6 +107,7 @@ def rewards_to_powers(
             power_calculator,
             zip(
                 torch.split(reward_samples, len(reward_samples) // num_workers, dim=0),
+                torch.split(all_transition_tensors, len(all_transition_tensors) // num_workers, dim=0),
                 range(num_workers)
             )
         )
@@ -114,22 +115,30 @@ def rewards_to_powers(
     return torch.cat(power_samples_list, axis=0)
 
 def run_one_experiment(
-    transition_tensor,
+    base_transition_tensor,
     discount_rate,
     reward_sampler,
     num_reward_samples=10000,
     num_workers=1,
     convergence_threshold=1e-4,
-    random_seed=None
+    random_seed=None,
+    reward_correlation=None,
+    noise_correlation=None
 ):
     misc.set_global_random_seed(random_seed)
     
     # When the number of samples doesn't divide evenly into the available workers, truncate the samples
-    reward_samples = reward_sampler(num_workers * (num_reward_samples // num_workers))
+    reward_samples_agent_A = reward_sampler(num_workers * (num_reward_samples // num_workers))
+
+    if reward_correlation is None or noise_correlation is None:
+        all_transition_tensors = torch.tile(base_transition_tensor, (len(reward_samples_agent_A), 1, 1, 1))
+    
+    else:
+        pass # TODO: Add code here that uses generate_correlated_reward_samples() calculate agent B rewards, and build the new transition tensor list
 
     power_samples = rewards_to_powers(
-        reward_samples,
-        transition_tensor,
+        reward_samples_agent_A,
+        all_transition_tensors,
         discount_rate,
         num_workers=num_workers,
         convergence_threshold=convergence_threshold
@@ -139,7 +148,7 @@ def run_one_experiment(
     print('Run complete.')
 
     return (
-        reward_samples,
+        reward_samples_agent_A,
         power_samples
     )
 
