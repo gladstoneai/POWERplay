@@ -11,7 +11,7 @@ def construct_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_name=None, 
                 num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
             )
         )
-    policy_b_ = policy.quick_mdp_to_policy(stochastic_graph)
+    policy_b_ = graph.quick_mdp_to_policy(stochastic_graph)
 
     print('Now updating policy for Agent B.')
     print('State update example: { \'stay\': 0, \'up\': 1, \'down\': 0, \'left\': 0, \'right\': 0 }')
@@ -103,3 +103,6 @@ def visualize_full_gridworld_rollout(
         save_handle=save_handle,
         save_folder=save_folder
     )
+
+def build_quick_random_policy(mdp_graph):
+    return graph.quick_mdp_to_policy(mdp_graph)
