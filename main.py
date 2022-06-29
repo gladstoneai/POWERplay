@@ -50,6 +50,7 @@ from src import base
 # -- Relevant IDs: 20220622080554, 20220615184350
 # - Save Agent B reward samples and policy graphs in the output
 # - Refactor the loop in the torch.stack line of run_one_experiment (we should be doing it all in PyTorch, not a Python loop)
+# - Build an integration test for correlated reward functions
 
 # - What happens if you correlate Agent B's policy and make it dependent on Agent A's position
 # -- Forbid the agents from being in the same square

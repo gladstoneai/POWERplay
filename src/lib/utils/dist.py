@@ -60,8 +60,17 @@ def config_to_reward_distribution(state_list, reward_dist_config, distribution_d
 def sample_from_state_list(state_list, distribution_vector):
     return state_list[td.Categorical(distribution_vector).sample().item()]
 
+# See https://drive.google.com/file/d/1aCMAainYY_24ihCmjvz-Z_LYr7FLtQ1N/view?usp=sharing for calculations that apply
+# for correlation coefficients from 0  to 1. Note that similar logic can be used to calculate the correlated rewards
+# for correlations from -1 to 0, but negative correlations *only* make sense for pdfs that are symmetric over their support.
+# single_agent_reward_dist: Output of reward_distribution_constructor(state_list)
 # agent_A_samples: Output of reward_distribution_constructor(state_list)(num_samples), a tensor
 # of size num_samples x len(state_list)
-# single_agent_reward_dist: Output of reward_distribution_constructor(state_list)
-def generate_correlated_reward_samples(single_agent_reward_dist, agent_A_samples, correlation=1, noise=0):
-    return (1 - noise) * (correlation * agent_A_samples) + noise * (single_agent_reward_dist(len(agent_A_samples)))
+def generate_correlated_reward_samples(single_agent_reward_dist, agent_A_samples, correlation=1):
+    
+    if correlation >= 0 and correlation <= 1:
+        prob_mask = td.Categorical(torch.tensor([1 - correlation, correlation])).sample(agent_A_samples.shape)
+        return prob_mask * agent_A_samples + (1 - prob_mask) * single_agent_reward_dist(len(agent_A_samples))
+    
+    else:
+        raise Exception('Only correlations between 0 and 1 are supported; your correlation was {}.'.format(correlation))
