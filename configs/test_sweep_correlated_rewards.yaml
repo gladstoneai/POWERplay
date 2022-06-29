@@ -1,4 +1,4 @@
-name: sweep-3x3_GRIDWORLD_MULTIAGENT_CORRELATED_REWARDS_GAMMA_SWEEP-samples_30k
+name: test_run_multi_simulated
 description: "Sweeping over Agent A and Agent B reward correlation values on the 3x3 multiagent gridworld, with gamma = 0.2."
 program: sweep.py
 parameters:
