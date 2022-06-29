@@ -1,4 +1,5 @@
 from .utils import graph
+from .utils import misc
 from . import data
 
 # TODO: Document this function. Lets you quickly retrieve inputs or outputs of an experiment based on
@@ -89,6 +90,6 @@ def get_properties_from_run(
         'discount_rate': inputs['discount_rate'],
         'convergence_threshold': inputs['convergence_threshold'],
         'transition_graphs': get_transition_graphs(
-            inputs, mdps_folder=mdps_folder, policies_folder=policies_folder
+            inputs, misc.determine_sweep_type(inputs), mdps_folder=mdps_folder, policies_folder=policies_folder
         )
     }

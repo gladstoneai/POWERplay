@@ -187,6 +187,8 @@ def check_sweep_params(sweep_params):
         'mdp_graph_agent_A': check_mdp_graph,
         'mdp_graph_agent_B': noop,
         'policy_graph_agent_B': noop,
+        'reward_correlation': noop,
+        'reward_noise': noop,
         'discount_rate': check_discount_rate,
         'reward_distribution': noop,
         'num_reward_samples': noop,

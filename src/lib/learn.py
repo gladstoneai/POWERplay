@@ -177,41 +177,57 @@ def run_one_experiment(
 
     if sweep_type == 'single_agent':
 
-        mdp_graph_A = transition_graphs[0]
-        all_transition_tensors = torch.tile(
-            graph.graph_to_transition_tensor(mdp_graph_A),
-            (len(reward_samples_agent_A), 1, 1, 1)
-        )
+        transition_tensor_A = graph.graph_to_transition_tensor(transition_graphs[0])
+        all_transition_tensors = misc.tile_transition_tensor(transition_tensor_A, len(reward_samples_agent_A))
     
     elif sweep_type == 'multiagent_fixed_policy':
 
-        mdp_graph_A, policy_graph_B, mdp_graph_B = transition_graphs
-        all_transition_tensors = torch.tile(
-            graph.graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_graph_B),
-            (len(reward_samples_agent_A), 1, 1, 1)
+        transition_tensor_A, policy_tensor_B, transition_tensor_B = (
+            graph.graph_to_transition_tensor(transition_graphs[0]),
+            graph.graph_to_policy_tensor(transition_graphs[1]),
+            graph.graph_to_transition_tensor(transition_graphs[2])
+        )
+        all_transition_tensors = misc.tile_transition_tensor(
+            graph.compute_multiagent_transition_tensor(transition_tensor_A, policy_tensor_B, transition_tensor_B),
+            len(reward_samples_agent_A)
         )
     
     elif sweep_type == 'multiagent_with_reward':
 
-        mdp_graph_A, mdp_graph_B = transition_graphs
+        policy_tensor_A, transition_tensor_A, transition_tensor_B = (
+            graph.graph_to_policy_tensor(graph.quick_mdp_to_policy(transition_graphs[0])),
+            graph.graph_to_transition_tensor(transition_graphs[0]),
+            graph.graph_to_transition_tensor(transition_graphs[1])
+        )
         reward_samples_agent_B = dist.generate_correlated_reward_samples(
             reward_sampler, reward_samples_agent_A, correlation=reward_correlation, noise=reward_noise
         )
-
+        
+        print()
         print('Computing Agent B policies:')
         print()
-        '''
-        policies_agent_B = rewards_to_outputs(
+
+        policy_tensors_B = rewards_to_outputs(
             reward_samples_agent_B,
-            base_transition_tensors, # TODO: Compute the multiagent transition tensor from mdp_graph_A, mdp_graph_B, plus the agent A uniform random policy
+            misc.tile_transition_tensor(
+                graph.compute_multiagent_transition_tensor(
+                    transition_tensor_B, policy_tensor_A, transition_tensor_A
+                ), # NOTE: The order is reversed here since we need (mdp B, policy A, mdp A) to get Agent B's policy
+                len(reward_samples_agent_A)
+            ),
             discount_rate,
             compute_output_quantity=compute_optimal_policy_tensor,
             num_workers=num_workers,
             convergence_threshold=convergence_threshold
         )
-        '''
-        # TODO: Add code to combine the Agent B policy tensor with the base_transition_tensor to get the full transition tensor list
 
+        all_transition_tensors = torch.stack([
+            graph.compute_multiagent_transition_tensor(
+                transition_tensor_A, policy_tens_B, transition_tensor_B
+            ) for policy_tens_B in policy_tensors_B
+        ])
+
+    print()
     print('Computing POWER samples:')
     print()
 

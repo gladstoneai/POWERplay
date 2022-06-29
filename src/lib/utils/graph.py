@@ -177,14 +177,10 @@ def graph_to_policy_tensor(policy_graph):
     
     return policy_tensor_.to(torch.float)
 
-def graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_graph_B):
-    transition_tensor_A = graph_to_transition_tensor(mdp_graph_A)
-    policy_tensor_B = graph_to_policy_tensor(policy_graph_B)
-    transition_tensor_B = graph_to_transition_tensor(mdp_graph_B)
-
-    num_states = len(get_states_from_graph(mdp_graph_A))
-    num_actions_A = len(get_actions_from_graph(mdp_graph_A))
-    num_actions_B = len(get_actions_from_graph(mdp_graph_B))
+def compute_multiagent_transition_tensor(transition_tensor_A, policy_tensor_B, transition_tensor_B):
+    num_states = transition_tensor_A.shape[0]
+    num_actions_A = transition_tensor_A.shape[1]
+    num_actions_B = transition_tensor_B.shape[1]
 
     agent_B_state_mapping = (transition_tensor_B * policy_tensor_B.unsqueeze(-1).expand(
         num_states, num_actions_B, num_states
@@ -200,6 +196,14 @@ def graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_grap
         )
     )).sum(dim=2)
 
+
+def graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_graph_B):
+    return compute_multiagent_transition_tensor(
+        graph_to_transition_tensor(mdp_graph_A),
+        graph_to_policy_tensor(policy_graph_B),
+        graph_to_transition_tensor(mdp_graph_B)
+    )
+    
 def any_graphs_to_transition_tensor(*transition_graphs):
     if len(transition_graphs) == 1: # Single agent case
         return graph_to_transition_tensor(transition_graphs[0])

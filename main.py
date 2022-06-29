@@ -44,6 +44,13 @@ from src import base
 
 # TODO NEXT:
 # - Investigate possible bug in code associated with sweep 20220622080554. (See the POWER means graphs across discount rates.) 
+# - Fix rollout visualizations for Agent B reward sweeps, see base.visualize_full_gridworld_rollout('20220622194712', 'discount_rate__0p1', reward_sample_index=0)
+# - Fix Agent B marginal reward distribution to make it the same as Agent A's
+# - Investigate why the Pareto distribution gives qualitatively different results between the multiagent (agent B follows A) case vs the maze case
+# -- Relevant IDs: 20220622080554, 20220615184350
+# - Save Agent B reward samples and policy graphs in the output
+# - Refactor the loop in the torch.stack line of run_one_experiment (we should be doing it all in PyTorch, not a Python loop)
+
 # - What happens if you correlate Agent B's policy and make it dependent on Agent A's position
 # -- Forbid the agents from being in the same square
 # -- Try using different reward function distributions like a Jeffries prior
