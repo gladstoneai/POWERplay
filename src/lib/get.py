@@ -84,12 +84,20 @@ def get_properties_from_run(
 ):
     inputs = get_sweep_run_results(sweep_id, run_suffix, results_type='inputs')
     outputs = get_sweep_run_results(sweep_id, run_suffix, results_type='outputs')
+    sweep_type = misc.determine_sweep_type(inputs)
+
+    extra_props = {
+        'reward_samples_agent_B': outputs['reward_samples_agent_B'],
+        'reward_correlation': inputs['reward_correlation']
+    } if sweep_type == 'multiagent_with_reward' else {}
 
     return {
         'reward_samples': outputs['reward_samples'],
         'discount_rate': inputs['discount_rate'],
         'convergence_threshold': inputs['convergence_threshold'],
+        'sweep_type': sweep_type,
         'transition_graphs': get_transition_graphs(
-            inputs, misc.determine_sweep_type(inputs), mdps_folder=mdps_folder, policies_folder=policies_folder
-        )
+            inputs, sweep_type, mdps_folder=mdps_folder, policies_folder=policies_folder
+        ),
+        **extra_props
     }

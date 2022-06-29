@@ -174,6 +174,7 @@ def run_one_experiment(
     
     # When the number of samples doesn't divide evenly into the available workers, truncate the samples
     reward_samples_agent_A = reward_sampler(num_workers * (num_reward_samples // num_workers))
+    reward_samples_agent_B_ = None
 
     if sweep_type == 'single_agent':
 
@@ -199,7 +200,7 @@ def run_one_experiment(
             graph.graph_to_transition_tensor(transition_graphs[0]),
             graph.graph_to_transition_tensor(transition_graphs[1])
         )
-        reward_samples_agent_B = dist.generate_correlated_reward_samples(
+        reward_samples_agent_B_ = dist.generate_correlated_reward_samples(
             reward_sampler, reward_samples_agent_A, correlation=reward_correlation, symmetric_interval=symmetric_interval
         )
         
@@ -208,7 +209,7 @@ def run_one_experiment(
         print()
 
         policy_tensors_B = rewards_to_outputs(
-            reward_samples_agent_B,
+            reward_samples_agent_B_,
             misc.tile_transition_tensor(
                 graph.compute_multiagent_transition_tensor(
                     transition_tensor_B, policy_tensor_A, transition_tensor_A
@@ -244,6 +245,7 @@ def run_one_experiment(
     print('Run complete.')
 
     return (
-        reward_samples_agent_A, # TODO: Return Agent B reward samples and Agent B policies
+        reward_samples_agent_A,
+        reward_samples_agent_B_,
         power_samples
     )

@@ -61,7 +61,7 @@ def cli_experiment_sweep(
             run_params.get('reward_distribution')['default_dist'], distribution_dict=distribution_dict
         )
 
-        reward_samples, power_samples = learn.run_one_experiment(
+        reward_samples_agent_A, reward_samples_agent_B, power_samples = learn.run_one_experiment(
             transition_graphs,
             discount_rate,
             reward_sampler,
@@ -76,14 +76,16 @@ def cli_experiment_sweep(
 
         data.save_experiment({
             'name': run.name,
-            'inputs': { 'num_reward_samples_actual': len(reward_samples), **run_params },
+            'inputs': { 'num_reward_samples_actual': len(reward_samples_agent_A), **run_params },
             'outputs': {
-                'reward_samples': reward_samples, 'power_samples': power_samples
+                'reward_samples': reward_samples_agent_A,
+                'reward_samples_agent_B': reward_samples_agent_B,
+                'power_samples': power_samples
             }
         }, folder=save_folder)
 
         run.log({ fig_name: wb.Image(fig) for fig_name, fig in viz.plot_all_outputs(
-            reward_samples,
+            reward_samples_agent_A,
             power_samples,
             graphs_to_plot,
             save_handle=run.name,

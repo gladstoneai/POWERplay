@@ -53,17 +53,27 @@ def sample_optimal_policy_from_run(
     run_properties = get.get_properties_from_run(
         sweep_id, run_suffix, mdps_folder=mdps_folder, policies_folder=policies_folder
     )
-    reward_function, discount_rate, transition_graphs, convergence_threshold = (
+    reward_function, discount_rate, transition_graphs, convergence_threshold, sweep_type = (
         run_properties['reward_samples'][reward_sample_index],
         run_properties['discount_rate'],
         run_properties['transition_graphs'],
-        run_properties['convergence_threshold']
+        run_properties['convergence_threshold'],
+        run_properties['sweep_type']
     )
 
-    multiagent_dict = {} if len(transition_graphs) == 1 else {
-        'policy_graph_B': transition_graphs[1],
-        'mdp_graph_B': transition_graphs[2]
-    }
+    if sweep_type == 'single_agent':
+        multiagent_dict = {}
+    
+    elif sweep_type == 'multiagent_fixed_policy':
+        multiagent_dict = {
+            'policy_graph_B': transition_graphs[1],
+            'mdp_graph_B': transition_graphs[2]
+        }
+    
+    elif sweep_type == 'multiagent_with_reward':
+        multiagent_dict = {
+            'mdp_graph_B': transition_graphs[1]
+        }
 
     return {
         'inputs': {

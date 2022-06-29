@@ -44,14 +44,10 @@ from src import base
 
 # TODO NEXT:
 # - Fix rollout visualizations for Agent B reward sweeps, see base.visualize_full_gridworld_rollout('20220622194712', 'discount_rate__0p1', reward_sample_index=0)
-# - Save Agent B reward samples and policy graphs in the output
 # - Refactor the loop in the torch.stack line of run_one_experiment (we should be doing it all in PyTorch, not a Python loop)
 
 # - What happens if you correlate Agent B's policy and make it dependent on Agent A's position
 # -- Forbid the agents from being in the same square
-# -- Try using different reward function distributions like a Jeffries prior
-#    (a fat tail prior might give a stronger incentive to fight; the real world has sparser reward than uniform)
-# --- You can try this in a single agent setting too
 # - Remove code to handle correlation plots for multiagent in render
 # - Split viz into viz for graphs and viz for plots
 # - Clean up render_gridworld_rollout_snapshot()
