@@ -168,7 +168,7 @@ def run_one_experiment(
     convergence_threshold=1e-4,
     random_seed=None,
     reward_correlation=None,
-    reward_noise=None
+    symmetric_interval=None
 ):
     misc.set_global_random_seed(random_seed)
     
@@ -200,7 +200,7 @@ def run_one_experiment(
             graph.graph_to_transition_tensor(transition_graphs[1])
         )
         reward_samples_agent_B = dist.generate_correlated_reward_samples(
-            reward_sampler, reward_samples_agent_A, correlation=reward_correlation, noise=reward_noise
+            reward_sampler, reward_samples_agent_A, correlation=reward_correlation, symmetric_interval=symmetric_interval
         )
         
         print()

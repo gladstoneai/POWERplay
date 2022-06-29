@@ -1,0 +1,41 @@
+name: sweep-3x3_GRIDWORLD_MULTIAGENT_CORRELATED_REWARDS_GAMMA_SWEEP-samples_30k
+description: "Sweeping over Agent A and Agent B reward correlation values on the 3x3 multiagent gridworld, with gamma = 0.2."
+program: sweep.py
+parameters:
+  mdp_graph_agent_A:
+    value:
+      "stoch_gridworld_3x3_agent_A"
+  mdp_graph_agent_B:
+    value:
+      "stoch_gridworld_3x3_agent_B"
+  discount_rate:
+    value:
+      0.2
+  reward_distribution:
+    value:
+      default_dist:
+        dist_name:
+          "uniform"
+        params:
+          [0, 1]
+  reward_correlation:
+    values:
+      - 1
+      - 0
+      - -1
+    names:
+      - "corr_1"
+      - "corr_0"
+      - "corr_n1"
+  num_reward_samples:
+    value:
+      10000
+  convergence_threshold:
+    value:
+      0.0001
+  num_workers:
+    value:
+      10
+  random_seed:
+    value:
+      0

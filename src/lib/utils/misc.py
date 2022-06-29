@@ -122,9 +122,13 @@ def determine_sweep_type(run_params):
         'mdp_graph_agent_B' in run_params
     ) and (
         'reward_correlation' in run_params
-    ) and (
-        'reward_noise' in run_params
     ):
+
+        if 'state_dists' in run_params.get('reward_distribution'):
+            raise Exception(
+                'Correlated reward sweeps don\'t currently support state-specific reward distributions.'
+            ) # NOTE: We *could* quite easily support state-specific reward distributions, just not with negatively correlated rewards without a lot more work.
+
         return 'multiagent_with_reward'
     
     else:

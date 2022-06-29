@@ -13,6 +13,7 @@ configs/*
 !configs/test_sweep_stochastic.yaml
 !configs/test_run_multi_simulated.yaml
 !configs/test_run_multi_actual.yaml
+!configs/test_sweep_correlated_rewards.yaml
 
 mdps/*
 

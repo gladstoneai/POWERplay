@@ -136,5 +136,15 @@ def test_multiagent():
     launch.launch_sweep(
         'test_run_multi_actual.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
-        project='uncategorized'
+        project='uncategorized',
+        plot_as_gridworld=True
+    )
+
+def test_reward_correlation():
+    launch.launch_sweep(
+        'test_sweep_correlated_rewards.yaml',
+        entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        project='uncategorized',
+        plot_as_gridworld=True,
+        plot_correlations=False
     )

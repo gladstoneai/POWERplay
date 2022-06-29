@@ -5,7 +5,6 @@ import pathlib as path
 
 from src.lib.utils import dist
 from src.lib.utils import misc
-from src.lib.utils import graph
 from src.lib import data
 from src.lib import get
 from src.lib import save
@@ -41,7 +40,6 @@ def cli_experiment_sweep(
         convergence_threshold = run_params.get('convergence_threshold')
         random_seed = run_params.get('random_seed')
         reward_correlation = run_params.get('reward_correlation')
-        reward_noise = run_params.get('reward_noise')
 
         transition_graphs = get.get_transition_graphs(
             run_params, sweep_type, mdps_folder=mdps_folder, policies_folder=policies_folder
@@ -59,6 +57,10 @@ def cli_experiment_sweep(
             state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict
         )
 
+        symmetric_interval = dist.config_to_symmetric_interval(
+            run_params.get('reward_distribution')['default_dist'], distribution_dict=distribution_dict
+        )
+
         reward_samples, power_samples = learn.run_one_experiment(
             transition_graphs,
             discount_rate,
@@ -69,7 +71,7 @@ def cli_experiment_sweep(
             convergence_threshold=convergence_threshold,
             random_seed=random_seed,
             reward_correlation=reward_correlation,
-            reward_noise=reward_noise
+            symmetric_interval=symmetric_interval
         )
 
         data.save_experiment({
