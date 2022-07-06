@@ -13,6 +13,7 @@ def value_iteration(
     reward_function,
     discount_rate,
     transition_tensor,
+    _,
     value_initialization=None,
     convergence_threshold=1e-4
 ):
@@ -40,10 +41,10 @@ def value_iteration(
 
 # NOTE: This is from Sutton & Barto, Section 4.1 ("Iterative Policy Evaluation").
 def policy_evaluation(
-    policy_tensor,
     reward_function,
     discount_rate,
     transition_tensor,
+    policy_tensor,
     value_initialization=None,
     convergence_threshold=1e-4
 ):
@@ -114,7 +115,9 @@ def compute_power_values(reward_sample, optimal_values, discount_rate, _):
 def output_sample_calculator(
     reward_samples,
     transition_tensors,
+    policy_tensors,
     discount_rate,
+    iteration_function=value_iteration,
     compute_output_quantity=compute_power_values,
     convergence_threshold=1e-4,
     value_initializations=None,
@@ -125,6 +128,9 @@ def output_sample_calculator(
     all_value_initializations = [None] * len(reward_samples) if (
         value_initializations is None
     ) else value_initializations
+    all_policy_tensors = [None] * len(reward_samples) if (
+        policy_tensors is None
+    ) else policy_tensors
 
     all_output_samples_ = []
 
@@ -137,10 +143,11 @@ def output_sample_calculator(
             sys.stdout.write('\r')
             sys.stdout.flush()
 
-        optimal_values = value_iteration(
+        optimal_values = iteration_function(
             reward_samples[i],
             discount_rate,
             transition_tensors[i],
+            all_policy_tensors[i],
             value_initialization=all_value_initializations[i],
             convergence_threshold=convergence_threshold
         )
@@ -154,16 +161,18 @@ def output_sample_calculator(
 
     return torch.stack(all_output_samples_)
 
-def output_sample_calculator_mps(discount_rate, reward_samples, transition_tensors, worker_id, **kwargs):
-    return output_sample_calculator(reward_samples, transition_tensors, discount_rate, **{
+def output_sample_calculator_mps(discount_rate, reward_samples, transition_tensors, policy_tensors, worker_id, **kwargs):
+    return output_sample_calculator(reward_samples, transition_tensors, policy_tensors, discount_rate, **{
         **kwargs,
         **{ 'worker_id': worker_id }
     })
 
 def rewards_to_outputs(
+    all_policy_tensors,
     reward_samples,
     all_transition_tensors,
     discount_rate,
+    iteration_function=value_iteration,
     compute_output_quantity=compute_power_values,
     num_workers=1,
     convergence_threshold=1e-4
@@ -174,6 +183,7 @@ def rewards_to_outputs(
     output_calculator = func.partial(
         output_sample_calculator_mps,
         discount_rate,
+        iteration_function=iteration_function,
         compute_output_quantity=compute_output_quantity,
         convergence_threshold=convergence_threshold,
         value_initializations=None,
@@ -186,6 +196,9 @@ def rewards_to_outputs(
             zip(
                 torch.split(reward_samples, len(reward_samples) // num_workers, dim=0),
                 torch.split(all_transition_tensors, len(all_transition_tensors) // num_workers, dim=0),
+                torch.split(all_policy_tensors, len(all_policy_tensors) // num_workers, dim=0) if (
+                    all_policy_tensors is not None
+                ) else [None] * num_workers,
                 range(num_workers)
             )
         )
@@ -229,7 +242,7 @@ def run_one_experiment(
     
     elif sweep_type == 'multiagent_with_reward':
 
-        policy_tensor_A, transition_tensor_A, transition_tensor_B = (
+        policy_tensor_A_random, transition_tensor_A, transition_tensor_B = (
             graph.graph_to_policy_tensor(graph.quick_mdp_to_policy(transition_graphs[0])),
             graph.graph_to_transition_tensor(transition_graphs[0]),
             graph.graph_to_transition_tensor(transition_graphs[1])
@@ -243,12 +256,14 @@ def run_one_experiment(
         print()
 
         policy_tensors_B = rewards_to_outputs(
+            None,
             reward_samples_agent_B_,
             misc.tile_transition_tensor(
-                graph.compute_multiagent_transition_tensor(transition_tensor_B, policy_tensor_A, transition_tensor_A), # NOTE: The order is reversed here since we need (mdp B, policy A, mdp A) to get Agent B's policy
+                graph.compute_multiagent_transition_tensor(transition_tensor_B, policy_tensor_A_random, transition_tensor_A), # NOTE: The order is reversed here since we need (mdp B, policy A, mdp A) to get Agent B's policy
                 len(reward_samples_agent_A)
             ),
             discount_rate,
+            iteration_function=value_iteration,
             compute_output_quantity=compute_optimal_policy_tensor,
             num_workers=num_workers,
             convergence_threshold=convergence_threshold
@@ -263,13 +278,17 @@ def run_one_experiment(
     print()
 
     power_samples_agent_A = rewards_to_outputs(
+        None,
         reward_samples_agent_A,
         all_transition_tensors,
         discount_rate,
+        iteration_function=value_iteration,
         compute_output_quantity=compute_power_values,
         num_workers=num_workers,
         convergence_threshold=convergence_threshold
     )
+    
+    power_samples_agent_B = None # TODO: Delete and use if statement above instead
 
     print()
     print('Run complete.')
@@ -277,5 +296,6 @@ def run_one_experiment(
     return (
         reward_samples_agent_A,
         reward_samples_agent_B_,
-        power_samples_agent_A
+        power_samples_agent_A,
+        power_samples_agent_B
     )

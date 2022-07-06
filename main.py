@@ -32,6 +32,8 @@ from src import base
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
 # TODO NEXT:
+# - Split up run_one_experiment() into 3 functions for the 3 different sweep types
+# - Refactor rewards_to_outputs() and output_sample_calculator() so we don't have None arguments all over the place
 # - Maybe also different discount rates for Agent A vs Agent B.
 # - Visualizations for Agent B "POWER" proxy? i.e., rather than optimal value averaged over rewards,
 #   just look at the value Agent B can get (given A's optimal counter policy), averaged over rewards
