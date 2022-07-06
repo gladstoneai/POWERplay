@@ -43,8 +43,14 @@ from src import base
 # policy_tensor_to_graph() converts a policy tensor to a policy graph.
 
 # TODO NEXT:
-# - Fix rollout visualizations for Agent B reward sweeps, see base.visualize_full_gridworld_rollout('20220622194712', 'discount_rate__0p1', reward_sample_index=0)
 # - Refactor the loop in the torch.stack line of run_one_experiment (we should be doing it all in PyTorch, not a Python loop)
+# - Re-run 3x3 gridworld with fat-tail Pareto with a ton of samples (1M) to confirm it's not a bug.
+# - Maybe also different discount rates for Agent A vs Agent B.
+# - Visualizations for Agent B "POWER" proxy? i.e., rather than optimal value averaged over rewards,
+#   just look at the value Agent B can get (given A's optimal counter policy), averaged over rewards
+# - Final stage: building arbitrary back-and-forth counter-optimizations?
+# - Maybe log POWER at each step in a trajectory in a rollout, averaging over trajectories
+
 
 # - What happens if you correlate Agent B's policy and make it dependent on Agent A's position
 # -- Forbid the agents from being in the same square

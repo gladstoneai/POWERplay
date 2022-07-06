@@ -70,8 +70,22 @@ def sample_optimal_policy_from_run(
             'mdp_graph_B': transition_graphs[2]
         }
     
-    elif sweep_type == 'multiagent_with_reward':
+    elif sweep_type == 'multiagent_with_reward': # transition_graphs = (mdp_graph_A, mdp_graph_B)
         multiagent_dict = {
+            'policy_graph_B': policy_tensor_to_graph(
+                learn.evaluate_optimal_policy(
+                    run_properties['reward_samples_agent_B'][reward_sample_index],
+                    discount_rate,
+                    graph.graphs_to_multiagent_transition_tensor( # Note that the ordering is mdp_graph_B, policy_graph_A, mdp_graph_A because we want to calculate the Agent B policy
+                        transition_graphs[1],
+                        graph.quick_mdp_to_policy(transition_graphs[0]), # This creates a uniform random policy for Agent A
+                        transition_graphs[0]
+                    ),
+                    value_initialization=None,
+                    convergence_threshold=convergence_threshold
+                ),
+                transition_graphs[1]
+            ),
             'mdp_graph_B': transition_graphs[1]
         }
 
@@ -88,7 +102,10 @@ def sample_optimal_policy_from_run(
                 learn.evaluate_optimal_policy(
                     reward_function,
                     discount_rate,
-                    graph.any_graphs_to_transition_tensor(*transition_graphs),
+                    graph.any_graphs_to_transition_tensor(*[transition_graphs[0]] + (
+                            [] if multiagent_dict == {} else [multiagent_dict['policy_graph_B'], multiagent_dict['mdp_graph_B']]
+                        )
+                    ),
                     value_initialization=None,
                     convergence_threshold=convergence_threshold
                 ), # NOTE: This works for the agent of a single-agent system, OR for Agent A of a multi-agent system.
