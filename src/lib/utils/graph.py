@@ -196,7 +196,6 @@ def compute_multiagent_transition_tensor(transition_tensor_A, policy_tensor_B, t
         )
     )).sum(dim=2)
 
-
 def graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_graph_B):
     return compute_multiagent_transition_tensor(
         graph_to_transition_tensor(mdp_graph_A),

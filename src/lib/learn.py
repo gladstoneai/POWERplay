@@ -211,9 +211,7 @@ def run_one_experiment(
         policy_tensors_B = rewards_to_outputs(
             reward_samples_agent_B_,
             misc.tile_transition_tensor(
-                graph.compute_multiagent_transition_tensor(
-                    transition_tensor_B, policy_tensor_A, transition_tensor_A
-                ), # NOTE: The order is reversed here since we need (mdp B, policy A, mdp A) to get Agent B's policy
+                graph.compute_multiagent_transition_tensor(transition_tensor_B, policy_tensor_A, transition_tensor_A), # NOTE: The order is reversed here since we need (mdp B, policy A, mdp A) to get Agent B's policy
                 len(reward_samples_agent_A)
             ),
             discount_rate,
@@ -222,11 +220,9 @@ def run_one_experiment(
             convergence_threshold=convergence_threshold
         )
 
-        all_transition_tensors = torch.stack([
-            graph.compute_multiagent_transition_tensor(
+        all_transition_tensors = torch.stack([graph.compute_multiagent_transition_tensor(
                 transition_tensor_A, policy_tens_B, transition_tensor_B
-            ) for policy_tens_B in policy_tensors_B
-        ])
+            ) for policy_tens_B in policy_tensors_B])
 
     print()
     print('Computing POWER samples:')

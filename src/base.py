@@ -5,7 +5,19 @@ from . import viz
 from .lib.utils import graph
 from .lib import data
 
-def construct_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_name=None, policy_save_name=None):
+def construct_single_agent_gridworld_mdp(num_rows, num_cols, mdp_save_name=None):
+    stochastic_graph = mdp.gridworld_to_stochastic_graph(
+            mdp.construct_gridworld(
+                num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
+            )
+        )
+    
+    if mdp_save_name is not None:
+        data.save_graph_to_dot_file(stochastic_graph, mdp_save_name, folder=data.MDPS_FOLDER)
+    
+    return stochastic_graph
+
+def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_name=None, policy_save_name=None):
     stochastic_graph = mdp.gridworld_to_stochastic_graph(
             mdp.construct_gridworld(
                 num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
