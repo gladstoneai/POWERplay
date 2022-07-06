@@ -38,7 +38,41 @@ def value_iteration(
 
     return value_function
 
-# Note: in our setting, the reward r depends only on the current state s, not directly on the action a.
+# NOTE: This is from Sutton & Barto, Section 4.1 ("Iterative Policy Evaluation").
+def policy_evaluation(
+    policy_tensor,
+    reward_function,
+    discount_rate,
+    transition_tensor,
+    value_initialization=None,
+    convergence_threshold=1e-4
+):
+    value_function_ = torch.zeros(len(reward_function)) if (
+        value_initialization is None
+    ) else cp.deepcopy(value_initialization)
+
+    is_first_iteration = True
+
+    while is_first_iteration or (max_value_change > convergence_threshold):
+        is_first_iteration = False
+
+        max_value_change = 0
+        old_values_ = cp.deepcopy(value_function_)
+
+        for state in range(len(reward_function)):
+            value_function_[state] = torch.sum(
+                torch.matmul(
+                    policy_tensor[state], transition_tensor[state]
+                ) * (
+                    reward_function[state] + discount_rate * value_function_[state]
+                )
+            )
+            
+        max_value_change = misc.calculate_value_convergence(old_values_, value_function_)
+    
+    return value_function_
+
+# NOTE: in our setting, the reward r depends only on the current state s, not directly on the action a.
 # This means we can simplify the argmax expression for the policy (see the last line of the Value Iteration algorithm
 # in Section 4.4 of Sutton & Barto) to eliminate the r term and the gamma factor. i.e., we can find the optimal
 # policy from the optimal value function by simply taking \argmax_a \sum_{s'} p(s' | s, a) V(s').
@@ -52,7 +86,7 @@ def compute_optimal_policy_tensor(_, optimal_values, __, transition_tensor):
         size=tuple(transition_tensor.shape[:2])
     ).to_dense()
 
-def evaluate_optimal_policy(
+def find_optimal_policy(
     reward_function,
     discount_rate,
     transition_tensor,
@@ -228,7 +262,7 @@ def run_one_experiment(
     print('Computing POWER samples:')
     print()
 
-    power_samples = rewards_to_outputs(
+    power_samples_agent_A = rewards_to_outputs(
         reward_samples_agent_A,
         all_transition_tensors,
         discount_rate,
@@ -243,5 +277,5 @@ def run_one_experiment(
     return (
         reward_samples_agent_A,
         reward_samples_agent_B_,
-        power_samples
+        power_samples_agent_A
     )
