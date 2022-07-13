@@ -7,7 +7,7 @@ from .lib.utils import misc
 from .lib import data
 from .lib import check
 from .lib import get
-from .lib import learn
+from .lib import runex
 
 def update_state_actions(policy_graph, state, new_policy_actions):
     check.check_state_in_graph_states(policy_graph, state)
@@ -73,7 +73,7 @@ def sample_optimal_policy_from_run(
     elif sweep_type == 'multiagent_with_reward': # transition_graphs = (mdp_graph_A, mdp_graph_B)
         multiagent_dict = {
             'policy_graph_B': policy_tensor_to_graph(
-                learn.find_optimal_policy(
+                runex.find_optimal_policy(
                     run_properties['reward_samples_agent_B'][reward_sample_index],
                     discount_rate,
                     graph.graphs_to_multiagent_transition_tensor( # Note that the ordering is mdp_graph_B, policy_graph_A, mdp_graph_A because we want to calculate the Agent B policy
@@ -99,7 +99,7 @@ def sample_optimal_policy_from_run(
         },
         'outputs': {
             'policy_graph_A': policy_tensor_to_graph(
-                learn.find_optimal_policy(
+                runex.find_optimal_policy(
                     reward_function,
                     discount_rate,
                     graph.any_graphs_to_transition_tensor(*[transition_graphs[0]] + (

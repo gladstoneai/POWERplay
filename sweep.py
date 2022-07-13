@@ -8,7 +8,7 @@ from src.lib.utils import misc
 from src.lib import data
 from src.lib import get
 from src.lib import save
-from src.lib import learn
+from src.lib import runex
 from src import viz
 
 def cli_experiment_sweep(
@@ -61,7 +61,7 @@ def cli_experiment_sweep(
             run_params.get('reward_distribution')['default_dist'], distribution_dict=distribution_dict
         )
 
-        reward_samples_agent_A, reward_samples_agent_B, power_samples_agent_A, power_samples_agent_B = learn.run_one_experiment(
+        reward_samples_agent_A, reward_samples_agent_B, power_samples_agent_A, power_samples_agent_B = runex.run_one_experiment(
             transition_graphs,
             discount_rate,
             reward_sampler,
