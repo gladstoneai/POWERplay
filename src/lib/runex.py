@@ -29,6 +29,41 @@ def compute_power_values(reward_sample, optimal_values, discount_rate):
         [(optimal_values[state] - reward_sample[state]) for state in range(len(optimal_values))]
     )
 
+def run_single_agent_experiment(
+    reward_sampler,
+    mdp_graph,
+    discount_rate,
+    num_reward_samples=10000,
+    num_workers=1,
+    convergence_threshold=1e-4
+):
+    reward_samples = reward_sampler(num_workers * (num_reward_samples // num_workers))
+
+    print()
+    print('Computing POWER samples:')
+    print()
+
+    all_optimal_values = proc.samples_to_outputs(
+        reward_samples,
+        discount_rate,
+        graph.graph_to_transition_tensor(mdp_graph),
+        iteration_function=learn.value_iteration,
+        number_of_samples=len(reward_samples),
+        num_workers=num_workers,
+        convergence_threshold=convergence_threshold
+    )
+
+    power_samples = torch.stack([
+        compute_power_values(
+            reward_sample, optimal_values, discount_rate
+        ) for reward_sample, optimal_values in zip(reward_samples, all_optimal_values)
+    ])
+
+    return (
+        reward_samples,
+        power_samples
+    )
+
 def run_one_experiment(
     transition_graphs,
     discount_rate,
@@ -49,8 +84,21 @@ def run_one_experiment(
 
     if sweep_type == 'single_agent':
 
-        transition_tensor_A = graph.graph_to_transition_tensor(transition_graphs[0])
-        full_transition_tensors_A = misc.tile_tensor(transition_tensor_A, len(reward_samples_agent_A))
+        reward_samples_A, power_samples_A = run_single_agent_experiment(
+            reward_sampler,
+            transition_graphs[0],
+            discount_rate,
+            num_reward_samples=num_reward_samples,
+            num_workers=num_workers,
+            convergence_threshold=convergence_threshold
+        )
+
+        return (
+            reward_samples_A,
+            None,
+            power_samples_A,
+            None
+        )
     
     elif sweep_type == 'multiagent_fixed_policy':
 
