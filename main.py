@@ -34,8 +34,6 @@ from src import base
 # TODO NEXT:
 # - Visualizations for Agent B "POWER" proxy? i.e., rather than optimal value averaged over rewards,
 #   just look at the value Agent B can get (given A's optimal counter policy), averaged over rewards
-# -- TO DO THIS: we need to refactor learn.py so that we can actually pipe and chain functions through multiprocessing
-# --- Split up run_one_experiment() into 3 functions for the 3 different sweep types
 # - Think about: how do we tell the story of Agent B == humans; Agent A == AI, but consistent with joint states / random initial Agent A policy?
 # - Plot reward correlation against average POWER for Agent A and Agent B
 # - Investigate whether rollouts before steady state are longer for correlation -1 rather than for correlation 1 rewards
