@@ -76,8 +76,8 @@ def run_and_save_sweep_replication(
         print(run_name)
         print()
 
-        power_samples = learn.rewards_to_outputs(
-            None, *run_inputs['args'], **run_inputs['kwargs'], compute_output_quantity=learn.compute_power_values
+        power_samples = learn.samples_to_outputs(
+            *run_inputs['args'], **run_inputs['kwargs'], compute_output_quantity=learn.compute_power_values
         )
 
         data.save_experiment({

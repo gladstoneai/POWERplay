@@ -134,5 +134,6 @@ def determine_sweep_type(run_params):
     else:
         raise Exception('Unknown sweep type.')
     
-def tile_transition_tensor(transition_tensor, number_of_copies):
-    return torch.tile(transition_tensor, (number_of_copies, 1, 1, 1))
+def tile_tensor(input_object, number_of_copies):
+    input_tensor = input_object if torch.is_tensor(input_object) else torch.tensor(input_object)
+    return torch.tile(input_tensor, [number_of_copies, *([1] * len(input_tensor.shape))])

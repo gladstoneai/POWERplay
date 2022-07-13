@@ -1,5 +1,6 @@
 import multiprocessing as mps
 import warnings as warn
+import torch
 
 from .utils import graph
 from . import data
@@ -146,6 +147,11 @@ def check_num_workers(num_workers):
         raise Exception(
             'You can\'t assign more than {} workers on this machine.'.format(mps.cpu_count())
         )
+
+def check_tensor_or_number_args(args):
+    for arg in args:
+        if not (torch.is_tensor(arg) or type(arg) == int or type(arg) == float):
+            raise Exception('Positional arguments to this function can only be tensors or numbers, not {}.'.format(arg))
 
 # Ensures that each param conforms to a modified version of https://docs.wandb.ai/guides/sweeps/configuration
 # along with param-specific sanity checks. In the case of params that are primitive types (str, float,
