@@ -49,17 +49,12 @@ def policy_evaluation(
 
     while is_first_iteration or (max_value_change > convergence_threshold):
         is_first_iteration = False
-
-        max_value_change = 0
         old_values_ = cp.deepcopy(value_function_)
 
         for state in range(len(reward_function)):
-            value_function_[state] = torch.sum(
-                torch.matmul(
-                    policy_tensor[state], transition_tensor[state]
-                ) * (
-                    reward_function[state] + discount_rate * value_function_[state]
-                )
+            value_function_[state] = torch.dot(
+                torch.matmul(policy_tensor[state], transition_tensor[state]),
+                reward_function + discount_rate * value_function_
             )
             
         max_value_change = misc.calculate_value_convergence(old_values_, value_function_)

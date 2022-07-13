@@ -89,13 +89,26 @@ def cli_experiment_sweep(
             reward_samples_agent_A,
             power_samples_agent_A,
             graphs_to_plot,
-            save_handle=run.name,
+            save_handle='agent_A-{}'.format(run.name),
             save_figure=data.save_figure,
             save_folder=save_folder,
             show=False,
             plot_as_gridworld=plot_as_gridworld,
             plot_correlations=plot_correlations
         ).items() })
+
+        if reward_samples_agent_B is not None and power_samples_agent_B is not None:
+            run.log({ fig_name: wb.Image(fig) for fig_name, fig in viz.plot_all_outputs(
+                reward_samples_agent_B,
+                power_samples_agent_B,
+                [graphs_to_plot[0]],
+                save_handle='agent_B-{}'.format(run.name),
+                save_figure=data.save_figure,
+                save_folder=save_folder,
+                show=False,
+                plot_as_gridworld=plot_as_gridworld,
+                plot_correlations=plot_correlations
+            ).items() })
 
 if __name__ == '__main__':
     cli_experiment_sweep()
