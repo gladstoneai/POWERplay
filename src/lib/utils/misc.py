@@ -34,7 +34,7 @@ def retrieve(dictionary, path_with_dots):
 def calculate_value_convergence(old_values, new_values, tiny_number=TINY_NUMBER):
     return torch.max(torch.abs((old_values - new_values) / (old_values + tiny_number)))
 
-def pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100):
+def pdf_sampler_constructor(pdf=lambda _: 1, interval=(0, 1), resolution=100):
 
 # A bit weird, but lets us match the currying signature of PyTorch distribution functions.
     def constructor_l2():
@@ -66,12 +66,15 @@ def pdf_sampler_constructor(pdf=lambda x: 1, interval=(0, 1), resolution=100):
     
     return constructor_l2
 
-def build_run_name(local_sweep_name, run_config, sweep_variable_params):
-    return '-'.join([local_sweep_name] + [ # sorted() ensures naming is always consistent
+def build_run_suffix(run_config, sweep_variable_params):
+    return '-'.join([ # sorted() ensures naming is always consistent
         '{0}__{1}'.format(key, run_config[key][1]) for key in sorted(run_config.keys()) if (
             key in sweep_variable_params
         )
     ])
+
+def build_run_name(local_sweep_name, run_config, sweep_variable_params):
+    return '-'.join([local_sweep_name, build_run_suffix(run_config, sweep_variable_params)])
 
 def get_variable_params(sweep_config):
     return [

@@ -2,6 +2,14 @@ from .utils import graph
 from .utils import misc
 from . import data
 
+def get_sweep_run_suffixes_for_param(sweep_id, param_name, folder=data.EXPERIMENT_FOLDER):
+    sweep_name = data.get_full_sweep_name_from_id(sweep_id, folder=folder)
+    sweep_params = data.load_full_sweep(sweep_name, folder=folder)['parameters']
+
+    return [misc.build_run_suffix(
+        { param_name: sweep_params[param_name]['values'][i] }, [param_name]
+    ) for i in range(len(sweep_params[param_name]['values']))]
+
 # TODO: Document this function. Lets you quickly retrieve inputs or outputs of an experiment based on
 # the sweep_id (i.e., date & time hash, which should be unique) and the suffix for the run within
 # the experiment sweep. Returns outputs by default. For inputs, set results_type='inputs'.

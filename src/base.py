@@ -1,9 +1,38 @@
+import matplotlib.pyplot as plt
+
+from .lib.utils import graph
+from .lib import data
+from .lib import get
 from . import mdp
 from . import policy
 from . import multi
 from . import viz
-from .lib.utils import graph
-from .lib import data
+
+def plot_alignment_curves(sweep_id, folder=data.EXPERIMENT_FOLDER):
+    run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=folder)
+    all_correlations = [
+            get.get_sweep_run_results(
+            sweep_id, run_suffix, results_type='inputs', folder=folder
+        )['reward_correlation'] for run_suffix in run_suffixes
+    ]
+    all_powers_A = [
+        get.get_sweep_run_results(
+            sweep_id, run_suffix, results_type='outputs', folder=folder
+        )['power_samples'].mean() for run_suffix in run_suffixes
+    ]
+    all_powers_B = [
+        get.get_sweep_run_results(
+            sweep_id, run_suffix, results_type='outputs', folder=folder
+        )['power_samples_agent_B'].mean() for run_suffix in run_suffixes
+    ]
+
+    _, ax = plt.subplots()
+
+    ax.plot(all_correlations, all_powers_A, 'b.', label='Agent A POWER proxy')
+    ax.plot(all_correlations, all_powers_B, 'r.', label='Agent B POWER proxy')
+    ax.legend()
+
+    plt.show()
 
 def construct_single_agent_gridworld_mdp(num_rows, num_cols, mdp_save_name=None):
     stochastic_graph = mdp.gridworld_to_stochastic_graph(

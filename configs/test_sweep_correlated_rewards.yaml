@@ -24,9 +24,9 @@ parameters:
       - 0
       - -1
     names:
-      - "corr_1"
-      - "corr_0"
-      - "corr_n1"
+      - "1"
+      - "0"
+      - "n1"
   num_reward_samples:
     value:
       10000

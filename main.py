@@ -32,10 +32,15 @@ from src import base
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
 # TODO NEXT:
-# - Visualizations for Agent B "POWER" proxy? i.e., rather than optimal value averaged over rewards,
-#   just look at the value Agent B can get (given A's optimal counter policy), averaged over rewards
 # - Think about: how do we tell the story of Agent B == humans; Agent A == AI, but consistent with joint states / random initial Agent A policy?
-# - Plot reward correlation against average POWER for Agent A and Agent B
+# -- The absolute numbers for Agent B "POWER" feels weird: they look too high.
+# -- Maybe I can verify this by running a POWER experiment with Agent B facing a fixed uniform random Agent
+#   A policy. That should give the maximum POWER for B across all states.
+# - Write down a mathematical expression of what this POWER-proxy is for A and B
+# - Make per-state alignment curves
+# -- At reward correlation 1, plot A POWERs vs B POWERs across all states. Do the same for all other reward correlations, then plot that
+# - Plot 10th and 90th percentile POWER scores
+# - Allow us to not plot reward distributions (it's getting to be too many plots)
 # - Investigate whether rollouts before steady state are longer for correlation -1 rather than for correlation 1 rewards
 # - Maybe also different discount rates for Agent A vs Agent B.
 # - Final stage: building arbitrary back-and-forth counter-optimizations?
