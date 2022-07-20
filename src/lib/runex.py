@@ -143,7 +143,7 @@ def run_multiagent_with_reward_experiment(
     ])
 
     print()
-    print('Computing agent A POWER samples:')
+    print('Computing Agent A POWER samples:')
     print()
 
     all_optimal_values_A = proc.samples_to_outputs(
@@ -163,7 +163,7 @@ def run_multiagent_with_reward_experiment(
     ])
 
     print()
-    print('Computing agent B POWER samples:')
+    print('Computing Agent B POWER samples:')
     print()
 
     all_policy_tensors_A = torch.stack([

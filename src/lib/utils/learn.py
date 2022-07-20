@@ -32,7 +32,10 @@ def value_iteration(
 
     return value_function
 
-# NOTE: This is from Sutton & Barto, Section 4.1 ("Iterative Policy Evaluation").
+# NOTE: This is from Sutton & Barto, Section 4.1 ("Iterative Policy Evaluation"). 
+# As usual, in our setting, the reward r depends only on the current state s, not directly on the action a.
+# This means at each iteration, the reward we actually capture always corresponds to the state we are on
+# (i.e. reward_function[state]).
 def policy_evaluation(
     reward_function,
     discount_rate,
@@ -52,9 +55,9 @@ def policy_evaluation(
         old_values_ = cp.deepcopy(value_function_)
 
         for state in range(len(reward_function)):
-            value_function_[state] = torch.dot(
+            value_function_[state] = reward_function[state] + discount_rate * torch.dot(
                 torch.matmul(policy_tensor[state], transition_tensor[state]),
-                reward_function + discount_rate * value_function_
+                value_function_
             )
             
         max_value_change = misc.calculate_value_convergence(old_values_, value_function_)

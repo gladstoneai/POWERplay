@@ -51,7 +51,7 @@ def sample_optimal_policy_from_run(
     policies_folder=data.POLICIES_FOLDER
 ):
     run_properties = get.get_properties_from_run(
-        sweep_id, run_suffix, mdps_folder=mdps_folder, policies_folder=policies_folder
+        sweep_id, run_suffix=run_suffix, mdps_folder=mdps_folder, policies_folder=policies_folder
     )
     reward_function, discount_rate, transition_graphs, convergence_threshold, sweep_type = (
         run_properties['reward_samples'][reward_sample_index],

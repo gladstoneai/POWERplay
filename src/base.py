@@ -1,3 +1,4 @@
+from cProfile import label
 import matplotlib.pyplot as plt
 
 from .lib.utils import graph
@@ -8,7 +9,7 @@ from . import policy
 from . import multi
 from . import viz
 
-def plot_alignment_curves(sweep_id, folder=data.EXPERIMENT_FOLDER):
+def plot_alignment_curves(sweep_id, agent_B_baseline_power=None, folder=data.EXPERIMENT_FOLDER):
     run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=folder)
     all_correlations = [
             get.get_sweep_run_results(
@@ -30,6 +31,10 @@ def plot_alignment_curves(sweep_id, folder=data.EXPERIMENT_FOLDER):
 
     ax.plot(all_correlations, all_powers_A, 'b.', label='Agent A POWER proxy')
     ax.plot(all_correlations, all_powers_B, 'r.', label='Agent B POWER proxy')
+
+    if agent_B_baseline_power is not None:
+        ax.plot(all_correlations, [agent_B_baseline_power] * len(all_correlations), 'r-', label='Agent B baseline POWER')
+
     ax.legend()
 
     plt.show()

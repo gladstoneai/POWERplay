@@ -33,9 +33,6 @@ from src import base
 
 # TODO NEXT:
 # - Think about: how do we tell the story of Agent B == humans; Agent A == AI, but consistent with joint states / random initial Agent A policy?
-# -- The absolute numbers for Agent B "POWER" feels weird: they look too high.
-# -- Maybe I can verify this by running a POWER experiment with Agent B facing a fixed uniform random Agent
-#   A policy. That should give the maximum POWER for B across all states.
 # - Write down a mathematical expression of what this POWER-proxy is for A and B
 # - Make per-state alignment curves
 # -- At reward correlation 1, plot A POWERs vs B POWERs across all states. Do the same for all other reward correlations, then plot that

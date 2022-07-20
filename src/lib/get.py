@@ -86,7 +86,7 @@ def get_transition_graphs(
 
 def get_properties_from_run(
     sweep_id,
-    run_suffix,
+    run_suffix='',
     mdps_folder=data.MDPS_FOLDER,
     policies_folder=data.POLICIES_FOLDER
 ):
@@ -96,11 +96,13 @@ def get_properties_from_run(
 
     extra_props = {
         'reward_samples_agent_B': outputs['reward_samples_agent_B'],
+        'power_samples_agent_B': outputs['power_samples_agent_B'],
         'reward_correlation': inputs['reward_correlation']
     } if sweep_type == 'multiagent_with_reward' else {}
 
     return {
         'reward_samples': outputs['reward_samples'],
+        'power_samples': outputs['power_samples'],
         'discount_rate': inputs['discount_rate'],
         'convergence_threshold': inputs['convergence_threshold'],
         'sweep_type': sweep_type,
