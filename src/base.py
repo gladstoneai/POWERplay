@@ -1,5 +1,5 @@
-from cProfile import label
 import matplotlib.pyplot as plt
+import torch
 
 from .lib.utils import graph
 from .lib import data
@@ -11,31 +11,59 @@ from . import viz
 
 def plot_alignment_curves(sweep_id, agent_B_baseline_power=None, folder=data.EXPERIMENT_FOLDER):
     run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=folder)
-    all_correlations = [
-            get.get_sweep_run_results(
-            sweep_id, run_suffix, results_type='inputs', folder=folder
-        )['reward_correlation'] for run_suffix in run_suffixes
-    ]
-    all_powers_A = [
-        get.get_sweep_run_results(
-            sweep_id, run_suffix, results_type='outputs', folder=folder
-        )['power_samples'].mean() for run_suffix in run_suffixes
-    ]
-    all_powers_B = [
-        get.get_sweep_run_results(
-            sweep_id, run_suffix, results_type='outputs', folder=folder
-        )['power_samples_agent_B'].mean() for run_suffix in run_suffixes
-    ]
+    all_run_props = [get.get_properties_from_run(sweep_id, run_suffix=run_suffix) for run_suffix in run_suffixes]
+    all_correlations = [run_props['reward_correlation'] for run_props in all_run_props]
+    all_powers_A = [run_props['power_samples'] for run_props in all_run_props]
+    all_powers_B = [run_props['power_samples_agent_B'] for run_props in all_run_props]
 
     _, ax = plt.subplots()
 
     ax.plot(all_correlations, all_powers_A, 'b.', label='Agent A POWER proxy')
     ax.plot(all_correlations, all_powers_B, 'r.', label='Agent B POWER proxy')
+    ax.set_xlabel('POWER')
+    ax.set_ylabel('Reward correlation')
 
     if agent_B_baseline_power is not None:
         ax.plot(all_correlations, [agent_B_baseline_power] * len(all_correlations), 'r-', label='Agent B baseline POWER')
 
     ax.legend()
+
+    plt.show()
+
+def plot_specific_alignment_curves(sweep_id, folder=data.EXPERIMENT_FOLDER):
+    graph_buffer = 0.1
+
+    run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=folder)
+    all_run_props = [get.get_properties_from_run(sweep_id, run_suffix=run_suffix) for run_suffix in run_suffixes]
+    all_correlations = [run_props['reward_correlation'] for run_props in all_run_props]
+    all_powers_A = [run_props['power_samples'].mean(dim=0) for run_props in all_run_props]
+    all_powers_B = [run_props['power_samples_agent_B'].mean(dim=0) for run_props in all_run_props]
+
+    min_A_power = min([powers_A.min() for powers_A in all_powers_A]) * (1 - graph_buffer)
+    max_A_power = max([powers_A.max() for powers_A in all_powers_A]) * (1 + graph_buffer)
+    min_B_power = min([powers_B.min() for powers_B in all_powers_B]) * (1 - graph_buffer)
+    max_B_power = max([powers_B.max() for powers_B in all_powers_B]) * (1 + graph_buffer)
+
+    correlation_coefficients = []
+
+    for correlation, power_samples_A, power_samples_B in zip(all_correlations, all_powers_A, all_powers_B):
+        _, ax = plt.subplots()
+
+        ax.plot(power_samples_A, power_samples_B, 'b.')
+        ax.set_xlabel('State POWER values, Agent A')
+        ax.set_ylabel('State POWER values, Agent B')
+        ax.set_title('Reward correlation value {}'.format(correlation))
+        ax.set_xlim([min_A_power, max_A_power])
+        ax.set_ylim([min_B_power, max_B_power])
+
+        correlation_coefficients += [torch.corrcoef(torch.stack([power_samples_A, power_samples_B]))[0][1]]
+
+    _, ax = plt.subplots()
+
+    ax.plot(all_correlations, correlation_coefficients, 'r.')
+    ax.set_xlabel('Reward correlation value')
+    ax.set_ylabel('State-by-state POWER correlation value')
+    ax.set_title('Correlation coefficients plot')
 
     plt.show()
 
