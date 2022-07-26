@@ -1,6 +1,7 @@
 import torch
 import functools as func
 import operator as op
+import time
 
 ################################################################################
 
@@ -140,3 +141,6 @@ def determine_sweep_type(run_params):
 def tile_tensor(input_object, number_of_copies):
     input_tensor = input_object if torch.is_tensor(input_object) else torch.tensor(input_object)
     return torch.tile(input_tensor, [number_of_copies, *([1] * len(input_tensor.shape))])
+
+def generate_sweep_id(sweep_id=None):
+    return sweep_id if (sweep_id is not None) else time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))

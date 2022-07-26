@@ -9,19 +9,32 @@ from . import policy
 from . import multi
 from . import viz
 
-def plot_alignment_curves(sweep_id, agent_B_baseline_power=None, folder=data.EXPERIMENT_FOLDER):
+def plot_alignment_curves(sweep_id, agent_B_baseline_power=None, plot_title='', folder=data.EXPERIMENT_FOLDER):
     run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=folder)
-    all_run_props = [get.get_properties_from_run(sweep_id, run_suffix=run_suffix) for run_suffix in run_suffixes]
-    all_correlations = [run_props['reward_correlation'] for run_props in all_run_props]
-    all_powers_A = [run_props['power_samples'] for run_props in all_run_props]
-    all_powers_B = [run_props['power_samples_agent_B'] for run_props in all_run_props]
+
+    all_run_props_ = []
+
+    print()
+
+    for run_suffix in run_suffixes:
+
+        print('Accessing run {}...'.format(run_suffix))
+        all_run_props_ += [get.get_properties_from_run(sweep_id, run_suffix=run_suffix)]
+    
+    print()
+
+    all_correlations = [run_props['reward_correlation'] for run_props in all_run_props_]
+    all_powers_A = [run_props['power_samples'].mean() for run_props in all_run_props_]
+    all_powers_B = [run_props['power_samples_agent_B'].mean() for run_props in all_run_props_]
 
     _, ax = plt.subplots()
 
-    ax.plot(all_correlations, all_powers_A, 'b.', label='Agent A POWER proxy')
-    ax.plot(all_correlations, all_powers_B, 'r.', label='Agent B POWER proxy')
-    ax.set_xlabel('POWER')
-    ax.set_ylabel('Reward correlation')
+    ax.plot(all_correlations, all_powers_A, 'b.', label='Agent A POWER')
+    ax.plot(all_correlations, all_powers_B, 'r.', label='Agent B POWER')
+    ax.set_xlabel('Reward correlation')
+    ax.set_ylabel('POWER')
+    ax.set_ylim([0, 1])
+    ax.set_title(plot_title)
 
     if agent_B_baseline_power is not None:
         ax.plot(all_correlations, [agent_B_baseline_power] * len(all_correlations), 'r-', label='Agent B baseline POWER')
@@ -30,10 +43,18 @@ def plot_alignment_curves(sweep_id, agent_B_baseline_power=None, folder=data.EXP
 
     plt.show()
 
-def plot_specific_alignment_curves(sweep_id, folder=data.EXPERIMENT_FOLDER):
+def plot_specific_alignment_curves(
+    sweep_id,
+    show=True,
+    fig_name='',
+    expt_folder=data.EXPERIMENT_FOLDER,
+    save_folder=data.TEMP_FOLDER
+):
     graph_buffer = 0.1
 
-    run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=folder)
+    print('Accessing sweep {}...'.format(sweep_id))
+
+    run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=expt_folder)
     all_run_props = [get.get_properties_from_run(sweep_id, run_suffix=run_suffix) for run_suffix in run_suffixes]
     all_correlations = [run_props['reward_correlation'] for run_props in all_run_props]
     all_powers_A = [run_props['power_samples'].mean(dim=0) for run_props in all_run_props]
@@ -47,7 +68,7 @@ def plot_specific_alignment_curves(sweep_id, folder=data.EXPERIMENT_FOLDER):
     correlation_coefficients = []
 
     for correlation, power_samples_A, power_samples_B in zip(all_correlations, all_powers_A, all_powers_B):
-        _, ax = plt.subplots()
+        fig, ax = plt.subplots()
 
         ax.plot(power_samples_A, power_samples_B, 'b.')
         ax.set_xlabel('State POWER values, Agent A')
@@ -56,16 +77,31 @@ def plot_specific_alignment_curves(sweep_id, folder=data.EXPERIMENT_FOLDER):
         ax.set_xlim([min_A_power, max_A_power])
         ax.set_ylim([min_B_power, max_B_power])
 
+        if fig_name:
+            data.save_figure(
+                fig,
+                '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(fig_name, sweep_id, str(correlation)),
+                folder=save_folder
+            )
+
         correlation_coefficients += [torch.corrcoef(torch.stack([power_samples_A, power_samples_B]))[0][1]]
 
-    _, ax = plt.subplots()
+    fig, ax = plt.subplots()
 
     ax.plot(all_correlations, correlation_coefficients, 'r.')
     ax.set_xlabel('Reward correlation value')
     ax.set_ylabel('State-by-state POWER correlation value')
     ax.set_title('Correlation coefficients plot')
 
-    plt.show()
+    if fig_name:
+        data.save_figure(
+            fig,
+            '{0}-sweep_id_{1}-specific_alignment_curve-correlation_FULL'.format(fig_name, sweep_id),
+            folder=save_folder
+        )
+
+    if show:
+        plt.show()
 
 def construct_single_agent_gridworld_mdp(num_rows, num_cols, mdp_save_name=None):
     stochastic_graph = mdp.gridworld_to_stochastic_graph(
