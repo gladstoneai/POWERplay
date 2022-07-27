@@ -51,7 +51,6 @@ from src import base
 #       than the other.
 # --- Create a doc with a high level structure.
 # --- Content-wise, this is really strong already.
-# - Make a denser plot with more correlation points so we can investigate the "kink" in the graph
 # - Plot 10th and 90th percentile POWER scores
 # - Allow us to not plot reward distributions (it's getting to be too many plots)
 # - Investigate whether rollouts before steady state are longer for correlation -1 rather than for correlation 1 rewards
@@ -67,8 +66,6 @@ from src import base
 # TODO NEXT: Start building correlated reward functions
 # - Go back and forth: do 1 iteration of value iteration for B, 1 for A, etc. and stop at some predefined number
 # - Give B more or fewer iterations than A
-# - Start misaligning the reward functions; at what point does A "prefer" a less capable B vs a more capable B
-# -- HYPOTHESIS: you don't need to be that misaligned to get adversarial behavior
 # -- Maybe test out different initializations for Agent A policy (other than just random uniform), maybe sample a random policy for each reward sample
 
 if __name__ == '__main__':

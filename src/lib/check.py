@@ -122,7 +122,7 @@ def check_mdp_graph(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.M
     state_list, action_list = graph.get_states_from_graph(mdp_graph), graph.get_actions_from_graph(mdp_graph)
 
     if list(transition_tensor.shape) != [len(state_list), len(action_list), len(state_list)]:
-        raise Exception('The transition tensor for MDP {0} must have shape [{1}, {2}, {1}]'.format(
+        raise Exception('The transition tensor for MDP {0} must have shape [{1}, {2}, {1}].'.format(
             mdp_key, len(state_list), len(action_list)
         ))
     
@@ -134,6 +134,23 @@ def check_mdp_graph(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.M
                     '(if the action can\'t be taken) or sum to 1 ' \
                     '(the total probability of ending up in any downstream state).'.format(mdp_key)
                 )
+
+def check_policy_graph(policy_key, tolerance=PROBABILITY_TOLERANCE, policy_folder=data.POLICIES_FOLDER):
+    policy_graph = data.load_graph_from_dot_file(policy_key, folder=policy_folder)
+    policy_tensor = graph.graph_to_policy_tensor(policy_graph)
+    state_list, action_list = graph.get_states_from_graph(policy_graph), graph.get_actions_from_graph(policy_graph)
+
+    if list(policy_tensor.shape) != [len(state_list), len(action_list)]:
+        raise Exception('The policy tensor for policy {0} must have shape [{1}, {2}].'.format(
+            policy_key, len(state_list), len(action_list)
+        ))
+    
+    for state_tensor in policy_tensor:
+        if (state_tensor.sum() - 1).abs() > tolerance:
+            raise Exception(
+                'Every row of the policy tensor {} must sum to 1' \
+                '(the total probability of taking an action from that state.'.format(policy_key)
+            )
 
 def noop(_):
     pass
@@ -191,10 +208,11 @@ def check_sweep_params(sweep_params):
     all_param_checkers = {
         'mdp_graph': check_mdp_graph,
         'mdp_graph_agent_A': check_mdp_graph,
-        'mdp_graph_agent_B': noop,
-        'policy_graph_agent_B': noop,
+        'mdp_graph_agent_B': check_mdp_graph,
+        'policy_graph_agent_B': check_policy_graph,
         'reward_correlation': noop,
         'discount_rate': check_discount_rate,
+        'discount_rate_agent_B': check_discount_rate,
         'reward_distribution': noop,
         'num_reward_samples': noop,
         'convergence_threshold': noop,

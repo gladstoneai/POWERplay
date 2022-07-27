@@ -97,7 +97,8 @@ def get_properties_from_run(
     extra_props = {
         'reward_samples_agent_B': outputs['reward_samples_agent_B'],
         'power_samples_agent_B': outputs['power_samples_agent_B'],
-        'reward_correlation': inputs['reward_correlation']
+        'reward_correlation': inputs['reward_correlation'],
+        'discount_rate_agent_B': inputs['discount_rate_agent_B']
     } if sweep_type == 'multiagent_with_reward' else {}
 
     return {

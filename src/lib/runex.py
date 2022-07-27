@@ -103,7 +103,8 @@ def run_multiagent_with_reward_experiment(
     reward_samples_A,
     reward_samples_B,
     transition_graphs,
-    discount_rate,
+    discount_rate_agent_A,
+    discount_rate_agent_B,
     num_workers=1,
     convergence_threshold=1e-4
 ):
@@ -122,7 +123,7 @@ def run_multiagent_with_reward_experiment(
 
     all_optimal_values_B = proc.samples_to_outputs(
         reward_samples_B,
-        discount_rate,
+        discount_rate_agent_B,
         full_transition_tensor_B,
         iteration_function=learn.value_iteration,
         number_of_samples=len(reward_samples_B),
@@ -148,7 +149,7 @@ def run_multiagent_with_reward_experiment(
 
     all_optimal_values_A = proc.samples_to_outputs(
         reward_samples_A,
-        discount_rate,
+        discount_rate_agent_A,
         all_full_transition_tensors_A,
         iteration_function=learn.value_iteration,
         number_of_samples=len(reward_samples_A),
@@ -158,7 +159,7 @@ def run_multiagent_with_reward_experiment(
 
     power_samples_A = torch.stack([
         compute_power_values(
-            reward_sample_A, optimal_values_A, discount_rate
+            reward_sample_A, optimal_values_A, discount_rate_agent_A
         ) for reward_sample_A, optimal_values_A in zip(reward_samples_A, all_optimal_values_A)
     ])
 
@@ -180,7 +181,7 @@ def run_multiagent_with_reward_experiment(
 
     all_values_B = proc.samples_to_outputs(
         reward_samples_B,
-        discount_rate,
+        discount_rate_agent_B,
         all_full_transition_tensors_B,
         all_policy_tensors_B,
         iteration_function=learn.policy_evaluation,
@@ -191,7 +192,7 @@ def run_multiagent_with_reward_experiment(
 
     power_samples_B = torch.stack([
         compute_power_values(
-            reward_sample_B, values_B, discount_rate
+            reward_sample_B, values_B, discount_rate_agent_B
         ) for reward_sample_B, values_B in zip(reward_samples_B, all_values_B)
     ])
 
@@ -207,7 +208,7 @@ def run_multiagent_with_reward_experiment(
 
 def run_one_experiment(
     transition_graphs,
-    discount_rate,
+    discount_rate_agent_A,
     reward_sampler,
     sweep_type='single_agent',
     num_reward_samples=10000,
@@ -215,7 +216,8 @@ def run_one_experiment(
     convergence_threshold=1e-4,
     random_seed=None,
     reward_correlation=None,
-    symmetric_interval=None
+    symmetric_interval=None,
+    discount_rate_agent_B=None
 ):
     misc.set_global_random_seed(random_seed)
     # When the number of samples doesn't divide evenly into the available workers, truncate the samples
@@ -225,7 +227,7 @@ def run_one_experiment(
         reward_samples_A, power_samples_A = run_single_agent_experiment(
             reward_samples_agent_A,
             transition_graphs[0],
-            discount_rate,
+            discount_rate_agent_A,
             num_workers=num_workers,
             convergence_threshold=convergence_threshold
         )
@@ -241,7 +243,7 @@ def run_one_experiment(
         reward_samples_A, power_samples_A = run_multiagent_fixed_policy_experiment(
             reward_samples_agent_A,
             transition_graphs,
-            discount_rate,
+            discount_rate_agent_A,
             num_workers=num_workers,
             convergence_threshold=convergence_threshold
         )
@@ -262,7 +264,8 @@ def run_one_experiment(
             reward_samples_agent_A,
             reward_samples_agent_B,
             transition_graphs,
-            discount_rate,
+            discount_rate_agent_A,
+            discount_rate_agent_B,
             num_workers=num_workers,
             convergence_threshold=convergence_threshold
         )

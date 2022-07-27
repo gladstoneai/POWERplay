@@ -1,5 +1,4 @@
 import pathlib as path
-import time
 import subprocess as sp
 import re
 import os
@@ -17,7 +16,7 @@ def launch_sweep(
     sweep_config_folder=data.SWEEP_CONFIGS_FOLDER,
     output_folder_local=data.EXPERIMENT_FOLDER,
     plot_as_gridworld=False,
-    plot_correlations=True,
+    plot_correlations=False,
     announce_when_done=False,
     environ=os.environ
 ):

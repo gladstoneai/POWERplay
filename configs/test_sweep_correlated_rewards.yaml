@@ -11,6 +11,9 @@ parameters:
   discount_rate:
     value:
       0.2
+  discount_rate_agent_B:
+    value:
+      0.2
   reward_distribution:
     value:
       default_dist:

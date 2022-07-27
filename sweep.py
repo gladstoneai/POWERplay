@@ -36,7 +36,8 @@ def cli_experiment_sweep(
 
         num_reward_samples = run_params.get('num_reward_samples')
         num_workers = run_params.get('num_workers')
-        discount_rate = run_params.get('discount_rate')
+        discount_rate_agent_A = run_params.get('discount_rate')
+        discount_rate_agent_B = run_params.get('discount_rate_agent_B')
         convergence_threshold = run_params.get('convergence_threshold')
         random_seed = run_params.get('random_seed')
         reward_correlation = run_params.get('reward_correlation')
@@ -63,9 +64,10 @@ def cli_experiment_sweep(
 
         reward_samples_agent_A, reward_samples_agent_B, power_samples_agent_A, power_samples_agent_B = runex.run_one_experiment(
             transition_graphs,
-            discount_rate,
+            discount_rate_agent_A,
             reward_sampler,
             sweep_type=sweep_type,
+            discount_rate_agent_B=discount_rate_agent_B,
             num_reward_samples=num_reward_samples,
             num_workers=num_workers,
             convergence_threshold=convergence_threshold,
