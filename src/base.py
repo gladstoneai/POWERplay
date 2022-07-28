@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import torch
+import copy as cp
 
 from .lib.utils import graph
 from .lib import data
@@ -8,6 +9,77 @@ from . import mdp
 from . import policy
 from . import multi
 from . import viz
+
+def update_mdp_graph_with_interface(input_mdp, agent_label='A'):
+    output_mdp_ = cp.deepcopy(input_mdp)
+
+    print('Now updating MDP for Agent {}.'.format(agent_label))
+    print(
+        'For each state, input the new allowed actions you want from that state, one at a time. ' \
+        'Press Enter to skip and keep the allowed actions as they are.'
+    )
+    print(
+        'For each action of each state, input the state that action will take you to. ' \
+        'The state you type will get assigned probability 1, the rest 0.'
+    )
+    print()
+
+    for multi_state in graph.get_states_from_graph(input_mdp):
+        first_check = True
+        new_actions_ = []
+        print()
+
+        while first_check or new_action_:
+            first_check = False
+            new_action_ = input(
+                'State \'{0}\' currently allows actions {1} for agent {2}. ' \
+                'Input new actions, one at a time (Enter to skip): '.format(
+                    multi_state,
+                    ', '.join([
+                        '\'{}\''.format(action) for action in graph.get_available_actions_from_graph_state(
+                            input_mdp, multi_state
+                        )
+                    ]),
+                    agent_label
+                )
+            )
+
+            if new_action_:
+                new_actions_ += [new_action_]
+        
+        new_next_states_dicts_ = []
+        print()
+
+        for new_action in new_actions_:
+            if new_action in graph.get_available_actions_from_graph_state(input_mdp, multi_state):
+                print(
+                    'Action \'{0}\' from state \'{1}\' currently has the following next-state probabilities:'.format(new_action, multi_state)
+                )
+                print(graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(input_mdp, multi_state, new_action))
+            
+            new_next_state_ = input(
+                'Input new next state for action \'{0}\' from state \'{1}\'{2}: '.format(
+                    new_action,
+                    multi_state,
+                    ' (Enter to skip)' if new_action in graph.get_available_actions_from_graph_state(input_mdp, multi_state) else ''
+                )
+            )
+
+            new_next_states_dicts_ += [
+                { new_next_state_: 1 } if new_next_state_ else graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(
+                    input_mdp, multi_state, new_action
+                )
+            ]
+
+        if len(new_actions_) > 0:
+            output_mdp_ = mdp.update_state_action(
+                output_mdp_,
+                multi_state,
+                { action: next_state_dict for action, next_state_dict in zip(new_actions_, new_next_states_dicts_) },
+                check_closure=True
+            )
+    
+    return output_mdp_
 
 def plot_alignment_curves(sweep_id, agent_B_baseline_power=None, plot_title='', folder=data.EXPERIMENT_FOLDER):
     run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=folder)
@@ -181,6 +253,29 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
         'mdp_A': mdp_A,
         'mdp_B': mdp_B
     }
+
+def construct_multiagent_gridworld_mdps_with_interactions(num_rows, num_cols, mdp_save_name=None):
+    stochastic_graph = mdp.gridworld_to_stochastic_graph(
+        mdp.construct_gridworld(
+            num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
+        )
+    )
+
+    mdp_A = update_mdp_graph_with_interface(
+        multi.create_multiagent_graph(stochastic_graph, current_agent_is_A=True), agent_label='A'
+    )
+    mdp_B = update_mdp_graph_with_interface(
+        multi.create_multiagent_graph(stochastic_graph, current_agent_is_A=False), agent_label='B'
+    )
+
+    if mdp_save_name is not None:
+        data.save_graph_to_dot_file(mdp_A, '{}_agent_A'.format(mdp_save_name), folder=data.MDPS_FOLDER)
+        data.save_graph_to_dot_file(mdp_B, '{}_agent_B'.format(mdp_save_name), folder=data.MDPS_FOLDER)
+    
+    return [
+        mdp_A,
+        mdp_B
+    ]
 
 def visualize_full_gridworld_rollout(
     sweep_id,

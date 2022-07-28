@@ -74,6 +74,16 @@ def get_available_actions_from_graph_state(input_graph, state):
         )[0] for action_node in input_graph.neighbors(build_stochastic_graph_node(state))
     ]
 
+def get_available_states_and_probabilities_from_mdp_graph_state_and_action(input_mdp_graph, state, action):
+    action_node = build_stochastic_graph_node(action, state)
+    return {
+        decompose_stochastic_graph_node(
+            next_state_node
+        )[0]: input_mdp_graph[action_node][next_state_node]['weight'] for next_state_node in input_mdp_graph.neighbors(
+            action_node
+        )
+    }
+
 def are_graph_states_multiagent(state_list):
     return all([
         bool(re.fullmatch(r'\(\d+, \d+\)_A\^\(\d+, \d+\)_B', state)) for state in state_list

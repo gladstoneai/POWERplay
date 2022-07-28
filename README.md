@@ -570,7 +570,7 @@ Notice that `current_agent_is_A` is set to `False`, which is what defines this p
 >>> policy_B_right = policy.update_state_actions(base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), current_agent_is_A=False)), '(0 ,0)_A^(0, 0)_B', { 'right': 1, 'down': 0, 'stay': 0 })
 ```
 
-🔵 Here are the input arguments to `mdp.update_state_actions()` and what they mean:
+🔵 Here are the input arguments to `policy.update_state_actions()` and what they mean:
 
 (Listed as `name [type] (default): description`.)
 
@@ -586,7 +586,7 @@ Notice that `current_agent_is_A` is set to `False`, which is what defines this p
 
   Typical value: `{ 'right': 1, 'down': 0, 'stay': 0 }`
 
-🟢 Here is the output to `mdp.update_state_actions()`:
+🟢 Here is the output to `policy.update_state_actions()`:
 
 - `policy_graph [networkx.DiGraph]`: The NetworkX graph representing the new policy after the update. This will have exactly the same format (and the same state set) as the input policy graph, just with the action probabilities from the target state modified according to the `new_policy_actions` dict you assigned.
 
