@@ -33,6 +33,9 @@ from src import base
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
 # TODO NEXT:
+# - Do a rollout visualization to try to debug the interaction experiment
+# - Plot Agent A's non-optimal POWER in the case where it's moving randomly (i.e. A is in fact doing better by optimizing)
+# - Create a scatter plot of the POWER means between definition (1) and definition (3) POWERs to see if POWERs at equivalent states are identicals
 # Overnight experiments:
 # - Different gamma values
 # - Experiment with non-orthogonal action spaces
@@ -40,6 +43,9 @@ from src import base
 # - Think about: how do we tell the story of Agent B == humans; Agent A == AI, but consistent with joint states / random initial Agent A policy?
 # -- Start articulating concisely: what are the insights from these graphs & charts?
 # -- Instead of 2 pages for the multiagent POWER definition, create one that's 0.5-1 page in length
+# --- Add an intro:
+# --- AI alignment, powerful vs not powerful agent, one agent has goal X, another has goal Y, hey this is starting to look like RL
+# --- Draw the analogy we laid out earlier into the formula
 # --- Can invert this: describe the main outcome first. Here is the multiagent POWER definition, gloss over
 #       the details of what these things are. Gloss over the symbol, just here is the policy for A. Only later
 #       describe how we compute the policy for A.
@@ -54,7 +60,6 @@ from src import base
 # - Plot 10th and 90th percentile POWER scores
 # - Allow us to not plot reward distributions (it's getting to be too many plots)
 # - Investigate whether rollouts before steady state are longer for correlation -1 rather than for correlation 1 rewards
-# - Maybe also different discount rates for Agent A vs Agent B.
 # - Final stage: building arbitrary back-and-forth counter-optimizations?
 # - Maybe log POWER at each step in a trajectory in a rollout, averaging over trajectories
 
@@ -74,7 +79,7 @@ if __name__ == '__main__':
     # test.test_stochastic()
     # test.test_multiagent()
     # test.test_reward_correlation()
-
+    
     pass
 
     

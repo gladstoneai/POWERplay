@@ -81,8 +81,16 @@ def update_mdp_graph_with_interface(input_mdp, agent_label='A'):
     
     return output_mdp_
 
-def plot_alignment_curves(sweep_id, agent_B_baseline_power=None, plot_title='', folder=data.EXPERIMENT_FOLDER):
-    run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=folder)
+def plot_alignment_curves(
+    sweep_id,
+    agent_B_baseline_power=None,
+    show=True,
+    plot_title='',
+    fig_name='',
+    data_folder=data.EXPERIMENT_FOLDER,
+    save_folder=data.TEMP_FOLDER
+):
+    run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=data_folder)
 
     all_run_props_ = []
 
@@ -99,7 +107,7 @@ def plot_alignment_curves(sweep_id, agent_B_baseline_power=None, plot_title='', 
     all_powers_A = [run_props['power_samples'].mean() for run_props in all_run_props_]
     all_powers_B = [run_props['power_samples_agent_B'].mean() for run_props in all_run_props_]
 
-    _, ax = plt.subplots()
+    fig, ax = plt.subplots()
 
     ax.plot(all_correlations, all_powers_A, 'b.', label='Agent A POWER')
     ax.plot(all_correlations, all_powers_B, 'r.', label='Agent B POWER')
@@ -113,7 +121,43 @@ def plot_alignment_curves(sweep_id, agent_B_baseline_power=None, plot_title='', 
 
     ax.legend()
 
-    plt.show()
+    if fig_name:
+        data.save_figure(
+            fig,
+            '{0}-sweep_id_{1}-alignment_curve'.format(fig_name, sweep_id),
+            folder=save_folder
+        )
+
+    if show:
+        plt.show()
+
+def plot_all_alignment_curves(
+    sweep_ids_list,
+    agent_B_baseline_powers=None,
+    show=False,
+    plot_titles=None,
+    fig_names=None,
+    data_folder=data.EXPERIMENT_FOLDER,
+    save_folder=data.TEMP_FOLDER
+):
+    agent_B_baseline_powers_list = agent_B_baseline_powers if (
+        agent_B_baseline_powers
+    ) is not None else [None] * len(sweep_ids_list)
+    plot_titles_list = plot_titles if plot_titles is not None else [None] * len(sweep_ids_list)
+    fig_names_list = fig_names if fig_names is not None else [None] * len(sweep_ids_list)
+
+    for sweep_id, agent_B_baseline_power, plot_title, fig_name in zip(
+        sweep_ids_list, agent_B_baseline_powers_list, plot_titles_list, fig_names_list
+    ):
+        plot_alignment_curves(
+            sweep_id,
+            agent_B_baseline_power=agent_B_baseline_power,
+            show=show,
+            plot_title=plot_title,
+            fig_name=fig_name,
+            data_folder=data_folder,
+            save_folder=save_folder
+        )
 
 def plot_specific_alignment_curves(
     sweep_id,
