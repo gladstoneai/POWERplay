@@ -11,13 +11,17 @@ def plot_gridworld_rollout(
     state_rollout,
     reward_function=None,
     show=True,
+    agent_whose_rewards_are_displayed='A',
     save_handle='gridworld_rollout',
     save_folder=data.TEMP_FOLDER
 ):
     all_figs_ = []
     for i in range(len(state_rollout)):
         all_figs_ += [render.render_gridworld_rollout_snapshot(
-            state_list, state_rollout[i], reward_function=reward_function
+            state_list,
+            state_rollout[i],
+            reward_function=reward_function,
+            agent_whose_rewards_are_displayed=agent_whose_rewards_are_displayed
         )]
         data.save_figure(all_figs_[-1], '{0}-{1}'.format(save_handle, i), folder=save_folder)
 

@@ -53,7 +53,7 @@ def sample_optimal_policy_from_run(
     run_properties = get.get_properties_from_run(
         sweep_id, run_suffix=run_suffix, mdps_folder=mdps_folder, policies_folder=policies_folder
     )
-    reward_function, discount_rate, transition_graphs, convergence_threshold, sweep_type = (
+    reward_function_A, discount_rate_A, transition_graphs, convergence_threshold, sweep_type = (
         run_properties['reward_samples'][reward_sample_index],
         run_properties['discount_rate'],
         run_properties['transition_graphs'],
@@ -71,11 +71,16 @@ def sample_optimal_policy_from_run(
         }
     
     elif sweep_type == 'multiagent_with_reward': # transition_graphs = (mdp_graph_A, mdp_graph_B)
+        reward_function_B, discount_rate_B = (
+            run_properties['reward_samples_agent_B'][reward_sample_index],
+            run_properties['discount_rate_agent_B']
+        )
+
         multiagent_dict = {
             'policy_graph_B': policy_tensor_to_graph(
                 runex.find_optimal_policy(
-                    run_properties['reward_samples_agent_B'][reward_sample_index],
-                    discount_rate,
+                    reward_function_B,
+                    discount_rate_B,
                     graph.graphs_to_multiagent_transition_tensor( # Note that the ordering is mdp_graph_B, policy_graph_A, mdp_graph_A because we want to calculate the Agent B policy
                         transition_graphs[1],
                         graph.quick_mdp_to_policy(transition_graphs[0]), # This creates a uniform random policy for Agent A
@@ -86,22 +91,24 @@ def sample_optimal_policy_from_run(
                 ),
                 transition_graphs[1]
             ),
-            'mdp_graph_B': transition_graphs[1]
+            'mdp_graph_B': transition_graphs[1],
+            'reward_function_B': reward_function_B,
+            'discount_rate_B': discount_rate_B
         }
 
     return {
         'inputs': {
             'mdp_graph_A': transition_graphs[0],
-            'reward_function': reward_function,
-            'discount_rate': discount_rate,
+            'reward_function': reward_function_A,
+            'discount_rate': discount_rate_A,
             'convergence_threshold': convergence_threshold,
             **multiagent_dict
         },
         'outputs': {
             'policy_graph_A': policy_tensor_to_graph(
                 runex.find_optimal_policy(
-                    reward_function,
-                    discount_rate,
+                    reward_function_A,
+                    discount_rate_A,
                     graph.any_graphs_to_transition_tensor(*[transition_graphs[0]] + (
                             [] if multiagent_dict == {} else [multiagent_dict['policy_graph_B'], multiagent_dict['mdp_graph_B']]
                         )

@@ -35,7 +35,7 @@ from src import base
 # TODO NEXT:
 # - Do a rollout visualization to try to debug the interaction experiment
 # - Plot Agent A's non-optimal POWER in the case where it's moving randomly (i.e. A is in fact doing better by optimizing)
-# - Create a scatter plot of the POWER means between definition (1) and definition (3) POWERs to see if POWERs at equivalent states are identicals
+# - Create a scatter plot of the POWER means between definition (1) and definition (3) POWERs to see if POWERs at equivalent states are identical
 # Overnight experiments:
 # - Different gamma values
 # - Experiment with non-orthogonal action spaces
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     # test.test_stochastic()
     # test.test_multiagent()
     # test.test_reward_correlation()
-    
+
     pass
 
     

@@ -18,6 +18,10 @@ def check_project_exists(project, entity, wb_api):
             'You need to create a project of that name before running this sweep.'.format(project, entity)
         )
 
+def check_agent_label(agent_label):
+    if agent_label != 'A' and agent_label != 'B':
+        raise Exception('Agent label must be either \'A\' or \'B\', not {}.'.format(agent_label))
+
 def check_num_samples(num_samples, num_workers):
     if num_samples % num_workers != 0:
         raise Exception('The number of reward samples must be an exact multiple of the number of workers.')

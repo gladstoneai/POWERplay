@@ -5,6 +5,7 @@ import copy as cp
 from .lib.utils import graph
 from .lib import data
 from .lib import get
+from .lib import check
 from . import mdp
 from . import policy
 from . import multi
@@ -327,10 +328,13 @@ def visualize_full_gridworld_rollout(
     initial_state='(0, 0)_A^(0, 0)_B',
     reward_sample_index=0,
     number_of_steps=20,
+    agent_whose_rewards_are_displayed='A',
     show=True,
     save_handle='gridworld_rollout',
     save_folder=data.TEMP_FOLDER
 ):
+    check.check_agent_label(agent_whose_rewards_are_displayed)
+
     policy_data = policy.sample_optimal_policy_from_run(
         sweep_id,
         run_suffix,
@@ -347,8 +351,11 @@ def visualize_full_gridworld_rollout(
             mdp_graph_B = policy_data['inputs'].get('mdp_graph_B'),
             number_of_steps=number_of_steps
         ),
-        reward_function=policy_data['inputs']['reward_function'],
+        reward_function=policy_data['inputs'][
+            'reward_function' if agent_whose_rewards_are_displayed == 'A' else 'reward_function_B'
+        ],
         show=show,
+        agent_whose_rewards_are_displayed=agent_whose_rewards_are_displayed,
         save_handle=save_handle,
         save_folder=save_folder
     )

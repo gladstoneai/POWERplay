@@ -93,19 +93,26 @@ def generate_standard_fig_data(state_indices, sharey=False):
 # - Which B states are we plotting
 # - Where are we plotting them on the grid
 # - Where is agent A on the grid (None is an option we pick if we don't want Agent A's cyan box rendered)
-def render_gridworld_rollout_snapshot(state_list, current_state, reward_function=None):
+def render_gridworld_rollout_snapshot(state_list, current_state, reward_function=None, agent_whose_rewards_are_displayed='A'):
     agent_B_default_state = '(0, 0)'
+    agent_A_color = 'cyan'
+    agent_B_color = 'red'
 
     if graph.are_graph_states_multiagent(state_list):
-        agent_A_states, agent_B_states = np.array(graph.multiagent_states_to_single_agent_states(state_list)).T
-        agent_A_current_state, agent_B_current_state = graph.multiagent_state_to_single_agent_states(current_state)
+        both_agent_states = np.array(graph.multiagent_states_to_single_agent_states(state_list)).T
+        agent_A_states, agent_B_states = both_agent_states if agent_whose_rewards_are_displayed == 'A' else both_agent_states[::-1]
+        # When we want to visualize the Agent B rewards, we swap the state labels of the 2 agents (but we DON'T swap the COLORS of the agents as they move around on the gridworld)
+        agent_A_display_state, agent_B_display_state = graph.multiagent_state_to_single_agent_states(current_state)
+        agent_B_current_state = agent_B_display_state if agent_whose_rewards_are_displayed == 'A' else agent_A_display_state
+        
     else:
         agent_A_states, agent_B_states = np.array(state_list), np.full(len(state_list), agent_B_default_state)
-        agent_A_current_state, agent_B_current_state = current_state, np.array([agent_B_default_state])
+        agent_A_display_state, agent_B_display_state = current_state, np.array([agent_B_default_state])
+        agent_B_current_state = agent_B_display_state
 
     agent_A_unique_states = sorted(list(set(agent_A_states)))
     agent_A_rows, agent_A_cols = np.array(graph.gridworld_states_to_coords(agent_A_states)).T
-    agent_A_rewards = np.zeros(len(agent_A_states)) if reward_function is None else reward_function
+    rewards_to_display = np.zeros(len(agent_A_states)) if reward_function is None else reward_function
 
     _, fig_, axs_plot_, _ = generate_gridworld_fig_data(
         states_per_subplot=agent_A_unique_states, states_to_subplot=np.array(['(0, 0)'])
@@ -120,7 +127,7 @@ def render_gridworld_rollout_snapshot(state_list, current_state, reward_function
         )
     )
 
-    vmin, vmax = agent_A_rewards.min(), agent_A_rewards.max()
+    vmin, vmax = rewards_to_display.min(), rewards_to_display.max()
     state_indices = np.where(agent_B_current_state == agent_B_states)[0]
 
     # Fill excluded coords with nan values to maximize contrast for non-nan entries
@@ -128,27 +135,30 @@ def render_gridworld_rollout_snapshot(state_list, current_state, reward_function
         np.append(agent_A_rows[state_indices], [coords[0] for coords in excluded_coords]),
         np.append(agent_A_cols[state_indices], [coords[1] for coords in excluded_coords]),
         bins=[num_rows, num_cols],
-        weights=np.append(agent_A_rewards[state_indices], np.full(len(excluded_coords), np.nan))
+        weights=np.append(rewards_to_display[state_indices], np.full(len(excluded_coords), np.nan))
     )
 
     axs_plot_[0][0].imshow(heat_map, vmin=vmin, vmax=vmax)
     axs_plot_[0][0].set_xticks(range(num_cols))
     axs_plot_[0][0].set_yticks(range(num_rows))
+    axs_plot_[0][0].set_title('Rewards for agent {0} ({1})'.format(
+        agent_whose_rewards_are_displayed, agent_A_color if agent_whose_rewards_are_displayed == 'A' else agent_B_color)
+    )
 
     if graph.are_graph_states_multiagent([current_state]):
-        agent_A_coords, agent_B_coords = graph.gridworld_states_to_coords([agent_A_current_state, agent_B_current_state])
+        agent_A_coords, agent_B_coords = graph.gridworld_states_to_coords([agent_A_display_state, agent_B_display_state])
         axs_plot_[0][0].add_patch(
-            pat.Rectangle((agent_A_coords[1] - 0.5, agent_A_coords[0] - 0.5), 1, 1, fill=False, edgecolor='cyan', lw=12)
+            pat.Rectangle((agent_A_coords[1] - 0.5, agent_A_coords[0] - 0.5), 1, 1, fill=False, edgecolor=agent_A_color, lw=12)
         )
         axs_plot_[0][0].add_patch(
-            pat.Rectangle((agent_B_coords[1] - 0.5, agent_B_coords[0] - 0.5), 1, 1, fill=False, edgecolor='red', lw=6)
+            pat.Rectangle((agent_B_coords[1] - 0.5, agent_B_coords[0] - 0.5), 1, 1, fill=False, edgecolor=agent_B_color, lw=6)
         )
     
     for sample_index in state_indices:
         axs_plot_[0][0].text(
             agent_A_cols[sample_index],
             agent_A_rows[sample_index],
-            round(float(agent_A_rewards[sample_index]), 4),
+            round(float(rewards_to_display[sample_index]), 4),
             ha='center',
             va='center',
             color='w'
