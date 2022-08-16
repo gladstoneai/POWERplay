@@ -113,28 +113,64 @@ def run_multiagent_with_reward_experiment(
     transition_tensor_B = graph.graph_to_transition_tensor(transition_graphs[1])
 
     print()
-    print('Computing Agent B policies:')
+    print('Computing Agent A policies:')
     print()
 
-    full_transition_tensor_B = graph.graphs_to_multiagent_transition_tensor(
-        # NOTE: The order is reversed here since we need (mdp B, policy A, mdp A) to get Agent B's policy
-        transition_graphs[1], graph.quick_mdp_to_policy(transition_graphs[0]), transition_graphs[0]
+    full_transition_tensor_A = graph.graphs_to_multiagent_transition_tensor( # Full Agent A transition tensor assuming uniform random Agent B policy
+        transition_graphs[0], graph.quick_mdp_to_policy(transition_graphs[1]), transition_graphs[1]
     )
+
+    all_optimal_values_A = proc.samples_to_outputs(
+        reward_samples_A,
+        discount_rate_agent_A,
+        full_transition_tensor_A,
+        iteration_function=learn.value_iteration,
+        number_of_samples=len(reward_samples_A),
+        num_workers=num_workers,
+        convergence_threshold=convergence_threshold
+    )
+
+    all_policy_tensors_A = torch.stack([
+        learn.compute_optimal_policy_tensor(
+            optimal_values_A, full_transition_tensor_A
+        ) for optimal_values_A in all_optimal_values_A
+    ])
+
+    all_full_transition_tensors_B = torch.stack([
+        graph.compute_multiagent_transition_tensor(
+            # The order is reversed here since we need (mdp B, policy A, mdp A) to get Agent B's policy
+            transition_tensor_B, policy_tensor_A, transition_tensor_A
+        ) for policy_tensor_A in all_policy_tensors_A
+    ])
+
+    print()
+    print('Computing Agent B POWER samples:')
+    print()
 
     all_optimal_values_B = proc.samples_to_outputs(
         reward_samples_B,
         discount_rate_agent_B,
-        full_transition_tensor_B,
+        all_full_transition_tensors_B,
         iteration_function=learn.value_iteration,
         number_of_samples=len(reward_samples_B),
         num_workers=num_workers,
         convergence_threshold=convergence_threshold
     )
 
+    power_samples_B = torch.stack([
+        compute_power_values(
+            reward_sample_B, optimal_values_B, discount_rate_agent_B
+        ) for reward_sample_B, optimal_values_B in zip(reward_samples_B, all_optimal_values_B)
+    ])
+
+    print()
+    print('Computing Agent A POWER samples:')
+    print()
+
     all_policy_tensors_B = torch.stack([
         learn.compute_optimal_policy_tensor(
             optimal_values_B, full_transition_tensor_B
-        ) for optimal_values_B in all_optimal_values_B
+        ) for optimal_values_B, full_transition_tensor_B in zip(all_optimal_values_B, all_full_transition_tensors_B)
     ])
 
     all_full_transition_tensors_A = torch.stack([
@@ -143,15 +179,12 @@ def run_multiagent_with_reward_experiment(
         ) for policy_tensor_B in all_policy_tensors_B
     ])
 
-    print()
-    print('Computing Agent A POWER samples:')
-    print()
-
-    all_optimal_values_A = proc.samples_to_outputs(
+    all_values_A = proc.samples_to_outputs(
         reward_samples_A,
         discount_rate_agent_A,
         all_full_transition_tensors_A,
-        iteration_function=learn.value_iteration,
+        all_policy_tensors_A,
+        iteration_function=learn.policy_evaluation,
         number_of_samples=len(reward_samples_A),
         num_workers=num_workers,
         convergence_threshold=convergence_threshold
@@ -159,41 +192,8 @@ def run_multiagent_with_reward_experiment(
 
     power_samples_A = torch.stack([
         compute_power_values(
-            reward_sample_A, optimal_values_A, discount_rate_agent_A
-        ) for reward_sample_A, optimal_values_A in zip(reward_samples_A, all_optimal_values_A)
-    ])
-
-    print()
-    print('Computing Agent B POWER samples:')
-    print()
-
-    all_policy_tensors_A = torch.stack([
-        learn.compute_optimal_policy_tensor(
-            optimal_values_A, full_transition_tensor_A
-        ) for optimal_values_A, full_transition_tensor_A in zip(all_optimal_values_A, all_full_transition_tensors_A)
-    ])
-
-    all_full_transition_tensors_B = torch.stack([
-        graph.compute_multiagent_transition_tensor(
-            transition_tensor_B, policy_tensor_A, transition_tensor_A
-        ) for policy_tensor_A in all_policy_tensors_A
-    ])
-
-    all_values_B = proc.samples_to_outputs(
-        reward_samples_B,
-        discount_rate_agent_B,
-        all_full_transition_tensors_B,
-        all_policy_tensors_B,
-        iteration_function=learn.policy_evaluation,
-        number_of_samples=len(reward_samples_B),
-        num_workers=num_workers,
-        convergence_threshold=convergence_threshold
-    )
-
-    power_samples_B = torch.stack([
-        compute_power_values(
-            reward_sample_B, values_B, discount_rate_agent_B
-        ) for reward_sample_B, values_B in zip(reward_samples_B, all_values_B)
+            reward_sample_A, values_A, discount_rate_agent_A
+        ) for reward_sample_A, values_A in zip(reward_samples_A, all_values_A)
     ])
 
     print()
