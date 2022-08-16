@@ -118,7 +118,7 @@ def plot_alignment_curves(
     ax.set_title(plot_title)
 
     if agent_B_baseline_power is not None:
-        ax.plot(all_correlations, [agent_B_baseline_power] * len(all_correlations), 'r-', label='Agent B baseline POWER')
+        ax.plot(all_correlations, [agent_B_baseline_power] * len(all_correlations), 'b-', label='Agent A baseline POWER')
 
     ax.legend()
 
@@ -362,3 +362,12 @@ def visualize_full_gridworld_rollout(
 
 def build_quick_random_policy(mdp_graph):
     return graph.quick_mdp_to_policy(mdp_graph)
+
+def calculate_power_baseline(sweep_id, run_suffix='', agent_label='A'):
+   check.check_agent_label(agent_label)
+
+   run_props = get.get_properties_from_run(sweep_id, run_suffix=run_suffix)
+
+   return run_props['power_samples'].mean().item() if (
+    agent_label == 'A'
+   ) else run_props['power_samples_agent_B'].mean().item()
