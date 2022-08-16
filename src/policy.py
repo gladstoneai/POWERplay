@@ -97,7 +97,8 @@ def sample_optimal_policy_from_run(
                     graph.graphs_to_multiagent_transition_tensor(
                         transition_graphs[1], policy_graph_A, transition_graphs[0] # Note that the ordering is mdp_graph_B, policy_graph_A, mdp_graph_A because we want to calculate the Agent B policy
                     )
-                )
+                ),
+                transition_graphs[1]
             ),
             'mdp_graph_B': transition_graphs[1],
             'reward_function_B': reward_function_B,
