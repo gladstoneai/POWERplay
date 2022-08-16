@@ -47,39 +47,6 @@ def build_stochastic_graph_node(*states_and_actions):
 def decompose_stochastic_graph_node(stochastic_graph_node):
     return [node.strip('[').strip(']') for node in stochastic_graph_node.split('__')]
 
-def swap_agents_in_multiagent_state(multiagent_state):
-    return single_agent_states_to_multiagent_state(*multiagent_state_to_single_agent_states(multiagent_state)[::-1])
-
-def swap_agents_in_multiagent_graph_node(stochastic_graph_node):
-    decomposed_node = decompose_stochastic_graph_node(stochastic_graph_node)
-
-    if len(decomposed_node) == 1:
-        return build_stochastic_graph_node(swap_agents_in_multiagent_state(decomposed_node[0]))
-    
-    elif len(decomposed_node) == 2:
-        return build_stochastic_graph_node(decomposed_node[0], swap_agents_in_multiagent_state(decomposed_node[1]))
-    
-    elif len(decomposed_node) == 3:
-        return build_stochastic_graph_node(
-            swap_agents_in_multiagent_state(decomposed_node[0]),
-            decomposed_node[1],
-            swap_agents_in_multiagent_state(decomposed_node[2])
-        )
-
-def partially_swap_agents_in_multiagent_graph(input_graph):
-    return nx.relabel_nodes(
-        input_graph,
-        { node: swap_agents_in_multiagent_graph_node(node) for node in input_graph.nodes }
-    )
-
-def swap_agents_in_multiagent_mdps(input_mdp_A, input_mdp_B):
-    # We swap the agents' labels, AND ALSO swap which agent is doing the actions; both are needed to do a complete
-    # agent swap. This is why partially_swap_agents_in_multiagent_graph() is only a PARTIAL swap.
-    output_mdp_A = partially_swap_agents_in_multiagent_graph(input_mdp_B)
-    output_mdp_B = partially_swap_agents_in_multiagent_graph(input_mdp_A)
-
-    return [output_mdp_A, output_mdp_B]
-
 # Return True if graph is in stochastic format, False otherwise. Currently this just checks whether
 # some edges in the graph have weights. If none have weights, we conclude the graph is not in
 # stochastic format.
