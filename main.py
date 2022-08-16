@@ -33,6 +33,7 @@ from src import base
 #   Source: https://pytorch.org/docs/stable/sparse.html
 
 # TODO NEXT:
+# - Add a config flad called reverse_agent_roles that calls swap_agents_in_multiagent_mdps() on the MDPs
 # - Do a rollout visualization to try to debug the interaction experiment
 # - Plot Agent A's non-optimal POWER in the case where it's moving randomly (i.e. A is in fact doing better by optimizing)
 # - Create a scatter plot of the POWER means between definition (1) and definition (3) POWERs to see if POWERs at equivalent states are identical
@@ -68,10 +69,6 @@ from src import base
 # - Remove code to handle correlation plots for multiagent in render
 # - Split viz into viz for graphs and viz for plots
 # - Clean up render_gridworld_rollout_snapshot()
-# TODO NEXT: Start building correlated reward functions
-# - Go back and forth: do 1 iteration of value iteration for B, 1 for A, etc. and stop at some predefined number
-# - Give B more or fewer iterations than A
-# -- Maybe test out different initializations for Agent A policy (other than just random uniform), maybe sample a random policy for each reward sample
 
 if __name__ == '__main__':
     # test.test_vanilla()
