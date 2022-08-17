@@ -324,7 +324,7 @@ def construct_multiagent_gridworld_mdps_with_interactions(num_rows, num_cols, md
 
 def visualize_full_gridworld_rollout(
     sweep_id,
-    run_suffix,
+    run_suffix='',
     initial_state='(0, 0)_A^(0, 0)_B',
     reward_sample_index=0,
     number_of_steps=20,
@@ -335,25 +335,20 @@ def visualize_full_gridworld_rollout(
 ):
     check.check_agent_label(agent_whose_rewards_are_displayed)
 
-    policy_data = policy.sample_optimal_policy_from_run(
-        sweep_id,
-        run_suffix,
-        reward_sample_index=reward_sample_index
-    )
+    run_properties = get.get_properties_from_run(sweep_id, run_suffix=run_suffix)
+    policy_data = policy.sample_optimal_policy_from_run(run_properties, reward_sample_index=reward_sample_index)
 
     viz.plot_gridworld_rollout(
-        graph.get_states_from_graph(policy_data['outputs']['policy_graph_A']),
+        graph.get_states_from_graph(policy_data['policy_graph_A']),
         policy.simulate_policy_rollout(
             initial_state,
-            policy_data['outputs']['policy_graph_A'],
-            policy_data['inputs']['mdp_graph_A'],
-            policy_graph_B=policy_data['inputs'].get('policy_graph_B'),
-            mdp_graph_B = policy_data['inputs'].get('mdp_graph_B'),
+            policy_data['policy_graph_A'],
+            policy_data['mdp_graph_A'],
+            policy_graph_B=policy_data['policy_graph_B'],
+            mdp_graph_B=policy_data['mdp_graph_B'],
             number_of_steps=number_of_steps
         ),
-        reward_function=policy_data['inputs'][
-            'reward_function' if agent_whose_rewards_are_displayed == 'A' else 'reward_function_B'
-        ],
+        reward_function=policy_data['reward_function_{}'.format(agent_whose_rewards_are_displayed)],
         show=show,
         agent_whose_rewards_are_displayed=agent_whose_rewards_are_displayed,
         save_handle=save_handle,
