@@ -17,6 +17,7 @@ def cli_experiment_sweep(
     sweep_variable_params=json.loads(os.environ.get('SWEEP_VARIABLE_PARAMS')),
     plot_as_gridworld=(os.environ.get('PLOT_AS_GRIDWORLD') == 'True'),
     plot_correlations=(os.environ.get('PLOT_CORRELATIONS') == 'True'),
+    diagnostic_mode=(os.environ.get('DIAGNOSTIC_MODE') == 'True'),
     experiment_folder=data.EXPERIMENT_FOLDER,
     mdps_folder=data.MDPS_FOLDER,
     policies_folder=data.POLICIES_FOLDER,
@@ -62,7 +63,13 @@ def cli_experiment_sweep(
             run_params.get('reward_distribution')['default_dist'], distribution_dict=distribution_dict
         )
 
-        reward_samples_agent_A, reward_samples_agent_B, power_samples_agent_A, power_samples_agent_B = runex.run_one_experiment(
+        (
+            reward_samples_agent_A,
+            reward_samples_agent_B,
+            power_samples_agent_A,
+            power_samples_agent_B,
+            diagnostic_dict
+        ) = runex.run_one_experiment(
             transition_graphs,
             discount_rate_agent_A,
             reward_sampler,
@@ -73,7 +80,8 @@ def cli_experiment_sweep(
             convergence_threshold=convergence_threshold,
             random_seed=random_seed,
             reward_correlation=reward_correlation,
-            symmetric_interval=symmetric_interval
+            symmetric_interval=symmetric_interval,
+            diagnostic_mode=diagnostic_mode
         )
 
         data.save_experiment({
@@ -84,7 +92,8 @@ def cli_experiment_sweep(
                 'reward_samples_agent_B': reward_samples_agent_B,
                 'power_samples': power_samples_agent_A,
                 'power_samples_agent_B': power_samples_agent_B
-            }
+            },
+            'diagnostics': diagnostic_dict
         }, folder=save_folder)
 
         run.log({ fig_name: wb.Image(fig) for fig_name, fig in viz.plot_all_outputs(

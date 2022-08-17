@@ -106,18 +106,20 @@ def run_multiagent_with_reward_experiment(
     discount_rate_agent_A,
     discount_rate_agent_B,
     num_workers=1,
-    convergence_threshold=1e-4
+    convergence_threshold=1e-4,
+    diagnostic_mode=False
 ):
     # We precompute these tensors here to avoid recomputation in one of the loops below
     transition_tensor_A = graph.graph_to_transition_tensor(transition_graphs[0])
     transition_tensor_B = graph.graph_to_transition_tensor(transition_graphs[1])
+    random_policy_tensor_B = graph.graph_to_policy_tensor(graph.quick_mdp_to_policy(transition_graphs[1]))
 
     print()
     print('Computing Agent A policies:')
     print()
 
-    full_transition_tensor_A = graph.graphs_to_multiagent_transition_tensor( # Full Agent A transition tensor assuming uniform random Agent B policy
-        transition_graphs[0], graph.quick_mdp_to_policy(transition_graphs[1]), transition_graphs[1]
+    full_transition_tensor_A = graph.compute_multiagent_transition_tensor( # Full Agent A transition tensor assuming uniform random Agent B policy
+        transition_tensor_A, random_policy_tensor_B, transition_tensor_B
     )
 
     all_optimal_values_A = proc.samples_to_outputs(
@@ -142,6 +144,34 @@ def run_multiagent_with_reward_experiment(
             transition_tensor_B, policy_tensor_A, transition_tensor_A
         ) for policy_tensor_A in all_policy_tensors_A
     ])
+
+    if diagnostic_mode:
+        print()
+        print('Computing Agent B POWER samples (uniform random policy):')
+        print()
+
+        power_samples_A_against_random = torch.stack([
+            compute_power_values(
+                reward_sample_A, optimal_values_A, discount_rate_agent_A
+            ) for reward_sample_A, optimal_values_A in zip(reward_samples_A, all_optimal_values_A)
+        ])
+
+        all_values_B = proc.samples_to_outputs(
+            reward_samples_B,
+            discount_rate_agent_B,
+            all_full_transition_tensors_B,
+            random_policy_tensor_B,
+            iteration_function=learn.policy_evaluation,
+            number_of_samples=len(reward_samples_B),
+            num_workers=num_workers,
+            convergence_threshold=convergence_threshold
+        )
+
+        power_samples_B_random = torch.stack([
+            compute_power_values(
+                reward_sample_B, values_B, discount_rate_agent_B
+            ) for reward_sample_B, values_B in zip(reward_samples_B, all_values_B)
+        ])
 
     print()
     print('Computing Agent B POWER samples:')
@@ -203,7 +233,14 @@ def run_multiagent_with_reward_experiment(
         reward_samples_A,
         reward_samples_B,
         power_samples_A,
-        power_samples_B
+        power_samples_B,
+        {} if not diagnostic_mode else {
+            'all_values_A_against_random': all_optimal_values_A,
+            'all_values_A_against_B': all_values_A,
+            'all_values_B_random': all_values_B,
+            'power_samples_A_against_random': power_samples_A_against_random,
+            'power_samples_B_random': power_samples_B_random
+        }
     )
 
 def run_one_experiment(
@@ -217,7 +254,8 @@ def run_one_experiment(
     random_seed=None,
     reward_correlation=None,
     symmetric_interval=None,
-    discount_rate_agent_B=None
+    discount_rate_agent_B=None,
+    diagnostic_mode=False
 ):
     misc.set_global_random_seed(random_seed)
     # When the number of samples doesn't divide evenly into the available workers, truncate the samples
@@ -236,7 +274,8 @@ def run_one_experiment(
             reward_samples_A,
             None,
             power_samples_A,
-            None
+            None,
+            {}
         )
     
     elif sweep_type == 'multiagent_fixed_policy':
@@ -252,7 +291,8 @@ def run_one_experiment(
             reward_samples_A,
             None,
             power_samples_A,
-            None
+            None,
+            {}
         )
     
     elif sweep_type == 'multiagent_with_reward':
@@ -260,19 +300,23 @@ def run_one_experiment(
             reward_sampler, reward_samples_agent_A, correlation=reward_correlation, symmetric_interval=symmetric_interval
         )
 
-        reward_samples_A, reward_samples_B, power_samples_A, power_samples_B = run_multiagent_with_reward_experiment(
+        (
+            reward_samples_A, reward_samples_B, power_samples_A, power_samples_B, diagnostic_dict
+        ) = run_multiagent_with_reward_experiment(
             reward_samples_agent_A,
             reward_samples_agent_B,
             transition_graphs,
             discount_rate_agent_A,
             discount_rate_agent_B,
             num_workers=num_workers,
-            convergence_threshold=convergence_threshold
+            convergence_threshold=convergence_threshold,
+            diagnostic_mode=diagnostic_mode
         )
 
         return (
             reward_samples_A,
             reward_samples_B,
             power_samples_A,
-            power_samples_B
+            power_samples_B,
+            diagnostic_dict
         )

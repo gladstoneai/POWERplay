@@ -146,5 +146,6 @@ def test_reward_correlation():
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         project='uncategorized',
         plot_as_gridworld=True,
-        plot_correlations=False
+        plot_correlations=False,
+        diagnostic_mode=True
     )

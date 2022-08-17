@@ -13,6 +13,7 @@ def get_sweep_run_suffixes_for_param(sweep_id, param_name, folder=data.EXPERIMEN
 # TODO: Document this function. Lets you quickly retrieve inputs or outputs of an experiment based on
 # the sweep_id (i.e., date & time hash, which should be unique) and the suffix for the run within
 # the experiment sweep. Returns outputs by default. For inputs, set results_type='inputs'.
+# For diagnostics, set results_type='diagnostics'.
 def get_sweep_run_results(sweep_id, run_suffix, results_type='outputs', folder=data.EXPERIMENT_FOLDER):
     sweep_name = data.get_full_sweep_name_from_id(sweep_id, folder=folder)
 
@@ -92,6 +93,7 @@ def get_properties_from_run(
 ):
     inputs = get_sweep_run_results(sweep_id, run_suffix, results_type='inputs')
     outputs = get_sweep_run_results(sweep_id, run_suffix, results_type='outputs')
+    diagnostics = get_sweep_run_results(sweep_id, run_suffix, results_type='diagnostics')
     sweep_type = misc.determine_sweep_type(inputs)
 
     extra_props = {
@@ -110,5 +112,6 @@ def get_properties_from_run(
         'transition_graphs': get_transition_graphs(
             inputs, sweep_type, mdps_folder=mdps_folder, policies_folder=policies_folder
         ),
-        **extra_props
+        **extra_props,
+        **diagnostics
     }
