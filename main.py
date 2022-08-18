@@ -4,43 +4,30 @@ from src import test
 from src import launch
 from src import base
 
-# TODO: Refactor the loop in the torch.stack line of run_one_experiment (we should be doing it all in PyTorch, not a Python loop)
-# TODO: Update get_sweep_state_list to handle the multiagent case and return all the MDPs and policies
-# in that case.
-# TODO: Add sanity checks to policy / MDP inputs for the multiagent case. In particular, add checks that both
+# TODO Engineering nice to haves:
+# - Remove code to handle correlation plots for multiagent in render
+# - Split viz into viz for graphs and viz for plots
+# - Clean up render_gridworld_rollout_snapshot()
+# - Add sanity checks to policy / MDP inputs for the multiagent case. In particular, add checks that both
 # MDPs and the policy have the same state and action sets.
-# TODO: More stochastic experiments.
-# - Wind, teleporters, irreversible actions / doorways.
-# TODO: Refactor codebase to keep all files under 200 lines each.
-# TODO: Add visualization for gridworld and Agent 2 policy.
-# TODO: Do profiling and see which parts are the slowest.
-# TODO: (?) Create a state container for training loop with stateless functions underneath.
-# TODO: Save with wandb instead of homespun data methods.
-# TODO: Investigate writing type hints.
-# TODO: Add argparse.ArgumentParser().
+# - Refactor codebase to keep all files under 200 lines each.
+# - Do profiling and see which parts are the slowest.
+# - Save with wandb instead of homespun data methods.
+# - Investigate writing type hints.
+# - Add argparse.ArgumentParser().
 # parser = argparse.ArgumentParser()
 # parser.add_argument('-b', '--batch-size', type=int, default=8, metavar='N',
 #                      help='input batch size for training (default: 8)')
 # args = parser.parse_args()
-# TODO: Refactor experiment wrapper with https://hydra.cc/ when I understand what experiment configs
+# - Refactor experiment wrapper with https://hydra.cc/ when I understand what experiment configs
 # I commonly use.
-# TODO: Add ability to run sweep without wandb server access (i.e., offline mode). May be impossible, but
-# would be great as it would allow me to run local tests without consuming bandwidth, etc.
-# TODO: Add sparse / non-sparse flag to toggle value iteration calculation.
-# - "Using a sparse storage format for storing sparse arrays can be advantageous only when the
-#   size and sparsity levels of arrays are high. Otherwise, for small-sized or low-sparsity arrays
-#   using the contiguous memory storage format is likely the most efficient approach."
-#   Source: https://pytorch.org/docs/stable/sparse.html
 
-# TODO NEXT:
-# - Add a config flad called reverse_agent_roles that calls swap_agents_in_multiagent_mdps() on the MDPs
-# - Do a rollout visualization to try to debug the interaction experiment
-# - Plot Agent A's non-optimal POWER in the case where it's moving randomly (i.e. A is in fact doing better by optimizing)
-# - Create a scatter plot of the POWER means between definition (1) and definition (3) POWERs to see if POWERs at equivalent states are identical
-# Overnight experiments:
-# - Different gamma values
-# - Experiment with non-orthogonal action spaces
-# - Run for 2 more iterations as another venue to explore
+# TODO Experiment nice to haves:
+# - Plot 10th and 90th percentile POWER scores in alignment curves
+# - Allow us to not plot reward distributions (it's getting to be too many plots)
+# - Build arbitrary back-and-forth counter-optimizations between Agent A and Agent B
+
+# TODO Write up:
 # - Think about: how do we tell the story of Agent B == humans; Agent A == AI, but consistent with joint states / random initial Agent A policy?
 # -- Start articulating concisely: what are the insights from these graphs & charts?
 # -- Instead of 2 pages for the multiagent POWER definition, create one that's 0.5-1 page in length
@@ -58,17 +45,14 @@ from src import base
 #       than the other.
 # --- Create a doc with a high level structure.
 # --- Content-wise, this is really strong already.
-# - Plot 10th and 90th percentile POWER scores
-# - Allow us to not plot reward distributions (it's getting to be too many plots)
-# - Investigate whether rollouts before steady state are longer for correlation -1 rather than for correlation 1 rewards
-# - Final stage: building arbitrary back-and-forth counter-optimizations?
-# - Maybe log POWER at each step in a trajectory in a rollout, averaging over trajectories
 
-# - What happens if you correlate Agent B's policy and make it dependent on Agent A's position
-# -- Forbid the agents from being in the same square
-# - Remove code to handle correlation plots for multiagent in render
-# - Split viz into viz for graphs and viz for plots
-# - Clean up render_gridworld_rollout_snapshot()
+# TODO NEXT:
+# - Re-run diagnostic correlation plots with POWERs instead of value functions
+# - Enable logarithmic x-axis for Pareto POWER distributions so we can see the detail of them.
+# - Re-run instrumental convergence experiment without agent interactions
+# - Test different Pareto distribution parameters and how they affect alignment curves
+# - Build in capability to enter an initial "seed" policy for Agent B
+# - Set a deterministic initial seed policy for Agent B to make Agent A's initial policy more exploitable, then test instrumental convergence
 
 if __name__ == '__main__':
     # test.test_vanilla()

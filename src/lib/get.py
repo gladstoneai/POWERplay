@@ -19,7 +19,7 @@ def get_sweep_run_results(sweep_id, run_suffix, results_type='outputs', folder=d
 
     return data.load_full_sweep(
         sweep_name, folder=folder
-    )['all_runs_data']['{0}-{1}'.format(sweep_name, run_suffix)][results_type]
+    )['all_runs_data']['{0}-{1}'.format(sweep_name, run_suffix)].get(results_type, {})
 
 # TODO: Document this function. This is a convenience function that lets you quickly retrieve
 # the state_list for a sweep. IMPORTANT: This assumes that the state_list will be the same for all
