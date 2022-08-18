@@ -47,8 +47,6 @@ from src import base
 # --- Content-wise, this is really strong already.
 
 # TODO NEXT:
-# - Re-run diagnostic correlation plots with POWERs instead of value functions
-# - Enable logarithmic x-axis for Pareto POWER distributions so we can see the detail of them.
 # - Re-run instrumental convergence experiment without agent interactions
 # - Test different Pareto distribution parameters and how they affect alignment curves
 # - Build in capability to enter an initial "seed" policy for Agent B

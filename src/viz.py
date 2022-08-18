@@ -87,6 +87,7 @@ def plot_sample_distributions(
     plot_as_gridworld=False,
     sample_quantity='POWER',
     sample_units='reward units',
+    plot_in_log_scale=False,
     save_handle=None,
     save_figure=data.save_figure,
     save_folder=data.EXPERIMENT_FOLDER
@@ -102,7 +103,8 @@ def plot_sample_distributions(
         number_of_bins=number_of_bins,
         normalize_auc=normalize_auc,
         sample_quantity=sample_quantity,
-        sample_units=sample_units
+        sample_units=sample_units,
+        plot_in_log_scale=plot_in_log_scale
     )
 
     if callable(save_figure) and save_handle is not None:
@@ -263,6 +265,7 @@ def plot_all_outputs(
     graphs_to_plot,
     sample_filter=None,
     plot_correlations=True,
+    plot_in_log_scale=False,
     **kwargs
 ):
     state_list = graph.get_states_from_graph(graphs_to_plot[0]['graph_data'])
@@ -288,14 +291,24 @@ def plot_all_outputs(
             'Reward samples over states{}'.format(
                 ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
             ): fig for fig in plot_sample_distributions(
-                rs_inputs, state_list, sample_quantity='Reward', sample_units='reward units', **kwargs
+                rs_inputs,
+                state_list,
+                sample_quantity='Reward',
+                sample_units='reward units',
+                plot_in_log_scale=plot_in_log_scale,
+                **kwargs
             )
         },
         **{
             'POWER samples over states{}'.format(
                 ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
             ): fig for fig in plot_sample_distributions(
-                ps_inputs, state_list, sample_quantity='POWER', sample_units='reward units', **kwargs
+                ps_inputs,
+                state_list,
+                sample_quantity='POWER',
+                sample_units='reward units',
+                plot_in_log_scale=plot_in_log_scale,
+                **kwargs
             )
         },
         **(dict(col.ChainMap(*[{

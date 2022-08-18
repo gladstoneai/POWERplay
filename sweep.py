@@ -18,6 +18,7 @@ def cli_experiment_sweep(
     plot_as_gridworld=(os.environ.get('PLOT_AS_GRIDWORLD') == 'True'),
     plot_correlations=(os.environ.get('PLOT_CORRELATIONS') == 'True'),
     diagnostic_mode=(os.environ.get('DIAGNOSTIC_MODE') == 'True'),
+    plot_in_log_scale=(os.environ.get('PLOT_IN_LOG_SCALE') == 'True'),
     experiment_folder=data.EXPERIMENT_FOLDER,
     mdps_folder=data.MDPS_FOLDER,
     policies_folder=data.POLICIES_FOLDER,
@@ -106,7 +107,8 @@ def cli_experiment_sweep(
                 save_folder=save_folder,
                 show=False,
                 plot_as_gridworld=plot_as_gridworld,
-                plot_correlations=plot_correlations
+                plot_correlations=plot_correlations,
+                plot_in_log_scale=plot_in_log_scale
             ).items()
         })
 
@@ -121,7 +123,8 @@ def cli_experiment_sweep(
                     save_folder=save_folder,
                     show=False,
                     plot_as_gridworld=plot_as_gridworld,
-                    plot_correlations=plot_correlations
+                    plot_correlations=plot_correlations,
+                    plot_in_log_scale=plot_in_log_scale
                 ).items()
             })
 
@@ -136,7 +139,8 @@ def cli_experiment_sweep(
                         save_folder=save_folder,
                         show=False,
                         plot_as_gridworld=plot_as_gridworld,
-                        plot_correlations=plot_correlations
+                        plot_correlations=plot_correlations,
+                        plot_in_log_scale=plot_in_log_scale
                     ).items()
                 })
 
@@ -150,7 +154,8 @@ def cli_experiment_sweep(
                         save_folder=save_folder,
                         show=False,
                         plot_as_gridworld=plot_as_gridworld,
-                        plot_correlations=plot_correlations
+                        plot_correlations=plot_correlations,
+                        plot_in_log_scale=plot_in_log_scale
                     ).items()
                 })
 

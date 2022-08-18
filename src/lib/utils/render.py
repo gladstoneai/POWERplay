@@ -272,6 +272,7 @@ def render_distributions(
     plot_as_gridworld=False,
     number_of_bins=30,
     normalize_auc=True,
+    plot_in_log_scale=False,
     sample_quantity='POWER',
     sample_units='reward units'
 ):
@@ -309,14 +310,18 @@ def render_distributions(
         for axis_coords, state, state_index in zip(
             axis_coords_list, agent_A_states[figure_indices], figure_indices
         ):
+            bin_positions = np.logspace(np.log10(transposed_samples.min()), np.log10(transposed_samples.max()), number_of_bins) if (
+                plot_in_log_scale
+            ) else np.linspace(transposed_samples.min(), transposed_samples.max(), number_of_bins)
+
             # The hist function hangs unless we convert to numpy first
             axs_plot_[axis_coords[0]][axis_coords[1]].hist(
-                np.array(transposed_samples[state_index]),
-                bins=np.linspace(
-                    transposed_samples.min(), transposed_samples.max(), number_of_bins
-                ) if normalize_auc else number_of_bins
+                np.array(transposed_samples[state_index]), bins=(bin_positions if normalize_auc else number_of_bins)
             )
             axs_plot_[axis_coords[0]][axis_coords[1]].title.set_text(state)
+
+            if plot_in_log_scale:
+                axs_plot_[axis_coords[0]][axis_coords[1]].set_xscale('log')
 
         fig_.text(0.5, 0.01 / fig_rows, '{0} samples ({1})'.format(sample_quantity, sample_units))
 

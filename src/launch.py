@@ -19,6 +19,7 @@ def launch_sweep(
     plot_correlations=False,
     announce_when_done=False,
     diagnostic_mode=False,
+    plot_in_log_scale=False,
     environ=os.environ
 ):
     input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=sweep_config_folder)
@@ -53,7 +54,8 @@ def launch_sweep(
         'SWEEP_VARIABLE_PARAMS': json.dumps(misc.get_variable_params(input_sweep_config)),
         'PLOT_AS_GRIDWORLD': str(plot_as_gridworld), # Only str allowed in os.environ
         'PLOT_CORRELATIONS': str(plot_correlations),
-        'DIAGNOSTIC_MODE': str(diagnostic_mode)
+        'DIAGNOSTIC_MODE': str(diagnostic_mode),
+        'PLOT_IN_LOG_SCALE': str(plot_in_log_scale)
     })
 
     if announce_when_done:
