@@ -47,7 +47,6 @@ from src import base
 # --- Content-wise, this is really strong already.
 
 # TODO NEXT:
-# - Re-run instrumental convergence experiment without agent interactions
 # - Test different Pareto distribution parameters and how they affect alignment curves
 # - Build in capability to enter an initial "seed" policy for Agent B
 # - Set a deterministic initial seed policy for Agent B to make Agent A's initial policy more exploitable, then test instrumental convergence

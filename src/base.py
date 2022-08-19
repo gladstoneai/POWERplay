@@ -84,7 +84,6 @@ def update_mdp_graph_with_interface(input_mdp, agent_label='A'):
 
 def plot_alignment_curves(
     sweep_id,
-    agent_B_baseline_power=None,
     show=True,
     plot_title='',
     fig_name='',
@@ -107,6 +106,7 @@ def plot_alignment_curves(
     all_correlations = [run_props['reward_correlation'] for run_props in all_run_props_]
     all_powers_A = [run_props['power_samples'].mean() for run_props in all_run_props_]
     all_powers_B = [run_props['power_samples_agent_B'].mean() for run_props in all_run_props_]
+    agent_A_baseline_power = all_run_props_[0]['power_samples_A_against_random'].mean()
 
     fig, ax = plt.subplots()
 
@@ -114,12 +114,9 @@ def plot_alignment_curves(
     ax.plot(all_correlations, all_powers_B, 'r.', label='Agent B POWER')
     ax.set_xlabel('Reward correlation')
     ax.set_ylabel('POWER')
-    ax.set_ylim([0, 1])
     ax.set_title(plot_title)
 
-    if agent_B_baseline_power is not None:
-        ax.plot(all_correlations, [agent_B_baseline_power] * len(all_correlations), 'b-', label='Agent A baseline POWER')
-
+    ax.plot(all_correlations, [agent_A_baseline_power] * len(all_correlations), 'b-', label='Agent A baseline POWER')
     ax.legend()
 
     if fig_name:
