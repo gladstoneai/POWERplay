@@ -9,7 +9,6 @@ import subprocess as sp
 import os
 
 from .utils import misc
-from .utils import graph
 
 ################################################################################
 

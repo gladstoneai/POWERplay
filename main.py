@@ -24,7 +24,6 @@ from src import base
 
 # TODO Experiment nice to haves:
 # - Plot 10th and 90th percentile POWER scores in alignment curves
-# - Allow us to not plot reward distributions (it's getting to be too many plots)
 # - Build arbitrary back-and-forth counter-optimizations between Agent A and Agent B
 
 # TODO Write up:
@@ -47,9 +46,12 @@ from src import base
 # --- Content-wise, this is really strong already.
 
 # TODO NEXT:
-# - Test different Pareto distribution parameters and how they affect alignment curves
+# - Test different Pareto distribution parameters and how they affect alignment curves (also test Bernoulli distributions)
+# - Allow us to not plot reward distributions (it's getting to be too many plots, takes time in sweeps)
 # - Build in capability to enter an initial "seed" policy for Agent B
 # - Set a deterministic initial seed policy for Agent B to make Agent A's initial policy more exploitable, then test instrumental convergence
+# - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
+# - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability
 
 if __name__ == '__main__':
     # test.test_vanilla()

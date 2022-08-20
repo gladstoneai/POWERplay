@@ -1,5 +1,6 @@
 import torch
 import copy as cp
+import torch.nn.functional as tf
 
 from . import misc
 
@@ -68,12 +69,19 @@ def policy_evaluation(
 # This means we can simplify the argmax expression for the policy (see the last line of the Value Iteration algorithm
 # in Section 4.4 of Sutton & Barto) to eliminate the r term and the gamma factor. i.e., we can find the optimal
 # policy from the optimal value function by simply taking \argmax_a \sum_{s'} p(s' | s, a) V(s').
-def compute_optimal_policy_tensor(optimal_values, transition_tensor):
-    return torch.sparse_coo_tensor(
-        torch.stack((
-            torch.arange(transition_tensor.shape[0]),
-            torch.argmax(torch.matmul(transition_tensor, optimal_values.unsqueeze(1)), dim=1).flatten()
-        )),
-        torch.ones(transition_tensor.shape[0]),
-        size=tuple(transition_tensor.shape[:2])
-    ).to_dense()
+# NOTE: whenever two action-values are equal, we intentionally randomize the policy to avoid systematically
+# biasing our policies according to the canonical ordering of the states. This matters especially when we use a
+# reward function that's sparse (i.e., most states do not yield substantial reward but a few states yield big reward).
+# A "tiebreaker" policy between two equally unrewarding states that's very deterministic for e.g. Agent A, is also
+# very exploitable for Agent B. Randomizing the tiebreaker by choosing between equally good states with equal probability
+# makes agent policies exploitable only to the extent they're directed towards a goal.
+def compute_optimal_policy_tensor(optimal_values, transition_tensor, randomize_tiebreakers=False):
+    action_values = torch.matmul(transition_tensor, optimal_values.unsqueeze(1)).flatten(start_dim=1)
+# If randomize_tiebreakers is True, we randomize the policy when breaking ties between equally good outcomes
+    return tf.normalize(
+        torch.eq(
+            action_values, action_values.max(dim=1)[0].unsqueeze(1).tile(1, transition_tensor.shape[1])
+        ).to(torch.float32) * (
+            1 + torch.tensor([randomize_tiebreakers]).to(torch.float32) * (torch.rand(action_values.shape) - 1)
+        ), p=1, dim=1
+    )

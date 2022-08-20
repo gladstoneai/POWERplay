@@ -23,6 +23,9 @@ DISTRIBUTION_DICT = {
     },
     'pareto': {
         'distribution': td.Pareto
+    },
+    'bernoulli': {
+        'distribution': td.Bernoulli
     }
 }
 
