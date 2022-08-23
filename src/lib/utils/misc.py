@@ -125,6 +125,8 @@ def determine_sweep_type(run_params):
     ) and (
         'mdp_graph_agent_B' in run_params
     ) and (
+        'seed_policy_graph_agent_B' in run_params
+    ) and (
         'reward_correlation' in run_params
     ) and (
         'discount_rate_agent_B' in run_params

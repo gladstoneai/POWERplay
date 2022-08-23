@@ -111,15 +111,15 @@ def run_multiagent_with_reward_experiment(
 ):
     # We precompute these tensors here to avoid recomputation in one of the loops below
     transition_tensor_A = graph.graph_to_transition_tensor(transition_graphs[0])
-    transition_tensor_B = graph.graph_to_transition_tensor(transition_graphs[1])
-    random_policy_tensor_B = graph.graph_to_policy_tensor(graph.quick_mdp_to_policy(transition_graphs[1]))
+    seed_policy_tensor_B = graph.graph_to_policy_tensor(transition_graphs[1]) # The fixed policy tensor we give Agent B, that Agent A initially optimizes against
+    transition_tensor_B = graph.graph_to_transition_tensor(transition_graphs[2])
 
     print()
     print('Computing Agent A policies:')
     print()
 
     full_transition_tensor_A = graph.compute_multiagent_transition_tensor( # Full Agent A transition tensor assuming uniform random Agent B policy
-        transition_tensor_A, random_policy_tensor_B, transition_tensor_B
+        transition_tensor_A, seed_policy_tensor_B, transition_tensor_B
     )
 
     all_optimal_values_A = proc.samples_to_outputs(
@@ -160,7 +160,7 @@ def run_multiagent_with_reward_experiment(
             reward_samples_B,
             discount_rate_agent_B,
             all_full_transition_tensors_B,
-            random_policy_tensor_B,
+            seed_policy_tensor_B,
             iteration_function=learn.policy_evaluation,
             number_of_samples=len(reward_samples_B),
             num_workers=num_workers,
@@ -297,7 +297,10 @@ def run_one_experiment(
     
     elif sweep_type == 'multiagent_with_reward':
         reward_samples_agent_B = dist.generate_correlated_reward_samples(
-            reward_sampler, reward_samples_agent_A, correlation=reward_correlation, symmetric_interval=symmetric_interval
+            reward_sampler,
+            reward_samples_agent_A,
+            correlation=reward_correlation,
+            symmetric_interval=symmetric_interval
         )
 
         (

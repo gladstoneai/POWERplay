@@ -242,6 +242,7 @@ def check_sweep_params(sweep_params):
         'mdp_graph_agent_A': check_mdp_graph,
         'mdp_graph_agent_B': check_mdp_graph,
         'policy_graph_agent_B': check_policy_graph,
+        'seed_policy_graph_agent_B': check_policy_graph,
         'reward_correlation': noop,
         'discount_rate': check_discount_rate,
         'discount_rate_agent_B': check_discount_rate,

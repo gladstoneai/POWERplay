@@ -81,6 +81,9 @@ def get_transition_graphs(
                 run_params.get('mdp_graph_agent_A'), folder=mdps_folder
             ),
             data.load_graph_from_dot_file(
+                run_params.get('seed_policy_graph_agent_B'), folder=policies_folder
+            ),
+            data.load_graph_from_dot_file(
                 run_params.get('mdp_graph_agent_B'), folder=mdps_folder
             )
         ]

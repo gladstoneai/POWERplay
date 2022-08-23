@@ -57,9 +57,7 @@ def sample_optimal_policy_from_run(run_properties, reward_sample_index=0):
         runex.find_optimal_policy(
             reward_function_A,
             discount_rate_A,
-            graph.any_graphs_to_transition_tensor(*[transition_graphs[0]] + ([] if (
-                sweep_type != 'multiagent_with_reward'
-            ) else [graph.quick_mdp_to_policy(transition_graphs[1]), transition_graphs[1]])), # This creates a uniform random policy for Agent A
+            graph.any_graphs_to_transition_tensor(transition_graphs),
             value_initialization=None,
             convergence_threshold=convergence_threshold
         ), # NOTE: This works for the agent of a single-agent system, OR for Agent A of a multi-agent system.
@@ -90,18 +88,19 @@ def sample_optimal_policy_from_run(run_properties, reward_sample_index=0):
 
         return {
             'mdp_graph_A': transition_graphs[0],
+            'seed_policy_graph_B': transition_graphs[1],
             'policy_graph_A': policy_graph_A,
             'reward_function_A': reward_function_A,
-            'mdp_graph_B': transition_graphs[1],
+            'mdp_graph_B': transition_graphs[2],
             'policy_graph_B': policy_tensor_to_graph(
                 runex.find_optimal_policy(
                     reward_function_B,
                     discount_rate_B,
                     graph.graphs_to_multiagent_transition_tensor(
-                        transition_graphs[1], policy_graph_A, transition_graphs[0] # Note that the ordering is mdp_graph_B, policy_graph_A, mdp_graph_A because we want to calculate the Agent B policy
+                        transition_graphs[2], policy_graph_A, transition_graphs[0] # Note that the ordering is mdp_graph_B, policy_graph_A, mdp_graph_A because we want to calculate the Agent B policy
                     )
                 ),
-                transition_graphs[1]
+                transition_graphs[2]
             ),
             'reward_function_B': reward_function_B
         }
