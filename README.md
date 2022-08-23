@@ -220,17 +220,19 @@ Here are the entries of the sweep YAML file:
           "uniform"
         params:
           [0, 1]
-      state_dists:
-        "∅":
-          dist_name:
-            "uniform"
-          params:
-            [-1, 1]
-        "ℓ_◁":
-          dist_name:
-            "uniform"
-          params:
-            [-2, 0]
+    state_dists:
+      "∅":
+        dist_name:
+          "uniform"
+        params:
+          [-1, 1]
+      "ℓ_◁":
+        dist_name:
+          "uniform"
+        params:
+          [-2, 0]
+    allow_all_equal_rewards:
+      True
     ```
   
   - `num_reward_samples`: The number of samples to draw from the reward distribution for each state in the POWER calculations.

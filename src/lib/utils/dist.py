@@ -52,19 +52,39 @@ def config_to_symmetric_interval(distribution_config, distribution_dict=DISTRIBU
         # Handle both PyTorch and manual functions built with pdf_sampler_constructor
         return interval if not hasattr(distribution_data['distribution'](*dist_params), 'sample') else interval(*dist_params)
 
+# if allow_all_equal_rewards is False, re-sample anytime you get a reward function for which the rewards
+# are equal over all states. This is especially useful for e.g., the Bernoulli distribution, which is
+# a good distribution to use when investigating instrumental convergence.
 def reward_distribution_constructor(
     state_list,
     default_reward_sampler=config_to_pdf_constructor({ 'dist_name': 'uniform', 'params': [0., 1.] }),
-    state_reward_samplers={}
+    state_reward_samplers={},
+    allow_all_equal_rewards=True
 ):
     def reward_distribution(number_of_samples):
         state_sampler_list = [(state_reward_samplers[state_list[i]] if (
             state_list[i] in state_reward_samplers.keys()
         ) else default_reward_sampler) for i in range(len(state_list))]
 
-        return torch.cat([
+        outputs_ = torch.cat([
             sample(torch.tensor([number_of_samples])).unsqueeze(1) for sample in state_sampler_list
         ], dim=1)
+
+        # If we forbid reward functions whose rewards are equal at all states, we discard all reward samples
+        # that fail the test and re-run as many times as we need to get all passing samples.
+        if not allow_all_equal_rewards:
+            if outputs_.shape[0] == 0:
+                return outputs_
+            
+            else:
+                allowed_outputs_ = outputs_[torch.all(outputs_ == outputs_[:,0].unsqueeze(1), dim=1).logical_not()]
+                return torch.cat([
+                    allowed_outputs_,
+                    reward_distribution(number_of_samples - allowed_outputs_.shape[0])
+                ], dim=0)
+
+        else:
+            return outputs_
     
     return reward_distribution
 
@@ -74,17 +94,22 @@ def reward_distribution_constructor(
 #   <state label 2>: <1d pdf config applied to state 2 that overrides the default dist>
 #   ... etc.
 # } }
-def config_to_reward_distribution(state_list, reward_dist_config, distribution_dict=DISTRIBUTION_DICT):
+def config_to_reward_distribution(
+    state_list,
+    reward_dist_config,
+    distribution_dict=DISTRIBUTION_DICT
+):
     return reward_distribution_constructor(
         state_list,
         default_reward_sampler=config_to_pdf_constructor(
             reward_dist_config.get('default_dist'), distribution_dict=distribution_dict
         ),
         state_reward_samplers={
-                state: config_to_pdf_constructor(
-                    reward_dist_config.get('state_dists').get(state), distribution_dict=distribution_dict
-                ) for state in reward_dist_config.get('state_dists', {})
-            }
+            state: config_to_pdf_constructor(
+                reward_dist_config.get('state_dists').get(state), distribution_dict=distribution_dict
+            ) for state in reward_dist_config.get('state_dists', {})
+        },
+        allow_all_equal_rewards=reward_dist_config.get('allow_all_equal_rewards', True)
     )
 
 def sample_from_state_list(state_list, distribution_vector):

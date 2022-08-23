@@ -2,6 +2,7 @@ import multiprocessing as mps
 import warnings as warn
 import torch
 
+from .utils import dist
 from .utils import graph
 from . import data
 
@@ -25,6 +26,10 @@ def check_agent_label(agent_label):
 def check_num_samples(num_samples, num_workers):
     if num_samples % num_workers != 0:
         raise Exception('The number of reward samples must be an exact multiple of the number of workers.')
+
+def check_dict_contains_key(dict_to_check, key, dict_name):
+    if key not in dict_to_check.keys():
+        raise Exception('The {0} must contain a key \'{1}\'.'.format(dict_name, key))
 
 def check_state_in_graph_states(input_graph, state):
     if state not in graph.get_states_from_graph(input_graph):
@@ -169,6 +174,29 @@ def check_num_workers(num_workers):
             'You can\'t assign more than {} workers on this machine.'.format(mps.cpu_count())
         )
 
+def check_single_state_reward_config(single_state_reward_config, distribution_dict=dist.DISTRIBUTION_DICT):
+    check_dict_contains_key(single_state_reward_config, 'dist_name', 'single-state reward config')
+    check_dict_contains_key(single_state_reward_config, 'params', 'single-state reward config')
+
+    if single_state_reward_config['dist_name'] not in distribution_dict:
+        raise Exception('Undefined distribution \'{}\'.'.format(single_state_reward_config['dist_name']))
+    
+    if not isinstance(single_state_reward_config['params'], list):
+        raise Exception(
+            'The \'params\' value of a reward config should be a list, not {}.'.format(
+                single_state_reward_config['params']
+            )
+        )
+
+def check_reward_distribution_config(reward_distribution_config, distribution_dict=dist.DISTRIBUTION_DICT):
+    check_dict_contains_key(reward_distribution_config, 'default_dist', 'reward distribution config')
+    check_dict_contains_key(reward_distribution_config, 'allow_all_equal_rewards', 'reward distribution config')
+    
+    check_single_state_reward_config(reward_distribution_config['default_dist'], distribution_dict=distribution_dict)
+
+    for state in reward_distribution_config.get('state_dists', {}):
+        check_single_state_reward_config(reward_distribution_config[state], distribution_dict=distribution_dict)
+
 def check_tensor_or_number_args(args):
     for arg in args:
         if not (torch.is_tensor(arg) or type(arg) == int or type(arg) == float):
@@ -217,7 +245,7 @@ def check_sweep_params(sweep_params):
         'reward_correlation': noop,
         'discount_rate': check_discount_rate,
         'discount_rate_agent_B': check_discount_rate,
-        'reward_distribution': noop,
+        'reward_distribution': check_reward_distribution_config,
         'num_reward_samples': noop,
         'convergence_threshold': noop,
         'value_initializations': noop,

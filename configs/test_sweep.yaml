@@ -32,6 +32,8 @@ parameters:
             "uniform"
           params:
             [-2, 0]
+      allow_all_equal_rewards:
+        True
   num_reward_samples:
     value:
       10000

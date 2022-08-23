@@ -73,15 +73,12 @@ def policy_evaluation(
 # biasing our policies according to the canonical ordering of the states. This matters especially when we use a
 # reward function that's sparse (i.e., most states do not yield substantial reward but a few states yield big reward).
 # A "tiebreaker" policy between two equally unrewarding states that's very deterministic for e.g. Agent A, is also
-# very exploitable for Agent B. Randomizing the tiebreaker by choosing between equally good states with equal probability
-# makes agent policies exploitable only to the extent they're directed towards a goal.
-def compute_optimal_policy_tensor(optimal_values, transition_tensor, randomize_tiebreakers=False):
+# very exploitable for Agent B.
+def compute_optimal_policy_tensor(optimal_values, transition_tensor):
     action_values = torch.matmul(transition_tensor, optimal_values.unsqueeze(1)).flatten(start_dim=1)
-# If randomize_tiebreakers is True, we randomize the policy when breaking ties between equally good outcomes
     return tf.normalize(
         torch.eq(
-            action_values, action_values.max(dim=1)[0].unsqueeze(1).tile(1, transition_tensor.shape[1])
-        ).to(torch.float32) * (
-            1 + torch.tensor([randomize_tiebreakers]).to(torch.float32) * (torch.rand(action_values.shape) - 1)
-        ), p=1, dim=1
+            action_values,
+            action_values.max(dim=1)[0].unsqueeze(1).tile(1, transition_tensor.shape[1])
+        ).to(torch.float32), p=1, dim=1
     )
