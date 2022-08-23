@@ -264,6 +264,7 @@ def plot_all_outputs(
     power_samples,
     graphs_to_plot,
     sample_filter=None,
+    plot_distributions=True,
     plot_correlations=True,
     plot_in_log_scale=False,
     **kwargs
@@ -287,7 +288,7 @@ def plot_all_outputs(
         'POWER variances': plot_sample_aggregations(
             ps_inputs, state_list, aggregation='var', sample_quantity='POWER', sample_units='reward units', **kwargs
         ),
-        **{
+        **({
             'Reward samples over states{}'.format(
                 ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
             ): fig for fig in plot_sample_distributions(
@@ -298,8 +299,8 @@ def plot_all_outputs(
                 plot_in_log_scale=plot_in_log_scale,
                 **kwargs
             )
-        },
-        **{
+        } if plot_distributions else {}),
+        **({
             'POWER samples over states{}'.format(
                 ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
             ): fig for fig in plot_sample_distributions(
@@ -310,7 +311,7 @@ def plot_all_outputs(
                 plot_in_log_scale=plot_in_log_scale,
                 **kwargs
             )
-        },
+        } if plot_distributions else {}),
         **(dict(col.ChainMap(*[{
                 'POWER correlations, state {0}{1}'.format(
                     state, ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''

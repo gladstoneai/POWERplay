@@ -16,6 +16,7 @@ def cli_experiment_sweep(
     local_sweep_name=os.environ.get('LOCAL_SWEEP_NAME'),
     sweep_variable_params=json.loads(os.environ.get('SWEEP_VARIABLE_PARAMS')),
     plot_as_gridworld=(os.environ.get('PLOT_AS_GRIDWORLD') == 'True'),
+    plot_distributions=(os.environ.get('PLOT_DISTRIBUTIONS') == 'True'),
     plot_correlations=(os.environ.get('PLOT_CORRELATIONS') == 'True'),
     diagnostic_mode=(os.environ.get('DIAGNOSTIC_MODE') == 'True'),
     plot_in_log_scale=(os.environ.get('PLOT_IN_LOG_SCALE') == 'True'),
@@ -97,18 +98,23 @@ def cli_experiment_sweep(
             'diagnostics': diagnostic_dict
         }, folder=save_folder)
 
+        viz_kwargs = {
+            'save_figure': data.save_figure,
+            'save_folder': save_folder,
+            'show': False,
+            'plot_as_gridworld': plot_as_gridworld,
+            'plot_distributions': plot_distributions,
+            'plot_correlations': plot_correlations,
+            'plot_in_log_scale': plot_in_log_scale
+        }
+
         run.log({
             fig_name: wb.Image(fig) for fig_name, fig in viz.plot_all_outputs(
                 reward_samples_agent_A,
                 power_samples_agent_A,
                 graphs_to_plot,
                 save_handle='agent_A-{}'.format(run.name),
-                save_figure=data.save_figure,
-                save_folder=save_folder,
-                show=False,
-                plot_as_gridworld=plot_as_gridworld,
-                plot_correlations=plot_correlations,
-                plot_in_log_scale=plot_in_log_scale
+                **viz_kwargs
             ).items()
         })
 
@@ -119,12 +125,7 @@ def cli_experiment_sweep(
                     power_samples_agent_B,
                     [graphs_to_plot[0]],
                     save_handle='agent_B-{}'.format(run.name),
-                    save_figure=data.save_figure,
-                    save_folder=save_folder,
-                    show=False,
-                    plot_as_gridworld=plot_as_gridworld,
-                    plot_correlations=plot_correlations,
-                    plot_in_log_scale=plot_in_log_scale
+                    **viz_kwargs
                 ).items()
             })
 
@@ -135,12 +136,7 @@ def cli_experiment_sweep(
                         diagnostic_dict['power_samples_A_against_random'],
                         graphs_to_plot,
                         save_handle='agent_A_AGAINST_RANDOM-{}'.format(run.name),
-                        save_figure=data.save_figure,
-                        save_folder=save_folder,
-                        show=False,
-                        plot_as_gridworld=plot_as_gridworld,
-                        plot_correlations=plot_correlations,
-                        plot_in_log_scale=plot_in_log_scale
+                        **viz_kwargs
                     ).items()
                 })
 
@@ -150,12 +146,7 @@ def cli_experiment_sweep(
                         diagnostic_dict['power_samples_B_random'],
                         [graphs_to_plot[0]],
                         save_handle='agent_B_RANDOM_POLICY-{}'.format(run.name),
-                        save_figure=data.save_figure,
-                        save_folder=save_folder,
-                        show=False,
-                        plot_as_gridworld=plot_as_gridworld,
-                        plot_correlations=plot_correlations,
-                        plot_in_log_scale=plot_in_log_scale
+                        **viz_kwargs
                     ).items()
                 })
 

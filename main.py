@@ -47,9 +47,9 @@ from src import base
 
 # TODO NEXT:
 # - Test different Pareto distribution parameters and how they affect alignment curves (also test Bernoulli distributions)
-# - Allow us to not plot reward distributions (it's getting to be too many plots, takes time in sweeps)
 # - Build in capability to enter an initial "seed" policy for Agent B
 # - Set a deterministic initial seed policy for Agent B to make Agent A's initial policy more exploitable, then test instrumental convergence
+# - Remove diagnostic_mode and make it the default for reward correlation runs (or rename it to plot_first_optimization or something )
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability
 

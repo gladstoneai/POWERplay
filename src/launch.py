@@ -16,6 +16,7 @@ def launch_sweep(
     sweep_config_folder=data.SWEEP_CONFIGS_FOLDER,
     output_folder_local=data.EXPERIMENT_FOLDER,
     plot_as_gridworld=False,
+    plot_distributions=False,
     plot_correlations=False,
     announce_when_done=False,
     diagnostic_mode=False,
@@ -53,6 +54,7 @@ def launch_sweep(
         'LOCAL_SWEEP_NAME': sweep_name,
         'SWEEP_VARIABLE_PARAMS': json.dumps(misc.get_variable_params(input_sweep_config)),
         'PLOT_AS_GRIDWORLD': str(plot_as_gridworld), # Only str allowed in os.environ
+        'PLOT_DISTRIBUTIONS': str(plot_distributions),
         'PLOT_CORRELATIONS': str(plot_correlations),
         'DIAGNOSTIC_MODE': str(diagnostic_mode),
         'PLOT_IN_LOG_SCALE': str(plot_in_log_scale)
