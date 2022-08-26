@@ -147,10 +147,10 @@ def run_multiagent_with_reward_experiment(
 
     if diagnostic_mode:
         print()
-        print('Computing Agent B POWER samples (uniform random policy):')
+        print('Computing Agent B POWER samples (seed policy):')
         print()
 
-        power_samples_A_against_random = torch.stack([
+        power_samples_A_against_seed = torch.stack([
             compute_power_values(
                 reward_sample_A, optimal_values_A, discount_rate_agent_A
             ) for reward_sample_A, optimal_values_A in zip(reward_samples_A, all_optimal_values_A)
@@ -235,11 +235,11 @@ def run_multiagent_with_reward_experiment(
         power_samples_A,
         power_samples_B,
         {} if not diagnostic_mode else {
-            'all_values_A_against_random': all_optimal_values_A,
+            'all_values_A_against_seed': all_optimal_values_A,
             'all_values_A_against_B': all_values_A,
-            'all_values_B_random': all_values_B,
-            'power_samples_A_against_random': power_samples_A_against_random,
-            'power_samples_B_random': power_samples_B_random
+            'all_values_B_seed_policy': all_values_B,
+            'power_samples_A_against_seed': power_samples_A_against_seed,
+            'power_samples_B_seed_policy': power_samples_B_random
         }
     )
 

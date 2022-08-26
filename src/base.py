@@ -82,11 +82,14 @@ def update_mdp_graph_with_interface(input_mdp, agent_label='A'):
     
     return output_mdp_
 
+# y_axis_bounds is either None (and set the y-axis bounds by default based on the data) or a 2-element list
+# with the lower bound as the first element, and the upper bound as the second element.
 def plot_alignment_curves(
     sweep_id,
     show=True,
     plot_title='',
     fig_name='',
+    y_axis_bounds=None,
     data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
 ):
@@ -106,7 +109,7 @@ def plot_alignment_curves(
     all_correlations = [run_props['reward_correlation'] for run_props in all_run_props_]
     all_powers_A = [run_props['power_samples'].mean() for run_props in all_run_props_]
     all_powers_B = [run_props['power_samples_agent_B'].mean() for run_props in all_run_props_]
-    agent_A_baseline_power = all_run_props_[0]['power_samples_A_against_random'].mean()
+    agent_A_baseline_power = all_run_props_[0]['power_samples_A_against_seed'].mean()
 
     fig, ax = plt.subplots()
 
@@ -115,6 +118,9 @@ def plot_alignment_curves(
     ax.set_xlabel('Reward correlation')
     ax.set_ylabel('POWER')
     ax.set_title(plot_title)
+
+    if y_axis_bounds is not None:
+        ax.set_ylim(y_axis_bounds)
 
     ax.plot(all_correlations, [agent_A_baseline_power] * len(all_correlations), 'b-', label='Agent A baseline POWER')
     ax.legend()
@@ -231,10 +237,10 @@ def construct_single_agent_gridworld_mdp(num_rows, num_cols, mdp_save_name=None)
 
 def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_name=None, policy_save_name=None):
     stochastic_graph = mdp.gridworld_to_stochastic_graph(
-            mdp.construct_gridworld(
-                num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
-            )
+        mdp.construct_gridworld(
+            num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
         )
+    )
     policy_b_ = graph.quick_mdp_to_policy(stochastic_graph)
 
     print('Now updating policy for Agent B.')

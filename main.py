@@ -46,9 +46,7 @@ from src import base
 # --- Content-wise, this is really strong already.
 
 # TODO NEXT:
-# - Test adding interactions and see how they affect the alignment curves
-# - Set a deterministic initial seed policy for Agent B to make Agent A's initial policy more exploitable, then test instrumental convergence
-# - Remove diagnostic_mode and make it the default for reward correlation runs (or rename it to plot_first_optimization or something)
+# - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability
 
