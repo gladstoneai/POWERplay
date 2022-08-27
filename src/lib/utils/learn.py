@@ -80,5 +80,5 @@ def compute_optimal_policy_tensor(optimal_values, transition_tensor):
         torch.eq(
             action_values,
             action_values.max(dim=1)[0].unsqueeze(1).tile(1, transition_tensor.shape[1])
-        ).to(torch.float32), p=1, dim=1
+        ).to(torch.float32) * transition_tensor.sum(dim=2), p=1, dim=1
     )

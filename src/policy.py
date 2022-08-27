@@ -4,9 +4,7 @@ import networkx as nx
 from .lib.utils import graph
 from .lib.utils import dist
 from .lib.utils import misc
-from .lib import data
 from .lib import check
-from .lib import get
 from .lib import runex
 
 def update_state_actions(policy_graph, state, new_policy_actions):
@@ -57,7 +55,7 @@ def sample_optimal_policy_from_run(run_properties, reward_sample_index=0):
         runex.find_optimal_policy(
             reward_function_A,
             discount_rate_A,
-            graph.any_graphs_to_transition_tensor(transition_graphs),
+            graph.any_graphs_to_transition_tensor(*transition_graphs),
             value_initialization=None,
             convergence_threshold=convergence_threshold
         ), # NOTE: This works for the agent of a single-agent system, OR for Agent A of a multi-agent system.

@@ -9,7 +9,7 @@ from .lib import check
 from . import mdp
 from . import policy
 from . import multi
-from . import viz
+from . import view
 
 def update_mdp_graph_with_interface(input_mdp, agent_label='A'):
     output_mdp_ = cp.deepcopy(input_mdp)
@@ -341,7 +341,7 @@ def visualize_full_gridworld_rollout(
     run_properties = get.get_properties_from_run(sweep_id, run_suffix=run_suffix)
     policy_data = policy.sample_optimal_policy_from_run(run_properties, reward_sample_index=reward_sample_index)
 
-    viz.plot_gridworld_rollout(
+    view.plot_gridworld_rollout(
         graph.get_states_from_graph(policy_data['policy_graph_A']),
         policy.simulate_policy_rollout(
             initial_state,
