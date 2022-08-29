@@ -78,7 +78,7 @@ def sample_optimal_policy_from_run(run_properties, reward_sample_index=0):
             'policy_graph_B': transition_graphs[1]
         }
 
-    else: # transition_graphs = (mdp_graph_A, mdp_graph_B)
+    elif sweep_type == 'multiagent_with_reward': # transition_graphs = (mdp_graph_A, mdp_graph_B)
         reward_function_B, discount_rate_B = (
             run_properties['reward_samples_agent_B'][reward_sample_index],
             run_properties['discount_rate_agent_B']

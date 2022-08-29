@@ -143,7 +143,7 @@ def cli_experiment_sweep(
                 run.log({
                     fig_name: wb.Image(fig) for fig_name, fig in viz.plot_all_outputs(
                         reward_samples_agent_B,
-                        diagnostic_dict['power_samples_B_random'],
+                        diagnostic_dict['power_samples_B_seed_policy'],
                         [graphs_to_plot[0]],
                         save_handle='agent_B_SEED_POLICY-{}'.format(run.name),
                         **viz_kwargs

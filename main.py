@@ -46,6 +46,7 @@ from src import base
 # --- Content-wise, this is really strong already.
 
 # TODO NEXT:
+# - Make Agent A and Agent B move simultaneously, instead of in turns
 # - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability
