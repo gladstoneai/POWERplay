@@ -98,7 +98,7 @@ def render_gridworld_rollout_snapshot(state_list, current_state, reward_function
     agent_A_color = 'cyan'
     agent_B_color = 'red'
 
-    if graph.are_graph_states_multiagent(state_list):
+    if graph.are_gridworld_states_multiagent(state_list):
         both_agent_states = np.array(graph.multiagent_states_to_single_agent_states(state_list)).T
         agent_A_states, agent_B_states = both_agent_states if agent_whose_rewards_are_displayed == 'A' else both_agent_states[::-1]
         # When we want to visualize the Agent B rewards, we swap the state labels of the 2 agents (but we DON'T swap the COLORS of the agents as they move around on the gridworld)
@@ -145,7 +145,7 @@ def render_gridworld_rollout_snapshot(state_list, current_state, reward_function
         agent_whose_rewards_are_displayed, agent_A_color if agent_whose_rewards_are_displayed == 'A' else agent_B_color)
     )
 
-    if graph.are_graph_states_multiagent([current_state]):
+    if graph.are_gridworld_states_multiagent([current_state]):
         agent_A_coords, agent_B_coords = graph.gridworld_states_to_coords([agent_A_display_state, agent_B_display_state])
         axs_plot_[0][0].add_patch(
             pat.Rectangle((agent_A_coords[1] - 0.5, agent_A_coords[0] - 0.5), 1, 1, fill=False, edgecolor=agent_A_color, lw=12)
@@ -175,7 +175,7 @@ def render_gridworld_aggregations(
 ):
     agent_A_states, agent_B_states = np.array(
         graph.multiagent_states_to_single_agent_states(state_list)
-    ).T if graph.are_graph_states_multiagent(state_list) else (
+    ).T if graph.are_gridworld_states_multiagent(state_list) else (
         np.array(state_list), np.array(['(0, 0)'] * len(state_list))
     )
     agent_A_unique_states, agent_B_unique_states = (
@@ -216,7 +216,7 @@ def render_gridworld_aggregations(
         axs_plot_[axis_coords[0]][axis_coords[1]].set_xticks(range(num_cols))
         axs_plot_[axis_coords[0]][axis_coords[1]].set_yticks(range(num_rows))
 
-        if graph.are_graph_states_multiagent(state_list):
+        if graph.are_gridworld_states_multiagent(state_list):
             axs_plot_[axis_coords[0]][axis_coords[1]].title.set_text('Agent B at {}'.format(agent_B_state))
             axs_plot_[axis_coords[0]][axis_coords[1]].add_patch(
                 pat.Rectangle((axis_coords[1] - 0.5, axis_coords[0] - 0.5), 1, 1, fill=False, edgecolor='red', lw=3)
@@ -280,7 +280,7 @@ def render_distributions(
 
     agent_A_states, agent_B_states = np.array(
         graph.multiagent_states_to_single_agent_states(plotted_states)
-    ).T if (plot_as_gridworld and graph.are_graph_states_multiagent(plotted_states)) else (
+    ).T if (plot_as_gridworld and graph.are_gridworld_states_multiagent(plotted_states)) else (
         np.array(plotted_states), np.array(['(0, 0)'] * len(plotted_states))
     )
     agent_B_unique_states = sorted(list(set(agent_B_states)))
@@ -295,7 +295,7 @@ def render_distributions(
                 states_to_subplot=agent_A_states[figure_indices], sharey=True
             )
 
-            if graph.are_graph_states_multiagent(plotted_states):
+            if graph.are_gridworld_states_multiagent(plotted_states):
                 agent_B_coords = graph.gridworld_state_to_coords(agent_B_state)
 
                 fig_.suptitle('Agent B at {}'.format(agent_B_state))
@@ -342,7 +342,7 @@ def render_correlations(
 ):
     agent_A_states, agent_B_states = np.array(
         graph.multiagent_states_to_single_agent_states(state_y_list)
-    ).T if (plot_as_gridworld and graph.are_graph_states_multiagent(state_y_list)) else (
+    ).T if (plot_as_gridworld and graph.are_gridworld_states_multiagent(state_y_list)) else (
         np.array(state_y_list), np.array(['(0, 0)'] * len(state_y_list))
     )
     agent_B_unique_states = sorted(list(set(agent_B_states)))
@@ -357,7 +357,7 @@ def render_correlations(
                 states_to_subplot=agent_A_states[figure_indices], sharey=False
             )
 
-            if graph.are_graph_states_multiagent(state_y_list):
+            if graph.are_gridworld_states_multiagent(state_y_list):
                 agent_B_coords = graph.gridworld_state_to_coords(agent_B_state)
 
                 fig_.suptitle('Agent B at {}'.format(agent_B_state))

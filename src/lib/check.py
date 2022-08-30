@@ -74,11 +74,19 @@ def check_full_graph_compatibility(graph_1, graph_2):
 def check_stochastic_state_name(name):
     if '__' in name:
         raise Exception(
-            'The state or action {} has a double underscore in its name, which is forbidden'.format(name)
+            'The state or action {} has a double underscore in its name, which is forbidden.'.format(name)
         )
-    
+
     if ']' in name or '[' in name:
         raise Exception('The state or action {} can\'t have a [ or ] character in its name.'.format(name))
+    
+    if not graph.are_general_graph_states_multiagent([name]):
+        if '_' in name:
+            raise Exception(
+                'The single-agent state or action {} has an underscore in its name, which is forbidden.'.format(
+                    name
+                )
+            )
 
 def check_action_dict(action_dict, tolerance=PROBABILITY_TOLERANCE):
     if action_dict == {}:

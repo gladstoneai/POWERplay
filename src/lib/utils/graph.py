@@ -19,15 +19,14 @@ def gridworld_coords_to_states(gridworld_coords_list):
 def single_agent_states_to_multiagent_state(agent_A_state, agent_B_state):
     return '{0}_A^{1}_B'.format(agent_A_state, agent_B_state)
 
-def single_agent_states_to_multiagent_states(single_agent_states_list):
-    return [
-        single_agent_states_to_multiagent_state(
-            *single_agent_states
-        ) for single_agent_states in single_agent_states_list
-    ]
+def single_agent_actions_to_multiagent_action(agent_A_action, agent_B_action):
+    return single_agent_states_to_multiagent_state(agent_A_action, agent_B_action)
 
 def multiagent_state_to_single_agent_states(multiagent_state):
     return [state.split('_')[0] for state in multiagent_state.split('^')]
+
+def multiagent_action_to_single_agent_actions(multiagent_action):
+    return multiagent_state_to_single_agent_states(multiagent_action)
 
 def multiagent_states_to_single_agent_states(multiagent_state_list):
     return [
@@ -84,13 +83,18 @@ def get_available_states_and_probabilities_from_mdp_graph_state_and_action(input
         )
     }
 
-def are_graph_states_multiagent(state_list):
+def are_gridworld_states_multiagent(state_list):
     return all([
         bool(re.fullmatch(r'\(\d+, \d+\)_A\^\(\d+, \d+\)_B', state)) for state in state_list
     ])
 
+def are_general_graph_states_multiagent(state_list):
+    return all([
+        bool(re.fullmatch(r'.*_A\^.*_B', state)) for state in state_list
+    ])
+
 def is_graph_multiagent(input_graph):
-    return are_graph_states_multiagent(get_states_from_graph(input_graph))
+    return are_general_graph_states_multiagent(get_states_from_graph(input_graph))
 
 def transform_graph_for_plots(mdp_or_policy_graph, reward_to_plot=None, discount_rate_to_plot=None):
     mdp_or_policy_graph_ = cp.deepcopy(mdp_or_policy_graph)
