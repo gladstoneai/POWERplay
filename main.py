@@ -47,11 +47,11 @@ from src import base
 
 # TODO NEXT:
 # - Make Agent A and Agent B move simultaneously, instead of in turns
-# -- Write function to combine the simultaneous transition function with either agent's policy to get a full transition function for other agent
 # -- Refactor codebase to use the new simultaneous transition functions in experiments
 # --- Include checker function to ensure that the policy and the MDP have the same allowed actions at all states
 # --- Change graph_to_transition_tensor to graph_to_single_agent_transition_tensor
 # --- Change graph_to_simultaneous_transition_tensor to graph_to_multiagent_transition_tensor and delete existing function by that name
+# --- Delete compute_multiagent_transition_tensor and replace with compute_full_multiagent_transition_tensor
 # -- Update test_run_multi_actual to confirm same results as test_run_multi_simulated for the simultaneous transition
 # -- Update test_sweep_correlated_rewards to the simultaneous transition
 # -- Update transition probability calculation for rollouts: https://drive.google.com/file/d/1WD1Rd4K_71sgqg_P8Tp5QMnWk_Sdq5xL/view?usp=sharing

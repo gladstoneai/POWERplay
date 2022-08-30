@@ -235,6 +235,27 @@ def graph_to_policy_tensor(policy_graph):
     
     return policy_tensor_.to(torch.float)
 
+# Relevant calculation: https://drive.google.com/file/d/1XwM_HXkFu1VglsYhsew6SM3BMqb9T_9R/view?usp=sharing
+def compute_full_multiagent_transition_tensor(
+    simultaneous_transition_tensor,
+    policy_tensor,
+    policy_agent_is_A=True
+):
+    # Canonical ordering of dimensions is (current state, agent A action, agent B action, next state).
+    # If we have the policy for Agent B, transpose axis 1 (agent A action) and axis 2 (agent B action)
+    # before proceeding.
+    transition_tensor = simultaneous_transition_tensor if (
+        policy_agent_is_A
+    ) else torch.transpose(simultaneous_transition_tensor, 1, 2)
+
+    return (
+        transition_tensor * policy_tensor.unsqueeze(-1).expand(
+            -1, -1, transition_tensor.shape[2]
+        ).unsqueeze(-1).expand(
+            -1, -1, -1, transition_tensor.shape[3]
+        )
+    ).sum(dim=1)
+
 def compute_multiagent_transition_tensor(transition_tensor_A, policy_tensor_B, transition_tensor_B):
     num_states = transition_tensor_A.shape[0]
     num_actions_A = transition_tensor_A.shape[1]
