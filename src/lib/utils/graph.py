@@ -66,6 +66,16 @@ def get_actions_from_graph(input_graph):
         )
     ])) if is_graph_stochastic(input_graph) else list(input_graph)
 
+def get_single_agent_actions_from_multiagent_graph(input_graph):
+    action_pairs = [
+        multiagent_action_to_single_agent_actions(joint_action) for joint_action in get_actions_from_graph(input_graph)
+    ]
+
+    return [
+        sorted(set([action_pair[0] for action_pair in action_pairs])),
+        sorted(set([action_pair[1] for action_pair in action_pairs]))
+    ]
+
 def get_available_actions_from_graph_state(input_graph, state):
     return [
         decompose_stochastic_graph_node(
@@ -144,6 +154,40 @@ def transform_graph_for_plots(mdp_or_policy_graph, reward_to_plot=None, discount
         }
 
     return mdp_or_policy_graph_
+
+def graph_to_simultaneous_transition_tensor(mdp_graph):
+    if is_graph_stochastic(mdp_graph):
+        state_list = get_states_from_graph(mdp_graph)
+        action_list_A, action_list_B = get_single_agent_actions_from_multiagent_graph(mdp_graph)
+        transition_tensor_ = torch.zeros(len(state_list), len(action_list_A), len(action_list_B), len(state_list))
+
+        for i in range(len(state_list)):
+            for j in range(len(action_list_A)):
+                for k in range(len(action_list_B)):
+                    for l in range(len(state_list)):
+
+                        try:
+                            transition_tensor_[i][j][k][l] = mdp_graph[
+                                build_stochastic_graph_node(
+                                    single_agent_actions_to_multiagent_action(action_list_A[j], action_list_B[k]),
+                                    state_list[i]
+                                )
+                            ][
+                                build_stochastic_graph_node(
+                                    state_list[l],
+                                    single_agent_actions_to_multiagent_action(action_list_A[j], action_list_B[k]),
+                                    state_list[i]
+                                )
+                            ]['weight']
+
+# Some state-action-action-state quadruples don't occur; transition_tensor_ entry remains zero in those cases.
+                        except KeyError:
+                            pass
+    
+    else:
+        transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(mdp_graph)))
+    
+    return transition_tensor_
 
 def graph_to_transition_tensor(mdp_graph):
     if is_graph_stochastic(mdp_graph):
