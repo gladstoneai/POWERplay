@@ -47,6 +47,17 @@ from src import base
 
 # TODO NEXT:
 # - Make Agent A and Agent B move simultaneously, instead of in turns
+# -- Write multi function to quickly generate the new simultaneous transition graph
+# -- Write pipeline to convert simultaneous transition graph to a transition tensor
+# -- Write plotting code to visualize the new simultaneous transition graph
+# -- Write base function to help the user generate a simultaneous transition graph with desired properties
+# -- Write function to combine the simultaneous transition function with either agent's policy to get a full transition function for other agent
+# -- Refactor codebase to use the new simultaneous transition functions in experiments
+# -- Update test_run_multi_actual to confirm same results as test_run_multi_simulated for the simultaneous transition
+# -- Update test_sweep_correlated_rewards to the simultaneous transition
+# -- Update transition probability calculation for rollouts: https://drive.google.com/file/d/1WD1Rd4K_71sgqg_P8Tp5QMnWk_Sdq5xL/view?usp=sharing
+# -- Update code for rollout visualization of simultaneous transitions
+# -- Do a full test of the refactored code
 # - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability

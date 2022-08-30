@@ -135,8 +135,15 @@ def test_multiagent():
         'test_run_multi_simulated.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         plot_distributions=True,
+        plot_correlations=True,
         project='uncategorized'
     )
+
+    print(
+        'NOTE: The simulated and actual tests will temporarily give different results. '\
+        'The simulated results are currently the correct canonical output.'
+    )
+    
     launch.launch_sweep(
         'test_run_multi_actual.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
