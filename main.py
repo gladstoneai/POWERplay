@@ -47,11 +47,9 @@ from src import base
 
 # TODO NEXT:
 # - Make Agent A and Agent B move simultaneously, instead of in turns
-# -- Write multi function to quickly generate the new simultaneous transition graph
-# --- Test the generator function with state transition probabilities not equal to 1, to confirm correct combinatorics
-# -- Write pipeline to convert simultaneous transition graph to a transition tensor
-# -- Write plotting code to visualize the new simultaneous transition graph
 # -- Write base function to help the user generate a simultaneous transition graph with desired properties
+# -- Clean up create_multiagent_graph original function use in base and README
+# -- Write pipeline to convert simultaneous transition graph to a transition tensor
 # -- Write function to combine the simultaneous transition function with either agent's policy to get a full transition function for other agent
 # -- Refactor codebase to use the new simultaneous transition functions in experiments
 # -- Update test_run_multi_actual to confirm same results as test_run_multi_simulated for the simultaneous transition
