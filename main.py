@@ -47,7 +47,6 @@ from src import base
 
 # TODO NEXT:
 # - Make Agent A and Agent B move simultaneously, instead of in turns
-# -- Write function to generate a quick random policy on a simultaneous multiagent graph
 # -- Write pipeline to convert simultaneous transition graph to a transition tensor
 # -- Write function to combine the simultaneous transition function with either agent's policy to get a full transition function for other agent
 # -- Refactor codebase to use the new simultaneous transition functions in experiments

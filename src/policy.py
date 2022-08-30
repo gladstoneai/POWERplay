@@ -7,6 +7,7 @@ from .lib.utils import misc
 from .lib import check
 from .lib import runex
 from . import multi
+from . import mdp
 
 def single_agent_to_multiagent_policy_graph(single_agent_policy_graph, current_agent_is_A=True):
     multiagent_graph_ = nx.DiGraph()
@@ -26,24 +27,60 @@ def single_agent_to_multiagent_policy_graph(single_agent_policy_graph, current_a
 def create_single_agent_random_policy(mdp_graph):
     policy_graph_ = cp.deepcopy(mdp_graph)
 
-    policy_graph_.remove_nodes_from([
-        node for node in policy_graph_.nodes if len(graph.decompose_stochastic_graph_node(node)) == 3
-    ])
-
-    for state_node in graph.get_states_from_graph(policy_graph_):
-        state_edges = policy_graph_.edges(state_node)
+    for state in graph.get_states_from_graph(policy_graph_):
+        state_edges = policy_graph_.edges(graph.build_stochastic_graph_node(state))
 
         nx.set_edge_attributes(
             policy_graph_,
             { edge: (1 / len(state_edges)) for edge in state_edges },
             name='weight'
         )
+    
+    policy_graph_.remove_nodes_from([
+        node for node in policy_graph_.nodes if len(graph.decompose_stochastic_graph_node(node)) == 3
+    ])
 
     return policy_graph_
 
-def quick_mdp_to_policy(mdp_graph):
+def create_simultaneous_multiagent_random_policy(mdp_graph, current_agent_is_A=True):
+    policy_graph_ = nx.DiGraph()
+
+    for state in graph.get_states_from_graph(mdp_graph):
+        action_pairs = [
+            graph.multiagent_action_to_single_agent_actions(
+                joint_action
+            ) for joint_action in graph.get_available_actions_from_graph_state(mdp_graph, state)
+        ]
+
+        unique_actions = list(set(
+            [
+                action_pair[0] for action_pair in action_pairs
+            ] if current_agent_is_A else [
+                action_pair[1] for action_pair in action_pairs
+            ]
+        ))
+
+        policy_graph_ = mdp.add_state_action(policy_graph_, state, {
+            action: { 'TEMP': 1 } for action in unique_actions # This next-state node will be immediately deleted
+        })
+
+        policy_graph_.remove_nodes_from([
+            node for node in policy_graph_.nodes if len(graph.decompose_stochastic_graph_node(node)) == 3
+        ])
+
+        state_edges = policy_graph_.edges(graph.build_stochastic_graph_node(state))
+
+        nx.set_edge_attributes(
+            policy_graph_,
+            { edge: (1 / len(state_edges)) for edge in state_edges },
+            name='weight'
+        )
+    
+    return policy_graph_
+
+def quick_mdp_to_policy(mdp_graph, current_agent_is_A=True):
     if graph.are_general_graph_states_multiagent(graph.get_states_from_graph(mdp_graph)):
-        pass
+        return create_simultaneous_multiagent_random_policy(mdp_graph, current_agent_is_A=current_agent_is_A)
 
     else:
         return create_single_agent_random_policy(mdp_graph)
