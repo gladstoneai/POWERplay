@@ -23,16 +23,16 @@ def single_agent_to_multiagent_graph_node(
         ) else states_and_actions_single[i] for i in range(len(states_and_actions_single))
     ])
 
-def create_multiagent_graph(single_agent_graph, current_agent_is_A=True):
+def create_multiagent_policy_graph(single_agent_policy_graph, current_agent_is_A=True):
     multiagent_graph_ = nx.DiGraph()
 
-    for other_agent_state in graph.get_states_from_graph(single_agent_graph):
+    for other_agent_state in graph.get_states_from_graph(single_agent_policy_graph):
         multiagent_graph_ = nx.compose(
             multiagent_graph_,
-            nx.relabel_nodes(cp.deepcopy(single_agent_graph), {
+            nx.relabel_nodes(cp.deepcopy(single_agent_policy_graph), {
                 node: single_agent_to_multiagent_graph_node(
                     node, other_agent_state, current_agent_is_A=current_agent_is_A
-                ) for node in single_agent_graph.nodes
+                ) for node in single_agent_policy_graph.nodes
             })
         )
     
