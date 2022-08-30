@@ -235,21 +235,3 @@ def one_step_rollout(state_vector, policy_tensor, transition_tensor):
 
 def state_to_vector(state, state_list):
     return tf.one_hot(torch.tensor(state_list.index(state)), num_classes=len(state_list))
-
-def quick_mdp_to_policy(mdp_graph):
-    policy_graph_ = cp.deepcopy(mdp_graph)
-
-    policy_graph_.remove_nodes_from([
-        node for node in policy_graph_.nodes if len(decompose_stochastic_graph_node(node)) == 3
-    ])
-
-    for state_node in get_states_from_graph(policy_graph_):
-        state_edges = policy_graph_.edges(state_node)
-
-        nx.set_edge_attributes(
-            policy_graph_,
-            { edge: (1 / len(state_edges)) for edge in state_edges },
-            name='weight'
-        )
-
-    return policy_graph_

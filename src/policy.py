@@ -6,6 +6,47 @@ from .lib.utils import dist
 from .lib.utils import misc
 from .lib import check
 from .lib import runex
+from . import multi
+
+def single_agent_to_multiagent_policy_graph(single_agent_policy_graph, current_agent_is_A=True):
+    multiagent_graph_ = nx.DiGraph()
+
+    for other_agent_state in graph.get_states_from_graph(single_agent_policy_graph):
+        multiagent_graph_ = nx.compose(
+            multiagent_graph_,
+            nx.relabel_nodes(cp.deepcopy(single_agent_policy_graph), {
+                node: multi.single_agent_to_multiagent_graph_node(
+                    node, other_agent_state, current_agent_is_A=current_agent_is_A
+                ) for node in single_agent_policy_graph.nodes
+            })
+        )
+    
+    return multiagent_graph_
+
+def create_single_agent_random_policy(mdp_graph):
+    policy_graph_ = cp.deepcopy(mdp_graph)
+
+    policy_graph_.remove_nodes_from([
+        node for node in policy_graph_.nodes if len(graph.decompose_stochastic_graph_node(node)) == 3
+    ])
+
+    for state_node in graph.get_states_from_graph(policy_graph_):
+        state_edges = policy_graph_.edges(state_node)
+
+        nx.set_edge_attributes(
+            policy_graph_,
+            { edge: (1 / len(state_edges)) for edge in state_edges },
+            name='weight'
+        )
+
+    return policy_graph_
+
+def quick_mdp_to_policy(mdp_graph):
+    if graph.are_general_graph_states_multiagent(graph.get_states_from_graph(mdp_graph)):
+        pass
+
+    else:
+        return create_single_agent_random_policy(mdp_graph)
 
 def update_state_actions(policy_graph, state, new_policy_actions):
     check.check_state_in_graph_states(policy_graph, state)

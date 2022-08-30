@@ -51,6 +51,7 @@ from src import base
 # -- Write pipeline to convert simultaneous transition graph to a transition tensor
 # -- Write function to combine the simultaneous transition function with either agent's policy to get a full transition function for other agent
 # -- Refactor codebase to use the new simultaneous transition functions in experiments
+# --- Include checker function to ensure that the policy and the MDP have the same allowed actions at all states
 # -- Update test_run_multi_actual to confirm same results as test_run_multi_simulated for the simultaneous transition
 # -- Update test_sweep_correlated_rewards to the simultaneous transition
 # -- Update transition probability calculation for rollouts: https://drive.google.com/file/d/1WD1Rd4K_71sgqg_P8Tp5QMnWk_Sdq5xL/view?usp=sharing

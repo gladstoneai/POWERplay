@@ -240,7 +240,7 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
             num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
         )
     )
-    policy_b_ = graph.quick_mdp_to_policy(stochastic_graph)
+    policy_b_ = policy.quick_mdp_to_policy(stochastic_graph)
 
     print('Now updating policy for Agent B.')
     print('State update example: { \'stay\': 0, \'up\': 1, \'down\': 0, \'left\': 0, \'right\': 0 }')
@@ -261,7 +261,7 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
                 }
             )
     
-    policy_b_multi_ = multi.create_multiagent_policy_graph(policy_b_, current_agent_is_A=False)
+    policy_b_multi_ = policy.create_multiagent_policy_graph(policy_b_, current_agent_is_A=False)
 
     print()
 
@@ -348,7 +348,7 @@ def visualize_full_gridworld_rollout(
     )
 
 def build_quick_random_policy(mdp_graph):
-    return graph.quick_mdp_to_policy(mdp_graph)
+    return policy.quick_mdp_to_policy(mdp_graph)
 
 def calculate_power_baseline(sweep_id, run_suffix='', agent_label='A'):
    check.check_agent_label(agent_label)
