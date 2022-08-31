@@ -1,6 +1,7 @@
 from .utils import graph
 from .utils import misc
 from . import data
+from . import check
 
 def get_sweep_run_suffixes_for_param(sweep_id, param_name, folder=data.EXPERIMENT_FOLDER):
     sweep_name = data.get_full_sweep_name_from_id(sweep_id, folder=folder)
@@ -53,9 +54,11 @@ def get_sweep_state_list(sweep_id, folder=data.EXPERIMENT_FOLDER):
 # TODO: Document.
 # NOTE: The output of get_sweep_run_results(sweep_id, run_suffix, results_type='inputs')
 # can be used as the run_params input here.
+# check_graph_compatibilities lets us confirm that all the graphs are mutually compatible in terms of states and actions.
 def get_transition_graphs(
     run_params,
     sweep_type,
+    check_graph_compatibilities=True,
     mdps_folder=data.MDPS_FOLDER,
     policies_folder=data.POLICIES_FOLDER
 ):
@@ -63,30 +66,36 @@ def get_transition_graphs(
         return [data.load_graph_from_dot_file(run_params.get('mdp_graph'), folder=mdps_folder)]
     
     elif sweep_type == 'multiagent_fixed_policy':
-        return [
-            data.load_graph_from_dot_file(
-                run_params.get('mdp_graph_agent_A'), folder=mdps_folder
-            ),
-            data.load_graph_from_dot_file(
-                run_params.get('policy_graph_agent_B'), folder=policies_folder
-            ),
-            data.load_graph_from_dot_file(
-                run_params.get('mdp_graph_agent_B'), folder=mdps_folder
-            )
-        ]
+        mdp_graph_A = data.load_graph_from_dot_file(
+            run_params.get('mdp_graph_agent_A'), folder=mdps_folder
+        )
+        policy_graph_B = data.load_graph_from_dot_file(
+            run_params.get('policy_graph_agent_B'), folder=policies_folder
+        )
+        mdp_graph_B = data.load_graph_from_dot_file(
+            run_params.get('mdp_graph_agent_B'), folder=mdps_folder
+        )
+
+        if check_graph_compatibilities:
+            check.check_full_graph_compatibility(policy_graph_B, mdp_graph_B)
+
+        return [mdp_graph_A, policy_graph_B, mdp_graph_B]
     
     elif sweep_type == 'multiagent_with_reward':
-        return [
-            data.load_graph_from_dot_file(
-                run_params.get('mdp_graph_agent_A'), folder=mdps_folder
-            ),
-            data.load_graph_from_dot_file(
-                run_params.get('seed_policy_graph_agent_B', None), folder=policies_folder
-            ),
-            data.load_graph_from_dot_file(
-                run_params.get('mdp_graph_agent_B'), folder=mdps_folder
-            )
-        ]
+        mdp_graph_A = data.load_graph_from_dot_file(
+            run_params.get('mdp_graph_agent_A'), folder=mdps_folder
+        )
+        seed_policy_graph_B = data.load_graph_from_dot_file(
+            run_params.get('seed_policy_graph_agent_B', None), folder=policies_folder
+        )
+        mdp_graph_B = data.load_graph_from_dot_file(
+            run_params.get('mdp_graph_agent_B'), folder=mdps_folder
+        )
+
+        if check_graph_compatibilities:
+            check.check_full_graph_compatibility(seed_policy_graph_B, mdp_graph_B)
+        
+        return [mdp_graph_A, seed_policy_graph_B, mdp_graph_B]
 
 def get_properties_from_run(
     sweep_id,

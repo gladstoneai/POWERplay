@@ -50,7 +50,7 @@ def check_graph_state_compatibility(graph_1, graph_2):
     if graph.get_states_from_graph(graph_1) != graph.get_states_from_graph(graph_2):
         raise Exception('The two input graphs must have the same state set.')
 
-# graph_1 and graph_2 could be policy or MDP graphs
+# graph_1 and graph_2 could be policy or single-agent MDP graphs
 def check_full_graph_compatibility(graph_1, graph_2):
     check_graph_state_compatibility(graph_1, graph_2)
     
@@ -70,6 +70,30 @@ def check_full_graph_compatibility(graph_1, graph_2):
             raise Exception(
                 'The action set for graph_1 and graph_2 must be identical at state {}.'.format(state)
             )
+
+def check_policy_and_simultaneous_mdp_compatibility(policy_graph, simultaneous_mdp_graph, policy_is_for_agent_A=True):
+    check_graph_state_compatibility(policy_graph, simultaneous_mdp_graph)
+
+    if policy_is_for_agent_A:
+        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_multiagent_graph(simultaneous_mdp_graph)[0]:
+            raise Exception('The Agent A policy graph must have the same action set as Agent A does in the MDP graph.')
+    
+    else:
+        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_multiagent_graph(simultaneous_mdp_graph)[1]:
+            raise Exception('The Agent B policy graph must have the same action set as Agent B does in the MDP graph.')
+    
+    for state in graph.get_states_from_graph(simultaneous_mdp_graph):
+        agent_A_actions, agent_B_actions = graph.get_unique_single_agent_actions_from_joint_actions(
+            graph.get_available_actions_from_graph_state(simultaneous_mdp_graph, state)
+        )
+
+        if policy_is_for_agent_A:
+            if graph.get_available_actions_from_graph_state(policy_graph, state) != agent_A_actions:
+                raise Exception('The policy graph and MDP graph have different available actions for Agent A at state {}.'.format(state))
+            
+        else:
+            if graph.get_available_actions_from_graph_state(policy_graph, state) != agent_B_actions:
+                raise Exception('The policy graph and MDP graph have different available actions for Agent B at state {}.'.format(state))
 
 def check_stochastic_state_name(name):
     if '__' in name:

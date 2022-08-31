@@ -66,15 +66,18 @@ def get_actions_from_graph(input_graph):
         )
     ])) if is_graph_stochastic(input_graph) else list(input_graph)
 
-def get_single_agent_actions_from_multiagent_graph(input_graph):
+def get_unique_single_agent_actions_from_joint_actions(joint_actions):
     action_pairs = [
-        multiagent_action_to_single_agent_actions(joint_action) for joint_action in get_actions_from_graph(input_graph)
+        multiagent_action_to_single_agent_actions(joint_action) for joint_action in joint_actions
     ]
 
     return [
-        sorted(set([action_pair[0] for action_pair in action_pairs])),
-        sorted(set([action_pair[1] for action_pair in action_pairs]))
+        sorted(set([action_pair[0] for action_pair in action_pairs])), # Agent A actions
+        sorted(set([action_pair[1] for action_pair in action_pairs])) # Agent B actions
     ]
+
+def get_single_agent_actions_from_multiagent_graph(input_graph):
+    return get_unique_single_agent_actions_from_joint_actions(get_actions_from_graph(input_graph))
 
 def get_available_actions_from_graph_state(input_graph, state):
     return [
