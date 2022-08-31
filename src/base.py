@@ -291,7 +291,7 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
     if policy_save_name is not None:
         data.save_graph_to_dot_file(
             policy_b_multi_,
-            '{0}_agent_B_{1}'.format(mdp_save_name, policy_save_name),
+            '{0}_multiagent_agent_B_{1}'.format(mdp_save_name, policy_save_name),
             folder=data.POLICIES_FOLDER
         )
 

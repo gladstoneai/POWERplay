@@ -60,6 +60,7 @@ from src import base
 # --- Switch checks from check_full_graph_compatibility to check_policy_and_joint_mdp_compatibility
 # -- Do a full test of the refactored code
 # -- Update README to handle joint multiagent graphs
+# - Allow us to plot joint MDP conditional on other agent policy (to avoid huge size of image for joint MDPs)
 # - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability
