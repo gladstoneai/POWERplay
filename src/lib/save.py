@@ -5,8 +5,6 @@ from . import data
 
 ALL_GRAPH_DESCRIPTIONS = {
     'mdp_graph': 'MDP graph',
-    'mdp_graph_A': 'MDP graph for agent A',
-    'mdp_graph_B': 'MDP graph for agent B',
     'policy_graph_B': 'Policy graph for agent B',
     'seed_policy_graph_B': 'Seed policy graph for agent B'
 }
@@ -61,9 +59,8 @@ def save_graphs_and_generate_data_from_sweep_type(
     elif sweep_type == 'multiagent_with_reward':
         graph_plotting_data = save_graphs_and_generate_data(
             {
-                'mdp_graph_A': transition_graphs[0],
-                'seed_policy_graph_B': transition_graphs[1],
-                'mdp_graph_B': transition_graphs[2]
+                'mdp_graph': transition_graphs[0],
+                'seed_policy_graph_B': transition_graphs[1]
             },
             run_name,
             save_folder=save_folder,

@@ -46,10 +46,13 @@ def check_policy_actions(policy_graph, state, policy_actions, tolerance=PROBABIL
     if abs(sum(policy_actions.values()) - 1) > tolerance:
         raise Exception('The probabilities of all actions from state {} must sum to 1.'.format(state))
 
+def check_state_list_identity(state_list_1, state_list_2):
+    if state_list_1 != state_list_2:
+        raise Exception('The two input graphs must have the same state set.')
+
 # graph_1 and graph_2 could be policy or MDP graphs
 def check_graph_state_compatibility(graph_1, graph_2):
-    if graph.get_states_from_graph(graph_1) != graph.get_states_from_graph(graph_2):
-        raise Exception('The two input graphs must have the same state set.')
+    check_state_list_identity(graph.get_states_from_graph(graph_1), graph.get_states_from_graph(graph_2))
 
 # graph_1 and graph_2 could be policy or single-agent MDP graphs
 def check_full_graph_compatibility(graph_1, graph_2):
@@ -91,13 +94,13 @@ def check_policy_and_joint_mdp_compatibility(joint_mdp_graph, policy_graph, poli
         if policy_is_for_agent_A:
             if graph.get_available_actions_from_graph_state(policy_graph, state) != agent_A_actions:
                 raise Exception(
-                    'The policy graph and MDP graph have different available actions for Agent A at state {}.'.format(state)
+                    'The policy graph and MDP graph have different available actions for Agent A at state \'{}\'.'.format(state)
                 )
             
         else:
             if graph.get_available_actions_from_graph_state(policy_graph, state) != agent_B_actions:
                 raise Exception(
-                    'The policy graph and MDP graph have different available actions for Agent B at state {}.'.format(state)
+                    'The policy graph and MDP graph have different available actions for Agent B at state \'{}\'.'.format(state)
                 )
 
 def check_stochastic_state_name(name):
@@ -307,8 +310,6 @@ def check_sweep_params(sweep_params):
     all_param_checkers = {
         'mdp_graph': check_mdp_graph,
         'joint_mdp_graph': check_joint_mdp_graph,
-        'mdp_graph_agent_A': check_mdp_graph,
-        'mdp_graph_agent_B': check_mdp_graph,
         'policy_graph_agent_B': check_policy_graph,
         'seed_policy_graph_agent_B': check_policy_graph,
         'reward_correlation': noop,

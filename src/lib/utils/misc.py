@@ -119,9 +119,7 @@ def determine_sweep_type(run_params):
         return 'multiagent_fixed_policy'
     
     elif (
-        'mdp_graph_agent_A' in run_params
-    ) and (
-        'mdp_graph_agent_B' in run_params
+        'joint_mdp_graph' in run_params
     ) and (
         'seed_policy_graph_agent_B' in run_params
     ) and (

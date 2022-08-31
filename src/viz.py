@@ -1,9 +1,11 @@
 import matplotlib.pyplot as plt
 import collections as col
+import math
 
 from .lib.utils import graph
 from .lib.utils import render
 from .lib import data
+from .lib import check
 
 def plot_sample_aggregations(
     all_samples,
@@ -140,6 +142,7 @@ def plot_mdp_or_policy(
     mdp_or_policy_graph,
     show=True,
     subgraphs_per_row=4,
+    number_of_states_per_figure=128,
     reward_to_plot=None,
     discount_rate_to_plot=None,
     save_handle='temp',
@@ -147,39 +150,59 @@ def plot_mdp_or_policy(
     save_folder=data.TEMP_FOLDER,
     temp_folder=data.TEMP_FOLDER
 ):
+    state_list = graph.get_states_from_graph(mdp_or_policy_graph)
+    chunked_state_list = [
+        state_list[i:number_of_states_per_figure + i] for i in range(
+            0, len(state_list), number_of_states_per_figure
+        )
+    ]
+    all_figs_ = []
 
-    graph_to_plot = graph.transform_graph_for_plots(
-        mdp_or_policy_graph, reward_to_plot=reward_to_plot, discount_rate_to_plot=discount_rate_to_plot
-    )
+    for i in range(len(chunked_state_list)):
+        fig_number_label = str(i)
 
-# We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
-# rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
-# and so git doesn't track the contents of the temp folder.
-    data.save_graph_to_dot_file(graph_to_plot, save_handle, folder=temp_folder)
-    
-    fig = data.create_and_save_mdp_figure(
-        save_handle,
-        subgraphs_per_row=subgraphs_per_row,
-        fig_name='{0}-{1}'.format(graph_name, save_handle),
-        mdps_folder=temp_folder,
-        fig_folder=save_folder,
-        show=show
-    )
+        graph_to_plot = graph.transform_graph_for_plots(
+            graph.extract_subgraph_containing_states(mdp_or_policy_graph, chunked_state_list[i]),
+            reward_to_plot=reward_to_plot,
+            discount_rate_to_plot=discount_rate_to_plot
+        )
 
-    return fig
+    # We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
+    # rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
+    # and so git doesn't track the contents of the temp folder.
+        data.save_graph_to_dot_file(graph_to_plot, save_handle, folder=temp_folder)
+        
+        fig_ = data.create_and_save_mdp_figure(
+            save_handle,
+            subgraphs_per_row=subgraphs_per_row,
+            fig_name='{0}_{1}-{2}'.format(graph_name, fig_number_label, save_handle),
+            mdps_folder=temp_folder,
+            fig_folder=save_folder,
+            show=show
+        )
+        fig_.number_label = fig_number_label
+
+        all_figs_ += [fig_]
+
+    return all_figs_
 
 # Here sample_filter is, e.g., reward_samples[:, 3] < reward_samples[:, 4]
 def plot_all_outputs(
     reward_samples,
     power_samples,
-    graphs_to_plot,
+    state_list,
+    graphs_to_plot=[],
     sample_filter=None,
     plot_distributions=True,
     plot_correlations=True,
     plot_in_log_scale=False,
     **kwargs
 ):
-    state_list = graph.get_states_from_graph(graphs_to_plot[0]['graph_data'])
+    max_nodes_per_figure = 1024 # For MDP graphs bigger than this, we chunk the plot into multiple figures
+
+    for graph_to_plot in graphs_to_plot:
+        check.check_state_list_identity(state_list, graph.get_states_from_graph(graph_to_plot['graph_data']))
+
     rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
     ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
     mdp_kwargs = {
@@ -222,16 +245,30 @@ def plot_all_outputs(
                 **kwargs
             )
         } if plot_distributions else {}),
-        **(dict(col.ChainMap(*[{
+        **(
+            dict(col.ChainMap(*[{
                 'POWER correlations, state {0}{1}'.format(
                     state, ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
                 ): fig for fig in plot_sample_correlations(
                     ps_inputs, state_list, state, sample_quantity='POWER', sample_units='reward units', **kwargs
                 )
-            } for state in state_list])) if plot_correlations else {}),
-        **{
-            graph_to_plot['graph_description']: plot_mdp_or_policy(
-                graph_to_plot['graph_data'], **{ **mdp_kwargs, 'graph_name': graph_to_plot['graph_name'] }
-            ) for graph_to_plot in graphs_to_plot
-        }
+            } for state in state_list])) if plot_correlations else {}
+        ),
+         **(
+            dict(col.ChainMap(*[{
+                '{0}, Figure {1}'.format(
+                    graph_to_plot['graph_description'], fig.number_label
+                ): fig for fig in plot_mdp_or_policy(
+                    graph_to_plot['graph_data'], **{
+                        **mdp_kwargs,
+                        'graph_name': graph_to_plot['graph_name'],
+                        'number_of_states_per_figure': math.floor(
+                            (
+                                max_nodes_per_figure / len(list(graph_to_plot['graph_data']))
+                            ) * len(graph.get_states_from_graph(graph_to_plot['graph_data']))
+                        )
+                    }
+                )
+            } for graph_to_plot in graphs_to_plot]))
+        )
     }

@@ -112,16 +112,15 @@ def run_multiagent_with_reward_experiment(
     diagnostic_mode=False
 ):
     # We precompute these tensors here to avoid recomputation in one of the loops below
-    transition_tensor_A = graph.graph_to_transition_tensor(transition_graphs[0])
+    joint_transition_tensor = graph.graph_to_joint_transition_tensor(transition_graphs[0])
     seed_policy_tensor_B = graph.graph_to_policy_tensor(transition_graphs[1]) # The fixed policy tensor we give Agent B, that Agent A initially optimizes against
-    transition_tensor_B = graph.graph_to_transition_tensor(transition_graphs[2])
 
     print()
     print('Computing Agent A policies:')
     print()
 
-    full_transition_tensor_A = graph.compute_multiagent_transition_tensor( # Full Agent A transition tensor assuming uniform random Agent B policy
-        transition_tensor_A, seed_policy_tensor_B, transition_tensor_B
+    full_transition_tensor_A = graph.compute_full_multiagent_transition_tensor( # Full Agent A transition tensor assuming Agent B seed policy
+        joint_transition_tensor, seed_policy_tensor_B, policy_agent_is_A=False
     )
 
     all_optimal_values_A = proc.samples_to_outputs(
@@ -141,12 +140,11 @@ def run_multiagent_with_reward_experiment(
     ])
 
     all_full_transition_tensors_B = torch.stack([
-        graph.compute_multiagent_transition_tensor(
-            # The order is reversed here since we need (mdp B, policy A, mdp A) to get Agent B's policy
-            transition_tensor_B, policy_tensor_A, transition_tensor_A
+        graph.compute_full_multiagent_transition_tensor(
+            joint_transition_tensor, policy_tensor_A, policy_agent_is_A=True
         ) for policy_tensor_A in all_policy_tensors_A
     ])
-
+    
     if diagnostic_mode:
         print()
         print('Computing Agent B POWER samples (seed policy):')
@@ -169,7 +167,7 @@ def run_multiagent_with_reward_experiment(
             convergence_threshold=convergence_threshold
         )
 
-        power_samples_B_random = torch.stack([
+        power_samples_B_seed = torch.stack([
             compute_power_values(
                 reward_sample_B, values_B, discount_rate_agent_B
             ) for reward_sample_B, values_B in zip(reward_samples_B, all_values_B)
@@ -206,11 +204,11 @@ def run_multiagent_with_reward_experiment(
     ])
 
     all_full_transition_tensors_A = torch.stack([
-        graph.compute_multiagent_transition_tensor(
-            transition_tensor_A, policy_tensor_B, transition_tensor_B
+        graph.compute_full_multiagent_transition_tensor(
+            joint_transition_tensor, policy_tensor_B, policy_agent_is_A=False
         ) for policy_tensor_B in all_policy_tensors_B
     ])
-
+    
     all_values_A = proc.samples_to_outputs(
         reward_samples_A,
         discount_rate_agent_A,
@@ -241,7 +239,7 @@ def run_multiagent_with_reward_experiment(
             'all_values_A_against_B': all_values_A,
             'all_values_B_seed_policy': all_values_B,
             'power_samples_A_against_seed': power_samples_A_against_seed,
-            'power_samples_B_seed_policy': power_samples_B_random
+            'power_samples_B_seed_policy': power_samples_B_seed
         }
     )
 

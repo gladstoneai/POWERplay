@@ -96,7 +96,8 @@ def run_and_save_sweep_replication(
         viz.plot_all_outputs(
             run_inputs['args'][0],
             power_samples,
-            augmented_run_data['inputs']['mdp_graph_networkx'],
+            graph.get_states_from_graph(augmented_run_data['inputs']['mdp_graph']),
+            graphs_to_plot=augmented_run_data['inputs']['mdp_graph_networkx'],
             plot_correlations=plot_correlations,
             save_handle=run_name,
             save_figure=data.save_figure,

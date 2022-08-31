@@ -2,15 +2,12 @@ name: test_sweep_correlated_rewards
 description: "Sweeping over Agent A and Agent B reward correlation values on the 3x3 multiagent gridworld, with gamma = 0.2."
 program: sweep.py
 parameters:
-  mdp_graph_agent_A:
+  joint_mdp_graph:
     value:
-      "stoch_gridworld_3x3_agent_A"
-  mdp_graph_agent_B:
-    value:
-      "stoch_gridworld_3x3_agent_B"
+      "joint_3x3_gridworld_multiagent"
   seed_policy_graph_agent_B:
     value:
-      "stoch_gridworld_3x3_agent_B_uniform_random"
+      "joint_gridworld_3x3_multiagent_agent_B_uniform_random"
   discount_rate:
     value:
       0.2

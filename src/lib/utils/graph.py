@@ -79,11 +79,11 @@ def get_single_agent_actions_from_joint_mdp_graph(input_graph):
     return get_unique_single_agent_actions_from_joint_actions(get_actions_from_graph(input_graph))
 
 def get_available_actions_from_graph_state(input_graph, state):
-    return [
+    return sorted([
         decompose_stochastic_graph_node(
             action_node
         )[0] for action_node in input_graph.neighbors(build_stochastic_graph_node(state))
-    ]
+    ])
 
 def get_available_states_and_probabilities_from_mdp_graph_state_and_action(input_mdp_graph, state, action):
     action_node = build_stochastic_graph_node(action, state)
@@ -94,6 +94,13 @@ def get_available_states_and_probabilities_from_mdp_graph_state_and_action(input
             action_node
         )
     }
+
+def extract_subgraph_containing_states(input_graph, states_to_extract):
+    output_graph_ = cp.deepcopy(input_graph)
+    output_graph_.remove_nodes_from([
+        node for node in output_graph_.nodes if (decompose_stochastic_graph_node(node)[-1] not in states_to_extract)
+    ])
+    return output_graph_
 
 def are_gridworld_states_multiagent(state_list):
     return all([

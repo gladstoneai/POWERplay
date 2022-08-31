@@ -77,20 +77,15 @@ def get_transition_graphs(
         return [joint_mdp_graph, policy_graph_B]
     
     elif sweep_type == 'multiagent_with_reward':
-        mdp_graph_A = data.load_graph_from_dot_file(
-            run_params.get('mdp_graph_agent_A'), folder=mdps_folder
-        )
-        seed_policy_graph_B = data.load_graph_from_dot_file(
-            run_params.get('seed_policy_graph_agent_B', None), folder=policies_folder
-        )
-        mdp_graph_B = data.load_graph_from_dot_file(
-            run_params.get('mdp_graph_agent_B'), folder=mdps_folder
-        )
+        joint_mdp_graph = data.load_graph_from_dot_file(run_params['joint_mdp_graph'], folder=mdps_folder)
+        seed_policy_graph_B = data.load_graph_from_dot_file(run_params['seed_policy_graph_agent_B'], folder=policies_folder)
 
         if check_graph_compatibilities:
-            check.check_full_graph_compatibility(seed_policy_graph_B, mdp_graph_B)
-        
-        return [mdp_graph_A, seed_policy_graph_B, mdp_graph_B]
+            check.check_policy_and_joint_mdp_compatibility(
+                joint_mdp_graph, seed_policy_graph_B, policy_is_for_agent_A=False
+            )
+
+        return [joint_mdp_graph, seed_policy_graph_B]
 
 def get_properties_from_run(
     sweep_id,
