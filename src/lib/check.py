@@ -71,20 +71,20 @@ def check_full_graph_compatibility(graph_1, graph_2):
                 'The action set for graph_1 and graph_2 must be identical at state {}.'.format(state)
             )
 
-def check_policy_and_simultaneous_mdp_compatibility(policy_graph, simultaneous_mdp_graph, policy_is_for_agent_A=True):
-    check_graph_state_compatibility(policy_graph, simultaneous_mdp_graph)
+def check_policy_and_joint_mdp_compatibility(policy_graph, joint_mdp_graph, policy_is_for_agent_A=True):
+    check_graph_state_compatibility(policy_graph, joint_mdp_graph)
 
     if policy_is_for_agent_A:
-        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_multiagent_graph(simultaneous_mdp_graph)[0]:
+        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_multiagent_graph(joint_mdp_graph)[0]:
             raise Exception('The Agent A policy graph must have the same action set as Agent A does in the MDP graph.')
     
     else:
-        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_multiagent_graph(simultaneous_mdp_graph)[1]:
+        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_multiagent_graph(joint_mdp_graph)[1]:
             raise Exception('The Agent B policy graph must have the same action set as Agent B does in the MDP graph.')
     
-    for state in graph.get_states_from_graph(simultaneous_mdp_graph):
+    for state in graph.get_states_from_graph(joint_mdp_graph):
         agent_A_actions, agent_B_actions = graph.get_unique_single_agent_actions_from_joint_actions(
-            graph.get_available_actions_from_graph_state(simultaneous_mdp_graph, state)
+            graph.get_available_actions_from_graph_state(joint_mdp_graph, state)
         )
 
         if policy_is_for_agent_A:

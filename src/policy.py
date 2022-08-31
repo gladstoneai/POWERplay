@@ -42,7 +42,7 @@ def create_single_agent_random_policy(mdp_graph):
 
     return policy_graph_
 
-def create_simultaneous_multiagent_random_policy(mdp_graph, current_agent_is_A=True):
+def create_joint_multiagent_random_policy(mdp_graph, current_agent_is_A=True):
     policy_graph_ = nx.DiGraph()
 
     for state in graph.get_states_from_graph(mdp_graph):
@@ -80,7 +80,7 @@ def create_simultaneous_multiagent_random_policy(mdp_graph, current_agent_is_A=T
 
 def quick_mdp_to_policy(mdp_graph, current_agent_is_A=True):
     if graph.are_general_graph_states_multiagent(graph.get_states_from_graph(mdp_graph)):
-        return create_simultaneous_multiagent_random_policy(mdp_graph, current_agent_is_A=current_agent_is_A)
+        return create_joint_multiagent_random_policy(mdp_graph, current_agent_is_A=current_agent_is_A)
 
     else:
         return create_single_agent_random_policy(mdp_graph)

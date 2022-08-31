@@ -46,19 +46,19 @@ from src import base
 # --- Content-wise, this is really strong already.
 
 # TODO NEXT:
-# - Make Agent A and Agent B move simultaneously, instead of in turns
-# -- Refactor codebase to use the new simultaneous transition functions in 'multiagent_fixed_policy' experiments
-# --- Update test_run_multi_actual to confirm same results as test_run_multi_simulated for the simultaneous transition
-# --- Switch checks in get from check_full_graph_compatibility to check_policy_and_simultaneous_mdp_compatibility
-# -- Refactor codebase to use the new simultaneous transition functions in 'multiagent_with_reward' experiments
-# --- Update test_sweep_correlated_rewards to the simultaneous transition
+# - Make Agent A and Agent B move jointly, instead of in turns
+# -- Refactor codebase to use the new joint transition functions in 'multiagent_fixed_policy' experiments
+# --- Update test_run_multi_actual to confirm same results as test_run_multi_simulated for the joint transition
+# --- Switch checks in get from check_full_graph_compatibility to check_policy_and_joint_mdp_compatibility
+# -- Refactor codebase to use the new joint transition functions in 'multiagent_with_reward' experiments
+# --- Update test_sweep_correlated_rewards to the joint transition
 # --- Change graph_to_transition_tensor to graph_to_single_agent_transition_tensor
-# --- Change graph_to_simultaneous_transition_tensor to graph_to_multiagent_transition_tensor and delete existing function by that name
+# --- Change graph_to_joint_transition_tensor to graph_to_multiagent_transition_tensor and delete existing function by that name
 # --- Delete compute_multiagent_transition_tensor and replace with compute_full_multiagent_transition_tensor
 # -- Update transition probability calculation for rollouts: https://drive.google.com/file/d/1WD1Rd4K_71sgqg_P8Tp5QMnWk_Sdq5xL/view?usp=sharing
-# -- Update code for rollout visualization of simultaneous transitions
+# -- Update code for rollout visualization of joint transitions
 # -- Do a full test of the refactored code
-# -- Update README to handle simultaneous multiagent graphs
+# -- Update README to handle joint multiagent graphs
 # - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability

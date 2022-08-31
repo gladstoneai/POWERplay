@@ -1,5 +1,5 @@
 name: test_run_multi_simulated
-description: "A single run with (discount rate 0.1) on the 1x3 gridworld, with a simulated Agent B that has an always-move-left policy. Agent A is forbidden from using the 'stay' action whenever Agent B is on the far-right cell. This lets us simulate interactions between agents via a simultaneous-action transition tensor."
+description: "A single run with (discount rate 0.1) on the 1x3 gridworld, with a simulated Agent B that has an always-move-left policy. Agent A is forbidden from using the 'stay' action whenever Agent B is on the far-right cell. This lets us simulate interactions between agents via a joint-action transition tensor."
 program: sweep.py
 parameters:
   mdp_graph:

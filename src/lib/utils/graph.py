@@ -158,7 +158,7 @@ def transform_graph_for_plots(mdp_or_policy_graph, reward_to_plot=None, discount
 
     return mdp_or_policy_graph_
 
-def graph_to_simultaneous_transition_tensor(mdp_graph):
+def graph_to_joint_transition_tensor(mdp_graph):
     if is_graph_stochastic(mdp_graph):
         state_list = get_states_from_graph(mdp_graph)
         action_list_A, action_list_B = get_single_agent_actions_from_multiagent_graph(mdp_graph)
@@ -240,16 +240,16 @@ def graph_to_policy_tensor(policy_graph):
 
 # Relevant calculation: https://drive.google.com/file/d/1XwM_HXkFu1VglsYhsew6SM3BMqb9T_9R/view?usp=sharing
 def compute_full_multiagent_transition_tensor(
-    simultaneous_transition_tensor,
+    joint_transition_tensor,
     policy_tensor,
     policy_agent_is_A=True
 ):
     # Canonical ordering of dimensions is (current state, agent A action, agent B action, next state).
     # If we have the policy for Agent B, transpose axis 1 (agent A action) and axis 2 (agent B action)
     # before proceeding.
-    transition_tensor = simultaneous_transition_tensor if (
+    transition_tensor = joint_transition_tensor if (
         policy_agent_is_A
-    ) else torch.transpose(simultaneous_transition_tensor, 1, 2)
+    ) else torch.transpose(joint_transition_tensor, 1, 2)
 
     return (
         transition_tensor * policy_tensor.unsqueeze(-1).expand(

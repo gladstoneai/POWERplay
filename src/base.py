@@ -281,7 +281,7 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
 
     print()
 
-    multiagent_graph = multi.create_simultaneous_multiagent_graph(stochastic_graph)
+    multiagent_graph = multi.create_joint_multiagent_graph(stochastic_graph)
 
     if mdp_save_name is not None:
         data.save_graph_to_dot_file(
@@ -307,7 +307,7 @@ def construct_multiagent_gridworld_mdps_with_interactions(num_rows, num_cols, md
         )
     )
 
-    multiagent_graph = update_mdp_graph_with_interface(multi.create_simultaneous_multiagent_graph(stochastic_graph))
+    multiagent_graph = update_mdp_graph_with_interface(multi.create_joint_multiagent_graph(stochastic_graph))
 
     if mdp_save_name is not None:
         data.save_graph_to_dot_file(multiagent_graph, '{}_agent_A'.format(mdp_save_name), folder=data.MDPS_FOLDER)

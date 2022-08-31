@@ -22,7 +22,7 @@ def single_agent_to_multiagent_graph_node(
         ) else states_and_actions_single[i] for i in range(len(states_and_actions_single))
     ])
 
-def create_simultaneous_multiagent_graph(single_agent_graph):
+def create_joint_multiagent_graph(single_agent_graph):
     multiagent_graph_ = nx.DiGraph()
 
     state_list = graph.get_states_from_graph(single_agent_graph)
