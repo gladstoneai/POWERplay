@@ -4,6 +4,7 @@ import torch
 
 from .utils import dist
 from .utils import graph
+from .utils import misc
 from . import data
 
 ################################################################################
@@ -29,7 +30,7 @@ def check_num_samples(num_samples, num_workers):
 
 def check_dict_contains_key(dict_to_check, key, dict_name):
     if key not in dict_to_check.keys():
-        raise Exception('The {0} must contain a key \'{1}\'.'.format(dict_name, key))
+        raise Exception('The dict \'{0}\' must contain a key \'{1}\'.'.format(dict_name, key))
 
 def check_state_in_graph_states(input_graph, state):
     if state not in graph.get_states_from_graph(input_graph):
@@ -71,16 +72,16 @@ def check_full_graph_compatibility(graph_1, graph_2):
                 'The action set for graph_1 and graph_2 must be identical at state {}.'.format(state)
             )
 
-def check_policy_and_joint_mdp_compatibility(policy_graph, joint_mdp_graph, policy_is_for_agent_A=True):
+def check_policy_and_joint_mdp_compatibility(joint_mdp_graph, policy_graph, policy_is_for_agent_A=True):
     check_graph_state_compatibility(policy_graph, joint_mdp_graph)
 
     if policy_is_for_agent_A:
-        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_multiagent_graph(joint_mdp_graph)[0]:
-            raise Exception('The Agent A policy graph must have the same action set as Agent A does in the MDP graph.')
+        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_joint_mdp_graph(joint_mdp_graph)[0]:
+            raise Exception('The Agent A policy graph must have the same action set as Agent A does in the joint MDP graph.')
     
     else:
-        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_multiagent_graph(joint_mdp_graph)[1]:
-            raise Exception('The Agent B policy graph must have the same action set as Agent B does in the MDP graph.')
+        if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_joint_mdp_graph(joint_mdp_graph)[1]:
+            raise Exception('The Agent B policy graph must have the same action set as Agent B does in the joint MDP graph.')
     
     for state in graph.get_states_from_graph(joint_mdp_graph):
         agent_A_actions, agent_B_actions = graph.get_unique_single_agent_actions_from_joint_actions(
@@ -89,11 +90,15 @@ def check_policy_and_joint_mdp_compatibility(policy_graph, joint_mdp_graph, poli
 
         if policy_is_for_agent_A:
             if graph.get_available_actions_from_graph_state(policy_graph, state) != agent_A_actions:
-                raise Exception('The policy graph and MDP graph have different available actions for Agent A at state {}.'.format(state))
+                raise Exception(
+                    'The policy graph and MDP graph have different available actions for Agent A at state {}.'.format(state)
+                )
             
         else:
             if graph.get_available_actions_from_graph_state(policy_graph, state) != agent_B_actions:
-                raise Exception('The policy graph and MDP graph have different available actions for Agent B at state {}.'.format(state))
+                raise Exception(
+                    'The policy graph and MDP graph have different available actions for Agent B at state {}.'.format(state)
+                )
 
 def check_stochastic_state_name(name):
     if '__' in name:
@@ -176,6 +181,34 @@ def check_mdp_graph(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.M
                     '(the total probability of ending up in any downstream state).'.format(mdp_key)
                 )
 
+def check_joint_mdp_graph(joint_mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.MDPS_FOLDER):
+    joint_mdp_graph = data.load_graph_from_dot_file(joint_mdp_key, folder=mdps_folder)
+
+    try:
+        joint_transition_tensor = graph.graph_to_joint_transition_tensor(joint_mdp_graph)
+    except IndexError:
+        raise Exception('The MDP graph {} doesn\'t seem to be a joint MDP graph.'.format(joint_mdp_key))
+
+    state_list = graph.get_states_from_graph(joint_mdp_graph)
+    action_list_A, action_list_B = graph.get_single_agent_actions_from_joint_mdp_graph(joint_mdp_graph)
+
+    if list(joint_transition_tensor.shape) != [
+        len(state_list), len(action_list_A), len(action_list_B), len(state_list)
+    ]:
+        raise Exception('The transition tensor for MDP {0} must have shape [{1}, {2}, {3}, {1}].'.format(
+            joint_mdp_key, len(state_list), len(action_list_A), len(action_list_B)
+        ))
+    
+    for state_tensor in joint_transition_tensor:
+        for action_tensor_A in state_tensor:
+            for action_tensor_B in action_tensor_A:
+                if (not (action_tensor_B == 0).all()) and (action_tensor_B.sum() - 1).abs() > tolerance:
+                    raise Exception(
+                        'Every inner row of the joint transition tensor {} must either be all zeros '\
+                        '(if the action pair can\'t be taken) or sum to 1 '\
+                        '(the total probability of ending up in any downstream state).'.format(joint_mdp_key)
+                    )
+
 def check_policy_graph(policy_key, tolerance=PROBABILITY_TOLERANCE, policy_folder=data.POLICIES_FOLDER):
     policy_graph = data.load_graph_from_dot_file(policy_key, folder=policy_folder)
     policy_tensor = graph.graph_to_policy_tensor(policy_graph)
@@ -189,8 +222,8 @@ def check_policy_graph(policy_key, tolerance=PROBABILITY_TOLERANCE, policy_folde
     for state_tensor in policy_tensor:
         if (state_tensor.sum() - 1).abs() > tolerance:
             raise Exception(
-                'Every row of the policy tensor {} must sum to 1' \
-                '(the total probability of taking an action from that state.'.format(policy_key)
+                'Every row of the policy tensor {} must sum to 1 ' \
+                '(the total probability of taking any action from that state.'.format(policy_key)
             )
 
 def noop(_):
@@ -198,7 +231,7 @@ def noop(_):
 
 def check_discount_rate(discount_rate):
     if discount_rate < 0 or discount_rate > 1:
-        raise Exception('The discount rate should be between 0 and 1.')
+        raise Exception('The discount rate should be between 0 and 1, not {}.'.format(discount_rate))
 
 def check_num_workers(num_workers):
     if num_workers > mps.cpu_count():
@@ -226,8 +259,10 @@ def check_reward_distribution_config(reward_distribution_config, distribution_di
     
     check_single_state_reward_config(reward_distribution_config['default_dist'], distribution_dict=distribution_dict)
 
-    for state in reward_distribution_config.get('state_dists', {}):
-        check_single_state_reward_config(reward_distribution_config[state], distribution_dict=distribution_dict)
+    for state in reward_distribution_config.get('state_dists', {}).keys():
+        check_single_state_reward_config(
+            reward_distribution_config['state_dists'][state], distribution_dict=distribution_dict
+        )
 
 def check_tensor_or_number_args(args):
     for arg in args:
@@ -237,29 +272,29 @@ def check_tensor_or_number_args(args):
 # Ensures that each param conforms to a modified version of https://docs.wandb.ai/guides/sweeps/configuration
 # along with param-specific sanity checks. In the case of params that are primitive types (str, float,
 # list, etc.), the param is directly present in the config. In the case of distributions, we use a dictionary
-# in data.py to recover the actual distribution value. And in the case of MDP graphs, we use tracked dot files
-# in the `mdps` folder.
+# in dist.py to recover the actual distribution value. And in the case of MDP or policy graphs, we use dot files
+# in the `mdps` or `policies` folders, respectively.
 def check_sweep_param(param_name, value_dict, checker_function):
     if set(value_dict.keys()) == set(['value']):
-        checker_function(value_dict.get('value'))
+        checker_function(value_dict['value'])
     
     elif set(value_dict.keys()) == set(['values', 'names']):
-        if not isinstance(value_dict.get('values'), list):
+        if not isinstance(value_dict['values'], list):
             raise Exception('The \'values\' entry for the {} parameter must be a list.'.format(param_name))
-        if not isinstance(value_dict.get('names'), list):
+        if not isinstance(value_dict['names'], list):
             raise Exception('The \'names\' entry for the {} parameter must be a list.'.format(param_name))
-        if len(value_dict.get('values')) != len(value_dict.get('names')):
+        if len(value_dict['values']) != len(value_dict['names']):
             raise Exception(
                 'The \'values\' and \'names\' lists for the {} paramater must have the same length.'.format(
                     param_name
                 )
             )
-        if not all(isinstance(name, str) for name in value_dict.get('names')):
+        if not all(isinstance(name, str) for name in value_dict['names']):
             raise Exception(
                 'Each item in the \'names\' list of the {} parameter must be a str.'.format(param_name)
             )
         
-        for value in value_dict.get('values'):
+        for value in value_dict['values']:
             checker_function(value)
     
     else:
@@ -271,6 +306,7 @@ def check_sweep_param(param_name, value_dict, checker_function):
 def check_sweep_params(sweep_params):
     all_param_checkers = {
         'mdp_graph': check_mdp_graph,
+        'joint_mdp_graph': check_joint_mdp_graph,
         'mdp_graph_agent_A': check_mdp_graph,
         'mdp_graph_agent_B': check_mdp_graph,
         'policy_graph_agent_B': check_policy_graph,

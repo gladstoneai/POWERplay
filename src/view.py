@@ -57,7 +57,7 @@ def plot_policy_sample(
         reward_to_plot=reward_function,
         discount_rate_to_plot=discount_rate,
         save_handle=save_handle,
-        graph_type='policy_reward_sample',
+        graph_name='policy_reward_sample',
         save_folder=save_folder,
         temp_folder=temp_folder
     )

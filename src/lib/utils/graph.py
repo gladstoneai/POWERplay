@@ -36,17 +36,16 @@ def multiagent_states_to_single_agent_states(multiagent_state_list):
     ]
 
 # Builds a correctly formatted node in the stochastic graph. Input should be either:
-# 1) state1
-# 2) state1, action
-# 3) state1, action, state2
-# Output format is '[state_1]__[action]__[state2]'
+# 1) current_state (will give output '[current_state]')
+# 2) action, current_state (will give output '[action]__[current_state]')
+# 3) next_state, action, current_state (will give output '[next_state]__[action]__[current_state]')
 def build_stochastic_graph_node(*states_and_actions):
     return '__'.join(['[{}]'.format(state_or_action) for state_or_action in states_and_actions])
 
 def decompose_stochastic_graph_node(stochastic_graph_node):
     return [node.strip('[').strip(']') for node in stochastic_graph_node.split('__')]
 
-# Return True if graph is in stochastic format, False otherwise. Currently this just checks whether
+# Return True if graph is in stochastic format, False otherwise. This just checks whether
 # some edges in the graph have weights. If none have weights, we conclude the graph is not in
 # stochastic format.
 def is_graph_stochastic(input_graph):
@@ -76,7 +75,7 @@ def get_unique_single_agent_actions_from_joint_actions(joint_actions):
         sorted(set([action_pair[1] for action_pair in action_pairs])) # Agent B actions
     ]
 
-def get_single_agent_actions_from_multiagent_graph(input_graph):
+def get_single_agent_actions_from_joint_mdp_graph(input_graph):
     return get_unique_single_agent_actions_from_joint_actions(get_actions_from_graph(input_graph))
 
 def get_available_actions_from_graph_state(input_graph, state):
@@ -138,7 +137,7 @@ def transform_graph_for_plots(mdp_or_policy_graph, reward_to_plot=None, discount
         nx.set_node_attributes(
             mdp_or_policy_graph_,
             {
-                node_id: 'Reward: {0}'.format(
+                node_id: 'Reward: {}'.format(
                     round(float(reward_to_plot[
                         get_states_from_graph(mdp_or_policy_graph_).index(
                             decompose_stochastic_graph_node(node_id)[0]
@@ -153,7 +152,7 @@ def transform_graph_for_plots(mdp_or_policy_graph, reward_to_plot=None, discount
     
     if discount_rate_to_plot is not None:
         mdp_or_policy_graph_.graph['graph'] = {
-            'label': 'gamma = {0}'.format(discount_rate_to_plot), 'labelloc': 't'
+            'label': 'gamma = {}'.format(discount_rate_to_plot), 'labelloc': 't'
         }
 
     return mdp_or_policy_graph_
@@ -161,7 +160,7 @@ def transform_graph_for_plots(mdp_or_policy_graph, reward_to_plot=None, discount
 def graph_to_joint_transition_tensor(mdp_graph):
     if is_graph_stochastic(mdp_graph):
         state_list = get_states_from_graph(mdp_graph)
-        action_list_A, action_list_B = get_single_agent_actions_from_multiagent_graph(mdp_graph)
+        action_list_A, action_list_B = get_single_agent_actions_from_joint_mdp_graph(mdp_graph)
         transition_tensor_ = torch.zeros(len(state_list), len(action_list_A), len(action_list_B), len(state_list))
 
         for i in range(len(state_list)):
@@ -190,7 +189,8 @@ def graph_to_joint_transition_tensor(mdp_graph):
     else:
         transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(mdp_graph)))
     
-    return transition_tensor_
+# First index is current state s; second index is Agent A action a_A; third index is Agent B action a_B; fourth index is next state s'.
+    return transition_tensor_.to(torch.float)
 
 def graph_to_transition_tensor(mdp_graph):
     if is_graph_stochastic(mdp_graph):
@@ -284,7 +284,14 @@ def graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_grap
         graph_to_policy_tensor(policy_graph_B),
         graph_to_transition_tensor(mdp_graph_B)
     )
-    
+
+def graphs_to_full_multiagent_transition_tensor(joint_mdp_graph, policy_graph, policy_agent_is_A=True):
+    return compute_full_multiagent_transition_tensor(
+        graph_to_joint_transition_tensor(joint_mdp_graph),
+        graph_to_policy_tensor(policy_graph),
+        policy_agent_is_A=policy_agent_is_A
+    )
+
 def any_graphs_to_transition_tensor(*transition_graphs):
     if len(transition_graphs) == 1: # Single agent case
         return graph_to_transition_tensor(transition_graphs[0])

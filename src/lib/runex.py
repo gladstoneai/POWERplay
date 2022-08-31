@@ -26,7 +26,9 @@ def find_optimal_policy(
 
 def compute_power_values(reward_sample, optimal_values, discount_rate):
     return ((1 - discount_rate) / discount_rate) * torch.tensor(
-        [(optimal_values[state] - reward_sample[state]) for state in range(len(optimal_values))]
+        [(
+            optimal_values[state_index] - reward_sample[state_index]
+        ) for state_index in range(len(optimal_values))]
     )
 
 def run_single_agent_experiment(
@@ -78,7 +80,7 @@ def run_multiagent_fixed_policy_experiment(
     all_optimal_values = proc.samples_to_outputs(
         reward_samples,
         discount_rate,
-        graph.graphs_to_multiagent_transition_tensor(*transition_graphs),
+        graph.graphs_to_full_multiagent_transition_tensor(*transition_graphs, policy_agent_is_A=False),
         iteration_function=learn.value_iteration,
         number_of_samples=len(reward_samples),
         num_workers=num_workers,

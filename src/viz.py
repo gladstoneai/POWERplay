@@ -4,7 +4,6 @@ import collections as col
 from .lib.utils import graph
 from .lib.utils import render
 from .lib import data
-from . import policy
 
 def plot_sample_aggregations(
     all_samples,
@@ -144,7 +143,7 @@ def plot_mdp_or_policy(
     reward_to_plot=None,
     discount_rate_to_plot=None,
     save_handle='temp',
-    graph_type='mdp_graph_A',
+    graph_name='mdp_graph',
     save_folder=data.TEMP_FOLDER,
     temp_folder=data.TEMP_FOLDER
 ):
@@ -155,12 +154,13 @@ def plot_mdp_or_policy(
 
 # We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
 # rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
-# and so git doesn't track these.
+# and so git doesn't track the contents of the temp folder.
     data.save_graph_to_dot_file(graph_to_plot, save_handle, folder=temp_folder)
+    
     fig = data.create_and_save_mdp_figure(
         save_handle,
         subgraphs_per_row=subgraphs_per_row,
-        fig_name='{0}-{1}'.format(graph_type, save_handle),
+        fig_name='{0}-{1}'.format(graph_name, save_handle),
         mdps_folder=temp_folder,
         fig_folder=save_folder,
         show=show
@@ -230,8 +230,8 @@ def plot_all_outputs(
                 )
             } for state in state_list])) if plot_correlations else {}),
         **{
-            graph_to_plot['graph_name']: plot_mdp_or_policy(
-                graph_to_plot['graph_data'], **{ **mdp_kwargs, 'graph_type': graph_to_plot['graph_type'] }
+            graph_to_plot['graph_description']: plot_mdp_or_policy(
+                graph_to_plot['graph_data'], **{ **mdp_kwargs, 'graph_name': graph_to_plot['graph_name'] }
             ) for graph_to_plot in graphs_to_plot
         }
     }

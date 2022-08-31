@@ -18,8 +18,8 @@ def build_sweep_config(
     return {
         **input_sweep_config,
         'parameters': { # Allows us to name individual runs with preset strings
-            key: (value_dict if ('value' in input_sweep_config.get('parameters').get(key)) else { 'values': [
-                [val, name] for val, name in zip(value_dict.get('values'), value_dict.get('names'))
+            key: (value_dict if ('value' in input_sweep_config['parameters'][key]) else { 'values': [
+                [val, name] for val, name in zip(value_dict['values'], value_dict['names'])
             ]}) for (key, value_dict) in input_sweep_config.get('parameters').items()
         },
         'name': sweep_name,
@@ -79,8 +79,8 @@ def build_run_name(local_sweep_name, run_config, sweep_variable_params):
 
 def get_variable_params(sweep_config):
     return [
-        param for param in sweep_config.get('parameters').keys() if (
-            sweep_config.get('parameters').get(param).get('values') is not None
+        param for param in sweep_config['parameters'].keys() if (
+            sweep_config['parameters'][param].get('values') is not None
         )
     ]
 
@@ -112,9 +112,7 @@ def determine_sweep_type(run_params):
         return 'single_agent'
     
     elif (
-        'mdp_graph_agent_A' in run_params
-    ) and (
-        'mdp_graph_agent_B' in run_params
+        'joint_mdp_graph' in run_params
     ) and (
         'policy_graph_agent_B' in run_params
     ):
@@ -132,7 +130,7 @@ def determine_sweep_type(run_params):
         'discount_rate_agent_B' in run_params
     ):
 
-        if 'state_dists' in run_params.get('reward_distribution'):
+        if 'state_dists' in run_params['reward_distribution']:
             raise Exception(
                 'Correlated reward sweeps don\'t currently support state-specific reward distributions.'
             ) # NOTE: We *could* quite easily support state-specific reward distributions, just not with negatively correlated rewards without a lot more work.

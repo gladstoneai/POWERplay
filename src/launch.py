@@ -24,9 +24,9 @@ def launch_sweep(
     environ=os.environ
 ):
     input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=sweep_config_folder)
-    check.check_sweep_params(input_sweep_config.get('parameters'))
+    check.check_sweep_params(input_sweep_config['parameters'])
 
-    sweep_name = '{0}-{1}'.format(sweep_local_id, input_sweep_config.get('name'))
+    sweep_name = '{0}-{1}'.format(sweep_local_id, input_sweep_config['name'])
 
     output_sweep_config = misc.build_sweep_config(
         input_sweep_config=input_sweep_config,

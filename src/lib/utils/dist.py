@@ -34,27 +34,30 @@ DISTRIBUTION_DICT = {
 # A 1d pdf config has the form
 # { 'dist_name': <key for distribution in DISTRIBUTION_DICT>, 'params': <params input to that distribution> }
 def config_to_pdf_constructor(distribution_config, distribution_dict=DISTRIBUTION_DICT):
-    raw_distribution = distribution_dict[distribution_config.get('dist_name')]['distribution'](
+    raw_distribution = distribution_dict[distribution_config['dist_name']]['distribution'](
         *distribution_config.get('params')
     )
     # Handle both PyTorch and manual functions built with pdf_sampler_constructor
     return raw_distribution if not hasattr(raw_distribution, 'sample') else raw_distribution.sample
 
 def config_to_symmetric_interval(distribution_config, distribution_dict=DISTRIBUTION_DICT):
-    distribution_data = distribution_dict[distribution_config.get('dist_name')]
+    distribution_data = distribution_dict[distribution_config['dist_name']]
+    dist_params = distribution_config['params']
     interval = distribution_data.get('symmetric_interval')
-    dist_params = distribution_config.get('params')
 
     if interval is None:
         return None
     
     else:
         # Handle both PyTorch and manual functions built with pdf_sampler_constructor
-        return interval if not hasattr(distribution_data['distribution'](*dist_params), 'sample') else interval(*dist_params)
+        return interval if not hasattr(
+            distribution_data['distribution'](*dist_params), 'sample'
+        ) else interval(*dist_params)
 
 # if allow_all_equal_rewards is False, re-sample anytime you get a reward function for which the rewards
-# are equal over all states. This is especially useful for e.g., the Bernoulli distribution, which is
-# a good distribution to use when investigating instrumental convergence.
+# are equal over all states. This is especially useful for e.g., the Bernoulli distribution (which is
+# a good distribution to use when investigating instrumental convergence), because you'll often have
+# reward distributions that are all zeros or all ones by chance.
 def reward_distribution_constructor(
     state_list,
     default_reward_sampler=config_to_pdf_constructor({ 'dist_name': 'uniform', 'params': [0., 1.] }),
@@ -70,8 +73,8 @@ def reward_distribution_constructor(
             sample(torch.tensor([number_of_samples])).unsqueeze(1) for sample in state_sampler_list
         ], dim=1)
 
-        # If we forbid reward functions whose rewards are equal at all states, we discard all reward samples
-        # that fail the test and re-run as many times as we need to get all passing samples.
+        # If we forbid reward functions whose rewards are equal at all states, our sampler discards all reward samples
+        # that fail the test, and it re-runs as many times as we need to get all passing samples.
         if not allow_all_equal_rewards:
             if outputs_.shape[0] == 0:
                 return outputs_
@@ -102,12 +105,12 @@ def config_to_reward_distribution(
     return reward_distribution_constructor(
         state_list,
         default_reward_sampler=config_to_pdf_constructor(
-            reward_dist_config.get('default_dist'), distribution_dict=distribution_dict
+            reward_dist_config['default_dist'], distribution_dict=distribution_dict
         ),
         state_reward_samplers={
             state: config_to_pdf_constructor(
-                reward_dist_config.get('state_dists').get(state), distribution_dict=distribution_dict
-            ) for state in reward_dist_config.get('state_dists', {})
+                reward_dist_config['state_dists'][state], distribution_dict=distribution_dict
+            ) for state in reward_dist_config.get('state_dists', {}).keys()
         },
         allow_all_equal_rewards=reward_dist_config.get('allow_all_equal_rewards', True)
     )

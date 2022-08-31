@@ -46,7 +46,11 @@ def cli_experiment_sweep(
         reward_correlation = run_params.get('reward_correlation')
 
         transition_graphs = get.get_transition_graphs(
-            run_params, sweep_type, mdps_folder=mdps_folder, policies_folder=policies_folder
+            run_params,
+            sweep_type,
+            check_graph_compatibilities=True,
+            mdps_folder=mdps_folder,
+            policies_folder=policies_folder
         )
 
         state_list, graphs_to_plot = save.save_graphs_and_generate_data_from_sweep_type(
@@ -58,11 +62,11 @@ def cli_experiment_sweep(
         )
 
         reward_sampler = dist.config_to_reward_distribution(
-            state_list, run_params.get('reward_distribution'), distribution_dict=distribution_dict
+            state_list, run_params['reward_distribution'], distribution_dict=distribution_dict
         )
 
         symmetric_interval = dist.config_to_symmetric_interval(
-            run_params.get('reward_distribution')['default_dist'], distribution_dict=distribution_dict
+            run_params['reward_distribution']['default_dist'], distribution_dict=distribution_dict
         )
 
         (

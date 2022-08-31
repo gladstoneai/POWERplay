@@ -48,7 +48,7 @@ def load_sweep_config(sweep_config_filename, folder=EXPERIMENT_FOLDER):
 
 def save_sweep_config(sweep_config_dict, folder=EXPERIMENT_FOLDER):
     create_folder(folder)
-    sweep_config_filepath = path.Path()/folder/'{}.yaml'.format(sweep_config_dict.get('name'))
+    sweep_config_filepath = path.Path()/folder/'{}.yaml'.format(sweep_config_dict['name'])
 
     with open(sweep_config_filepath, 'w') as f:
         yaml.dump(sweep_config_dict, f, allow_unicode=True)

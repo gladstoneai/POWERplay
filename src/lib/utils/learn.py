@@ -20,13 +20,11 @@ def value_iteration(
 
     while is_first_iteration or (max_value_change > convergence_threshold):
         is_first_iteration = False
-
-        max_value_change = 0
         old_values = cp.deepcopy(value_function)
         
-        for state in range(len(reward_function)):
-            value_function[state] = reward_function[state] + discount_rate * torch.max(
-                torch.sparse.mm(transition_tensor_sparse[state], value_function.unsqueeze(1))
+        for state_index in range(len(reward_function)):
+            value_function[state_index] = reward_function[state_index] + discount_rate * torch.max(
+                torch.sparse.mm(transition_tensor_sparse[state_index], value_function.unsqueeze(1))
             )
 
         max_value_change = misc.calculate_value_convergence(old_values, value_function)

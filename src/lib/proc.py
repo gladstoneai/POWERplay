@@ -23,10 +23,10 @@ def output_sample_calculator(
 
     all_output_samples_ = []
 
-    for i in range(number_of_samples):
+    for j in range(number_of_samples):
         if worker_id == 0: # Only the first worker prints so the pool isn't slowed
             sys.stdout.write('Running samples {0} / {1}'.format(
-                worker_pool_size * (i + 1), worker_pool_size * number_of_samples
+                worker_pool_size * (j + 1), worker_pool_size * number_of_samples
             ))
             sys.stdout.flush()
             sys.stdout.write('\r')
@@ -34,8 +34,8 @@ def output_sample_calculator(
 
         all_output_samples_ += [
             iteration_function(
-                *args_by_iteration[i],
-                value_initialization=all_value_initializations[i],
+                *args_by_iteration[j],
+                value_initialization=all_value_initializations[j],
                 convergence_threshold=convergence_threshold
             )
         ]
@@ -60,7 +60,7 @@ def samples_to_outputs(
 
     output_calculator = func.partial(
         output_sample_calculator_mps,
-        number_of_samples=number_of_samples // num_workers,
+        number_of_samples=(number_of_samples // num_workers),
         iteration_function=iteration_function,
         convergence_threshold=convergence_threshold,
         value_initializations=None,

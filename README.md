@@ -204,7 +204,7 @@ Here are the entries of the sweep YAML file:
   
   - (Multi-agent only) `policy_graph_agent_B`: The name of the file in the `policies` folder that corresponds to the policy graph you want to use for Agent B. This name should not include the `.gv` extension. **Do not include this parameter if you are running a single-agent sweep.**
     
-    Typical value: `'stoch_gridworld_1x3_agent_B_move_left'`
+    Typical value: `'joint_1x3_gridworld_agent_B_move_left'`
   
   - `discount_rate`: The discount rate for the MDP.
 
