@@ -261,7 +261,7 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
                 }
             )
     
-    policy_b_multi_ = policy.create_multiagent_policy_graph(policy_b_, current_agent_is_A=False)
+    policy_b_multi_ = policy.single_agent_to_multiagent_policy_graph(policy_b_, current_agent_is_A=False)
 
     print()
 

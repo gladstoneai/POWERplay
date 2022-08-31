@@ -49,6 +49,7 @@ from src import base
 # - Make Agent A and Agent B move jointly, instead of in turns
 # -- Refactor codebase to use the new joint transition functions in 'multiagent_fixed_policy' experiments
 # --- Update test_run_multi_actual to confirm same results as test_run_multi_simulated for the joint transition
+# --- Delete stoch_gridworld_1x3_agent_A, stoch_gridworld_1x3_agent_B, and stoch_gridworld_1x3_agent_B_move_left from gitignore
 # --- Switch checks in get from check_full_graph_compatibility to check_policy_and_joint_mdp_compatibility
 # -- Refactor codebase to use the new joint transition functions in 'multiagent_with_reward' experiments
 # --- Update test_sweep_correlated_rewards to the joint transition
