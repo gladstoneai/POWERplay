@@ -249,14 +249,15 @@ def graph_to_policy_tensor(policy_graph):
 def compute_full_multiagent_transition_tensor(
     joint_transition_tensor,
     policy_tensor,
-    policy_agent_is_A=True
+    acting_agent_is_A=True
 ):
     # Canonical ordering of dimensions is (current state, agent A action, agent B action, next state).
-    # If we have the policy for Agent B, transpose axis 1 (agent A action) and axis 2 (agent B action)
+    # If policy_tensor corresponds to the policy for Agent B (and therefore the currently acting agent
+    # is A, i.e., acting_agent_is_A == True), transpose axis 1 (agent A action) and axis 2 (agent B action)
     # before proceeding.
-    transition_tensor = joint_transition_tensor if (
-        policy_agent_is_A
-    ) else torch.transpose(joint_transition_tensor, 1, 2)
+    transition_tensor = torch.transpose(joint_transition_tensor, 1, 2) if (
+        acting_agent_is_A
+    ) else joint_transition_tensor
 
     return (
         transition_tensor * policy_tensor.unsqueeze(-1).expand(
@@ -292,19 +293,21 @@ def graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_grap
         graph_to_transition_tensor(mdp_graph_B)
     )
 
-def graphs_to_full_multiagent_transition_tensor(joint_mdp_graph, policy_graph, policy_agent_is_A=True):
+def graphs_to_full_multiagent_transition_tensor(joint_mdp_graph, policy_graph, acting_agent_is_A=True):
     return compute_full_multiagent_transition_tensor(
         graph_to_joint_transition_tensor(joint_mdp_graph),
         graph_to_policy_tensor(policy_graph),
-        policy_agent_is_A=policy_agent_is_A
+        acting_agent_is_A=acting_agent_is_A
     )
 
-def any_graphs_to_transition_tensor(*transition_graphs):
+def any_graphs_to_transition_tensor(*transition_graphs, acting_agent_is_A=True):
     if len(transition_graphs) == 1: # Single agent case
         return graph_to_transition_tensor(transition_graphs[0])
 
     else: # Multiagent case
-        return graphs_to_multiagent_transition_tensor(*transition_graphs)
+        return graphs_to_full_multiagent_transition_tensor(
+            *transition_graphs, acting_agent_is_A=acting_agent_is_A
+        )
 
 # Calculation details here:
 # https://drive.google.com/file/d/1t3wx0P-j3IBKZfD7td9Cewz2-sO5zzDz/view
@@ -320,7 +323,7 @@ def one_step_joint_rollout(state_vector, policy_tensor_A, policy_tensor_B, joint
         state_vector,
         policy_tensor_A,
         compute_full_multiagent_transition_tensor(
-            joint_transition_tensor, policy_tensor_B, policy_agent_is_A=False
+            joint_transition_tensor, policy_tensor_B, acting_agent_is_A=True
         )
     )
 

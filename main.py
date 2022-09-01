@@ -47,14 +47,18 @@ from src import base
 
 # TODO NEXT:
 # - Make Agent A and Agent B move jointly, instead of in turns
-# -- Update core rollout computation code for joint transitions
+# -- Update next_state_rollout and simulate_policy_rollout
 # -- Update rollout visualization code for joint transitions
 # --- Switch checks from check_full_graph_compatibility to check_policy_and_joint_mdp_compatibility
 # --- Change graph_to_joint_transition_tensor to graphs_to_multiagent_transition_tensor and delete existing function by that name
 # --- Delete compute_multiagent_transition_tensor and replace with compute_full_multiagent_transition_tensor
 # --- Delete graphs_to_multiagent_transition_tensor and replace with graphs_to_full_multiagent_transition_tensor in graph
+# --- Delete or update any_graphs_to_transition_tensor
+# -- Update base code for rollout
 # -- Test rollout code
-# -- Update base code for joint transitions
+# --- Single-agent case and joint multiagent case
+# -- Update base code for all joint transitions
+# --- Make red dots bigger so that we see them behind the blue dots in the alignment curves
 # - Understand why Agent A has weird POWERs in Correlation 0 MOTIONLESS plot (timebox); maybe statistical: we only have ~1k samples per Agent B position with 10k total samples
 # -- Switch to Pareto distributions to smooth our results?
 # - Run alignment curves for fixed correlation 0 with gamma, etc., to see what causes the most misalignment at correlation 0

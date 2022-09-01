@@ -76,7 +76,9 @@ def plot_rollout_powers(run_properties, initial_state=None, number_of_rollouts=1
     for reward_sample_index in range(number_of_rollouts):
 
         print(reward_sample_index)
-        policy_data = policy.sample_optimal_policy_from_run(run_properties, reward_sample_index=reward_sample_index)
+        policy_data = policy.sample_optimal_policy_data_from_run(
+            run_properties, reward_sample_index=reward_sample_index
+        )
 
         rollout = policy.simulate_policy_rollout(
             initial_state,

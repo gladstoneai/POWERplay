@@ -513,7 +513,7 @@ For full documentation on the NetworkX `DiGraph()` API, see [here](https://netwo
 🟣 You can create a two-agent MDP graph from the perspective of either agent by starting from a "naive" single-agent MDP graph and applying `multi.create_multiagent_graph()` to it. This function takes the state set of the input MDP graph, and takes the outer product of those states by assuming that both Agent A and Agent B are moving on the same state set. So if the original graph was a 1x2 gridworld with cells `'(0, 0)'` and `'(0, 1)'`, the output graph would have states `'(0_A, 0_B)'`, `'(0_A, 1_B)'`, `'(1_A, 0_B)'`, and `'(1_A, 1_B)'`. For example, the following code creates a multiagent MDP graph from the perspective of Agent A, out of a 3x3 gridworld graph in stochastic format:
 
 ``` 
->>> mdp_graph_A = multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), current_agent_is_A=True)
+>>> mdp_graph_A = multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_A=True)
 ```
 
 🔵 Here are the input arguments to `mdp.create_multiagent_graph()` and what they mean:
@@ -524,13 +524,13 @@ For full documentation on the NetworkX `DiGraph()` API, see [here](https://netwo
 
   Typical value: `mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3'))`
 
-- `current_agent_is_A [bool] (True)`: Set this to `True` if you want the output multiagent graph to be from the perspective of Agent A, and `False` if you want it from the perspective of Agent B. The agent you pick will be the one whose actions will affect the states; so if you choose the perspective of Agent A, your output graph will have transitions like `'(0_A, 0_B)' == 'right' ==> '(1_A, 0_B)'`, but will _not_ have transitions like `'(0_A, 0_B)' == 'right' ==> '(0_A, 1_B)'`.
+- `acting_agent_is_A [bool] (True)`: Set this to `True` if you want the output multiagent graph to be from the perspective of Agent A, and `False` if you want it from the perspective of Agent B. The agent you pick will be the one whose actions will affect the states; so if you choose the perspective of Agent A, your output graph will have transitions like `'(0_A, 0_B)' == 'right' ==> '(1_A, 0_B)'`, but will _not_ have transitions like `'(0_A, 0_B)' == 'right' ==> '(0_A, 1_B)'`.
 
   Typical value: `True`
 
 🟢 Here is the output to `mdp.create_multiagent_graph()`:
 
-- `multiagent_graph [networkx.DiGraph]`: A NetworkX graph representing the multiagent MDP from the perspective of the agent you selected in `current_agent_is_A`. This MDP is in stochastic format, and its states are the outer product of Agent A and Agent B positional states. Here is an example of a multiagent MDP from the perspective of Agent A:
+- `multiagent_graph [networkx.DiGraph]`: A NetworkX graph representing the multiagent MDP from the perspective of the agent you selected in `acting_agent_is_A`. This MDP is in stochastic format, and its states are the outer product of Agent A and Agent B positional states. Here is an example of a multiagent MDP from the perspective of Agent A:
 
   ![multiagent-mdp-A](img/multiagent_mdp_example_A.png)
 
@@ -545,10 +545,10 @@ For full documentation on the NetworkX `DiGraph()` API, see [here](https://netwo
 🟣 To run a multiagent experiment, you need to create a fixed policy for Agent B — otherwise the state transitions from the perspective of Agent A won't be fully defined. You can quickly create a random policy for Agent B using the `base.build_quick_random_policy()` function. (You have to apply this function to an MDP **over joint states** that's **from the perspective of the agent you want the policy to be for** — in practice, that means you apply this to the output of the `multi.create_multiagent_graph()` function.) For example, the following code creates a random Agent B policy over the 3x3 gridworld graph:
 
 ``` 
->>> policy_B = base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), current_agent_is_A=False))
+>>> policy_B = base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_A=False))
 ```
 
-Notice that `current_agent_is_A` is set to `False`, which is what defines this policy as being as belonging to Agent B.
+Notice that `acting_agent_is_A` is set to `False`, which is what defines this policy as being as belonging to Agent B.
 
 🔵 Here are the input arguments to `base.build_quick_random_policy()` and what they mean:
 
@@ -556,7 +556,7 @@ Notice that `current_agent_is_A` is set to `False`, which is what defines this p
 
 - `mdp_graph [networkx.DiGraph, required]`: The MDP graph over joint states, from the perspective of the agent whose policy you want as output. Normally this will be the output of a call to the `multi.create_multiagent_graph()` function.
 
-  Typical value: `multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), current_agent_is_A=False)`
+  Typical value: `multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_A=False)`
 
 🟢 Here is the output to `base.build_quick_random_policy()`:
 
@@ -569,7 +569,7 @@ Notice that `current_agent_is_A` is set to `False`, which is what defines this p
 🟣 The `base.build_quick_random_policy()` function returns a random policy. But in general, we want to test all sorts of different policies in our multiagent runs. The way to do this is to start from a random policy, and run `policy.update_state_actions()` on it until you end up with the policy you want. For example, the following code updates the Agent B random policy on a 3x3 gridworld to deterministically move to the right when A and B are both at cell `(0, 0)`:
 
 ``` 
->>> policy_B_right = policy.update_state_actions(base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), current_agent_is_A=False)), '(0 ,0)_A^(0, 0)_B', { 'right': 1, 'down': 0, 'stay': 0 })
+>>> policy_B_right = policy.update_state_actions(base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_A=False)), '(0 ,0)_A^(0, 0)_B', { 'right': 1, 'down': 0, 'stay': 0 })
 ```
 
 🔵 Here are the input arguments to `policy.update_state_actions()` and what they mean:
@@ -578,7 +578,7 @@ Notice that `current_agent_is_A` is set to `False`, which is what defines this p
 
 - `policy_graph [networkx.DiGraph, required]`: The policy graph you want to update.
 
-  Typical value: `base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), current_agent_is_A=False))`
+  Typical value: `base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_A=False))`
 
 - `state [str, required]`: The state whose action probabilities you want to update in your new policy.
 
@@ -629,19 +629,19 @@ pol = policy.update_state_actions(pol, '(1, 0)', { 'stay': 0, 'up': 1, 'right': 
 pol = policy.update_state_actions(pol, '(1, 1)', { 'stay': 0, 'right': 0, 'up': 0, 'left': 1 })
 pol = policy.update_state_actions(pol, '(1, 2)', { 'stay': 0, 'up': 0, 'left': 1 })
 
-pol_b = multi.create_multiagent_graph(pol, current_agent_is_A=False)
+pol_b = multi.create_multiagent_graph(pol, acting_agent_is_A=False)
 ```
 
 You can then create the multiagent MDPs as usual from the basic stochastic gridworld above:
 
 ```
-mdp_a = multi.create_multiagent_graph(st_gw, current_agent_is_A=True)
-mdp_b = multi.create_multiagent_graph(st_gw, current_agent_is_A=False)
+mdp_a = multi.create_multiagent_graph(st_gw, acting_agent_is_A=True)
+mdp_b = multi.create_multiagent_graph(st_gw, acting_agent_is_A=False)
 ```
 
 ### Plotting a policy sample
 
-Sometimes, you'll want to plot a particular optimal policy that corresponds to a particular reward function sample. You can do this by chaining together `policy.sample_optimal_policy_from_run()` (which takes in a run identifier and the index of the reward sample you're interested in) and `viz.plot_policy_sample()` (which plots the policy sample along with its reward function at each state).
+Sometimes, you'll want to plot a particular optimal policy that corresponds to a particular reward function sample. You can do this by chaining together `policy.sample_optimal_policy_data_from_run()` (which takes in a run identifier and the index of the reward sample you're interested in) and `viz.plot_policy_sample()` (which plots the policy sample along with its reward function at each state).
 
 For example, here's how you might plot the optimal policy for the third reward sample of a run with `sweep_id` of `'20220525090545'` and `run_suffix` of `'discount_rate__0p1'`:
 
@@ -649,7 +649,7 @@ For example, here's how you might plot the optimal policy for the third reward s
   sweep_id = '20220525090545'
   run_suffix = 'discount_rate__0p1'
 
-  policy_graph, reward_function, discount_rate = policy.sample_optimal_policy_from_run(sweep_id, run_suffix)
+  policy_graph, reward_function, discount_rate = policy.sample_optimal_policy_data_from_run(sweep_id, run_suffix)
   viz.plot_policy_sample(policy_graph, reward_function, discount_rate)
   ```
 

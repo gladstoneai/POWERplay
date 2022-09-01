@@ -240,42 +240,42 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
             num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
         )
     )
-    policy_b_ = policy.quick_mdp_to_policy(stochastic_graph)
+    policy_B_ = policy.quick_mdp_to_policy(stochastic_graph)
 
     print('Now updating policy for Agent B.')
     print('State update example: { \'stay\': 0, \'up\': 1, \'down\': 0, \'left\': 0, \'right\': 0 }')
     print('The action you type (stay/up/down/left/right) gets set to 1, all others to 0.')
     print()
 
-    for state in graph.get_states_from_graph(policy_b_):
+    for state in graph.get_states_from_graph(policy_B_):
         action_to_take = input('Enter action for individual state \'{}\': '.format(state)).replace('\'', '"')
 
         if action_to_take:
-            policy_b_ = policy.update_state_actions(
-                policy_b_,
+            policy_B_ = policy.update_state_actions(
+                policy_B_,
                 state,
                 {
                     action: (
                         1 if action == action_to_take else 0
-                    ) for action in graph.get_available_actions_from_graph_state(policy_b_, state)
+                    ) for action in graph.get_available_actions_from_graph_state(policy_B_, state)
                 }
             )
     
-    policy_b_multi_ = policy.single_agent_to_multiagent_policy_graph(policy_b_, current_agent_is_A=False)
+    policy_B_multi_ = policy.single_agent_to_multiagent_policy_graph(policy_B_, acting_agent_is_A=False)
 
     print()
 
-    for multi_state in graph.get_states_from_graph(policy_b_multi_):
+    for multi_state in graph.get_states_from_graph(policy_B_multi_):
         action_to_take = input('Enter action for multiagent state \'{}\': '.format(multi_state)).replace('\'', '"')
 
         if action_to_take:
-            policy_b_multi_ = policy.update_state_actions(
-                policy_b_multi_,
+            policy_B_multi_ = policy.update_state_actions(
+                policy_B_multi_,
                 multi_state,
                 {
                     action: (
                         1 if action == action_to_take else 0
-                    ) for action in graph.get_available_actions_from_graph_state(policy_b_multi_, multi_state)
+                    ) for action in graph.get_available_actions_from_graph_state(policy_B_multi_, multi_state)
                 }
             )
 
@@ -290,13 +290,13 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
     
     if policy_save_name is not None:
         data.save_graph_to_dot_file(
-            policy_b_multi_,
+            policy_B_multi_,
             '{0}_agent_B_{1}'.format(mdp_save_name, policy_save_name),
             folder=data.POLICIES_FOLDER
         )
 
     return {
-        'policy_B': policy_b_multi_,
+        'policy_B': policy_B_multi_,
         'mdp': multiagent_graph
     }
 
@@ -328,7 +328,7 @@ def visualize_full_gridworld_rollout(
     check.check_agent_label(agent_whose_rewards_are_displayed)
 
     run_properties = get.get_properties_from_run(sweep_id, run_suffix=run_suffix)
-    policy_data = policy.sample_optimal_policy_from_run(run_properties, reward_sample_index=reward_sample_index)
+    policy_data = policy.sample_optimal_policy_data_from_run(run_properties, reward_sample_index=reward_sample_index)
 
     view.plot_gridworld_rollout(
         graph.get_states_from_graph(policy_data['policy_graph_A']),

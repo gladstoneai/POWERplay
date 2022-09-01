@@ -7,7 +7,7 @@ from . import mdp
 def single_agent_to_multiagent_graph_node(
     current_agent_graph_node,
     other_agent_state,
-    current_agent_is_A=True
+    acting_agent_is_A=True
 ):
     states_and_actions_single = graph.decompose_stochastic_graph_node(current_agent_graph_node)
     action_index = 0 if len(states_and_actions_single) == 2 else 1
@@ -15,7 +15,7 @@ def single_agent_to_multiagent_graph_node(
     return graph.build_stochastic_graph_node(*[
         graph.single_agent_states_to_multiagent_state(*([
             states_and_actions_single[i], other_agent_state
-        ] if current_agent_is_A else [
+        ] if acting_agent_is_A else [
             other_agent_state, states_and_actions_single[i]
         ])) if (
             i != action_index
