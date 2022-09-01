@@ -47,15 +47,13 @@ from src import base
 
 # TODO NEXT:
 # - Make Agent A and Agent B move jointly, instead of in turns
-# -- Refactor plot_rollout_powers
-# -- Update base code for rollout
-# -- Test rollout code
-# --- Single-agent case and joint multiagent case
-# -- Update base code for all joint transitions
+# -- Update all remaining base code for joint transitions
 # --- Make red dots bigger so that we see them behind the blue dots in the alignment curves
 # - Understand why Agent A has weird POWERs in Correlation 0 MOTIONLESS plot (timebox); maybe statistical: we only have ~1k samples per Agent B position with 10k total samples
-# -- Switch to Pareto distributions to smooth our results?
+# -- Switch to Pareto distributions to smooth our results? (This didn't work)
+# -- Does this issue persist outside the MOTIONLESS Agent B seed policy?
 # - Run alignment curves for fixed correlation 0 with gamma, etc., to see what causes the most misalignment at correlation 0
+# - Build robust alignment curve plotting code for our results
 # - Update README to handle joint multiagent graphs
 # - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?

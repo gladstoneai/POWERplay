@@ -69,7 +69,7 @@ def plot_policy_sample(
 # NOTE: This function is not optimized for speed and runs very slowly, even for just 10 rollouts.
 # It's also not capable of saving the plot and just shows it.
 # run_properties: outupt of get.get_properties_from_run(sweep_id, run_suffix=run_suffix)
-def plot_rollout_powers(run_properties, initial_state=None, number_of_rollouts=10, number_of_steps=20):
+def plot_rollout_powers(run_properties, initial_state, number_of_rollouts=10, number_of_steps=20):
     state_list = graph.get_states_from_graph(run_properties['transition_graphs'][0])
     powers_A = run_properties['power_samples'].mean(dim=0)
 
@@ -77,7 +77,8 @@ def plot_rollout_powers(run_properties, initial_state=None, number_of_rollouts=1
 
     for reward_sample_index in range(number_of_rollouts):
 
-        print(reward_sample_index)
+        print('Building rollout for reward sample {}...'.format(reward_sample_index))
+
         policy_data = policy.sample_optimal_policy_data_from_run(
             run_properties, reward_sample_index=reward_sample_index
         )
@@ -85,18 +86,15 @@ def plot_rollout_powers(run_properties, initial_state=None, number_of_rollouts=1
         rollout = policy.simulate_policy_rollout(
             initial_state,
             policy_data['policy_graph_A'],
-            policy_data['mdp_graph_A'],
+            policy_data['mdp_graph'],
             policy_graph_B=policy_data['policy_graph_B'],
-            mdp_graph_B=policy_data['mdp_graph_B'],
             number_of_steps=number_of_steps
         )
 
         power_rollout = [powers_A[state_list.index(state)].item() for state in rollout]
-        # In either multiagent case, we have to skip the rollout steps where Agent B moves
-        power_plot_rollout = power_rollout if run_properties['sweep_type'] == 'single_agent' else power_rollout[::2]
 
-        plt.plot(list(range(number_of_steps + 1)), power_plot_rollout, 'b-')
-        all_power_plot_rollouts_ += [power_plot_rollout]
+        plt.plot(list(range(number_of_steps + 1)), power_rollout, 'b-')
+        all_power_plot_rollouts_ += [power_rollout]
 
     plt.show()
 
