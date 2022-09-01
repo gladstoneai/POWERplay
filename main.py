@@ -47,11 +47,6 @@ from src import base
 
 # TODO NEXT:
 # - Make Agent A and Agent B move jointly, instead of in turns
-# -- Clean up unused code
-# --- Change graph_to_joint_transition_tensor to graphs_to_multiagent_transition_tensor and delete existing function by that name
-# --- Delete compute_multiagent_transition_tensor and replace with compute_full_transition_tensor
-# --- Delete graphs_to_multiagent_transition_tensor and replace with graphs_to_full_transition_tensor in graph
-# --- Delete or update any_graphs_to_transition_tensor
 # -- Update rollout visualization code for joint transitions
 # -- Update base code for rollout
 # -- Test rollout code

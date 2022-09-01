@@ -165,7 +165,7 @@ def sample_optimal_policy_data_from_run(run_properties, reward_sample_index=0):
         runex.find_optimal_policy(
             reward_function_A,
             discount_rate_A,
-            graph.any_graphs_to_transition_tensor(*transition_graphs, acting_agent_is_A=True),
+            graph.any_graphs_to_full_transition_tensor(*transition_graphs, acting_agent_is_A=True),
             value_initialization=None,
             convergence_threshold=convergence_threshold
         ), # This works for the agent of a single-agent system, OR for Agent A of a multi-agent system
@@ -219,7 +219,7 @@ def next_state_rollout(current_state, mdp_graph, policy_graph_A, policy_graph_B=
     state_vector = graph.state_to_vector(current_state, state_list)
     policy_tensor_A = graph.graph_to_policy_tensor(policy_graph_A)
 
-    full_transition_tensor = graph.graph_to_transition_tensor(mdp_graph) if (
+    full_transition_tensor = graph.graph_to_full_transition_tensor(mdp_graph) if (
         policy_graph_B is None
     ) else graph.graphs_to_full_transition_tensor(mdp_graph, policy_graph_B, acting_agent_is_A=True)
 

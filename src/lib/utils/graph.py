@@ -199,7 +199,7 @@ def graph_to_joint_transition_tensor(mdp_graph):
 # First index is current state s; second index is Agent A action a_A; third index is Agent B action a_B; fourth index is next state s'.
     return transition_tensor_.to(torch.float)
 
-def graph_to_transition_tensor(mdp_graph):
+def graph_to_full_transition_tensor(mdp_graph):
     if is_graph_stochastic(mdp_graph):
         state_list, action_list = get_states_from_graph(mdp_graph), get_actions_from_graph(mdp_graph)
         transition_tensor_ = torch.zeros(len(state_list), len(action_list), len(state_list))
@@ -267,32 +267,6 @@ def compute_full_transition_tensor(
         )
     ).sum(dim=1)
 
-def compute_multiagent_transition_tensor(transition_tensor_A, policy_tensor_B, transition_tensor_B):
-    num_states = transition_tensor_A.shape[0]
-    num_actions_A = transition_tensor_A.shape[1]
-    num_actions_B = transition_tensor_B.shape[1]
-
-    agent_B_state_mapping = (transition_tensor_B * policy_tensor_B.unsqueeze(-1).expand(
-        num_states, num_actions_B, num_states
-    )).sum(dim=1)
-
-    return ((
-        agent_B_state_mapping.unsqueeze(0).unsqueeze(0).expand(
-            num_states, num_actions_A, num_states, num_states
-        )
-    ) * (
-        transition_tensor_A.unsqueeze(-1).expand(
-            num_states, num_actions_A, num_states, num_states
-        )
-    )).sum(dim=2)
-
-def graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_graph_B):
-    return compute_multiagent_transition_tensor(
-        graph_to_transition_tensor(mdp_graph_A),
-        graph_to_policy_tensor(policy_graph_B),
-        graph_to_transition_tensor(mdp_graph_B)
-    )
-
 def graphs_to_full_transition_tensor(joint_mdp_graph, policy_graph, acting_agent_is_A=True):
     return compute_full_transition_tensor(
         graph_to_joint_transition_tensor(joint_mdp_graph),
@@ -300,9 +274,9 @@ def graphs_to_full_transition_tensor(joint_mdp_graph, policy_graph, acting_agent
         acting_agent_is_A=acting_agent_is_A
     )
 
-def any_graphs_to_transition_tensor(*transition_graphs, acting_agent_is_A=True):
+def any_graphs_to_full_transition_tensor(*transition_graphs, acting_agent_is_A=True):
     if len(transition_graphs) == 1: # Single agent case
-        return graph_to_transition_tensor(transition_graphs[0])
+        return graph_to_full_transition_tensor(transition_graphs[0])
 
     else: # Multiagent case
         return graphs_to_full_transition_tensor(

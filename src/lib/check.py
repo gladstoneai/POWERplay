@@ -165,7 +165,7 @@ def check_noise_bias(noise_bias, stochastic_noise_level):
         raise Exception('Every value of the noise bias must be greater than 0.')
 
 def check_mdp_graph(mdp_graph, tolerance=PROBABILITY_TOLERANCE):
-    transition_tensor = graph.graph_to_transition_tensor(mdp_graph)
+    transition_tensor = graph.graph_to_full_transition_tensor(mdp_graph)
     state_list, action_list = graph.get_states_from_graph(mdp_graph), graph.get_actions_from_graph(mdp_graph)
 
     if list(transition_tensor.shape) != [len(state_list), len(action_list), len(state_list)]:

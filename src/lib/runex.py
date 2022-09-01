@@ -45,7 +45,7 @@ def run_single_agent_experiment(
     all_optimal_values = proc.samples_to_outputs(
         reward_samples,
         discount_rate,
-        graph.graph_to_transition_tensor(mdp_graph),
+        graph.graph_to_full_transition_tensor(mdp_graph),
         iteration_function=learn.value_iteration,
         number_of_samples=len(reward_samples),
         num_workers=num_workers,
