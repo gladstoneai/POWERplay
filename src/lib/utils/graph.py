@@ -245,7 +245,7 @@ def graph_to_policy_tensor(policy_graph):
     
     return policy_tensor_.to(torch.float)
 
-# Relevant calculation: https://drive.google.com/file/d/1XwM_HXkFu1VglsYhsew6SM3BMqb9T_9R/view?usp=sharing
+# Relevant calculation: https://drive.google.com/file/d/1XwM_HXkFu1VglsYhsew6SM3BMqb9T_9R/view
 def compute_full_multiagent_transition_tensor(
     joint_transition_tensor,
     policy_tensor,
@@ -314,6 +314,15 @@ def one_step_rollout(state_vector, policy_tensor, transition_tensor):
         * torch.tile(policy_tensor, (policy_tensor.shape[0], 1, 1)).transpose(0, 1).transpose(1, 2)
         * torch.tile(state_vector, (policy_tensor.shape[0], policy_tensor.shape[1], 1)).transpose(0, 2)
     ).sum(dim=[0, 1])
+
+def one_step_joint_rollout(state_vector, policy_tensor_A, policy_tensor_B, joint_transition_tensor):
+    return one_step_rollout(
+        state_vector,
+        policy_tensor_A,
+        compute_full_multiagent_transition_tensor(
+            joint_transition_tensor, policy_tensor_B, policy_agent_is_A=False
+        )
+    )
 
 def state_to_vector(state, state_list):
     return tf.one_hot(torch.tensor(state_list.index(state)), num_classes=len(state_list))

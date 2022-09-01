@@ -118,7 +118,7 @@ def config_to_reward_distribution(
 def sample_from_state_list(state_list, distribution_vector):
     return state_list[td.Categorical(distribution_vector).sample().item()]
 
-# See https://drive.google.com/file/d/1aCMAainYY_24ihCmjvz-Z_LYr7FLtQ1N/view?usp=sharing for calculations that apply
+# See https://drive.google.com/file/d/1aCMAainYY_24ihCmjvz-Z_LYr7FLtQ1N/view for calculations that apply
 # for correlation coefficients from 0 to 1. Note that similar logic can be used to calculate the correlated rewards
 # for correlations from -1 to 0, but negative correlations *only* make sense for pdfs that are symmetric over their
 # support.

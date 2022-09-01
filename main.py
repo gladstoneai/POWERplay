@@ -47,16 +47,15 @@ from src import base
 
 # TODO NEXT:
 # - Make Agent A and Agent B move jointly, instead of in turns
-# -- Update transition probability calculation for rollouts: https://drive.google.com/file/d/1WD1Rd4K_71sgqg_P8Tp5QMnWk_Sdq5xL/view?usp=sharing
-# -- Update code for rollout visualization of joint transitions
+# -- Update core rollout computation code for joint transitions
+# -- Update rollout visualization code for joint transitions
 # --- Switch checks from check_full_graph_compatibility to check_policy_and_joint_mdp_compatibility
 # --- Change graph_to_joint_transition_tensor to graphs_to_multiagent_transition_tensor and delete existing function by that name
 # --- Delete compute_multiagent_transition_tensor and replace with compute_full_multiagent_transition_tensor
 # --- Delete graphs_to_multiagent_transition_tensor and replace with graphs_to_full_multiagent_transition_tensor in graph
 # -- Do a full test of the refactored code
+# -- Update base code for joint transitions
 # -- Update README to handle joint multiagent graphs
-# - Refactor so that the get_transition_graphs check is only applied once at the beginning, since it slows down graph loading
-# - Allow us to plot joint MDP conditional on other agent policy (to avoid huge size of image for joint MDPs)
 # - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability
