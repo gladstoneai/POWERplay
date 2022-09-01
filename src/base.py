@@ -285,13 +285,13 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
 
     if mdp_save_name is not None:
         data.save_graph_to_dot_file(
-            multiagent_graph, '{}_multiagent'.format(mdp_save_name), folder=data.MDPS_FOLDER
+            multiagent_graph, mdp_save_name, folder=data.MDPS_FOLDER
         )
     
     if policy_save_name is not None:
         data.save_graph_to_dot_file(
             policy_b_multi_,
-            '{0}_multiagent_agent_B_{1}'.format(mdp_save_name, policy_save_name),
+            '{0}_agent_B_{1}'.format(mdp_save_name, policy_save_name),
             folder=data.POLICIES_FOLDER
         )
 
@@ -307,12 +307,12 @@ def construct_multiagent_gridworld_mdps_with_interactions(num_rows, num_cols, md
         )
     )
 
-    multiagent_graph = update_mdp_graph_with_interface(multi.create_joint_multiagent_graph(stochastic_graph))
+    joint_mdp_graph = update_mdp_graph_with_interface(multi.create_joint_multiagent_graph(stochastic_graph))
 
     if mdp_save_name is not None:
-        data.save_graph_to_dot_file(multiagent_graph, '{}_agent_A'.format(mdp_save_name), folder=data.MDPS_FOLDER)
+        data.save_graph_to_dot_file(joint_mdp_graph, '{}_agent_A'.format(mdp_save_name), folder=data.MDPS_FOLDER)
     
-    return multiagent_graph
+    return joint_mdp_graph
 
 def visualize_full_gridworld_rollout(
     sweep_id,

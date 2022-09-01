@@ -53,9 +53,12 @@ from src import base
 # --- Change graph_to_joint_transition_tensor to graphs_to_multiagent_transition_tensor and delete existing function by that name
 # --- Delete compute_multiagent_transition_tensor and replace with compute_full_multiagent_transition_tensor
 # --- Delete graphs_to_multiagent_transition_tensor and replace with graphs_to_full_multiagent_transition_tensor in graph
-# -- Do a full test of the refactored code
+# -- Test rollout code
 # -- Update base code for joint transitions
-# -- Update README to handle joint multiagent graphs
+# - Understand why Agent A has weird POWERs in Correlation 0 MOTIONLESS plot (timebox); maybe statistical: we only have ~1k samples per Agent B position with 10k total samples
+# -- Switch to Pareto distributions to smooth our results?
+# - Run alignment curves for fixed correlation 0 with gamma, etc., to see what causes the most misalignment at correlation 0
+# - Update README to handle joint multiagent graphs
 # - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability

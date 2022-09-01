@@ -22,9 +22,9 @@ mdps/*
 !mdps/mdp_from_paper.gv
 !mdps/stoch_1x3_gridworld_with_agent_B_moving_left_and_agent_A_forbidden_from_staying_when_agent_B_is_at_far_right_simulated.gv
 !mdps/joint_1x3_gridworld_with_agent_A_forbidden_from_staying_when_agent_B_is_at_far_right.gv
-!mdps/joint_3x3_gridworld_multiagent.gv
+!mdps/joint_3x3_gridworld.gv
 
 policies/*
 
 !policies/joint_1x3_gridworld_agent_B_move_left.gv
-!policies/joint_gridworld_3x3_multiagent_agent_B_uniform_random.gv
+!policies/joint_3x3_gridworld_agent_B_uniform_random.gv
