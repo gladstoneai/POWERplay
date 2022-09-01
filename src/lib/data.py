@@ -95,13 +95,13 @@ def load_png_figure(figure_name, folder):
     
     return img
 
-def save_gif_from_frames(frames_list, gif_name, folder):
+def save_gif_from_frames(frames_list, gif_name, folder, ms_per_frame=100):
     frames_list[0].save(
         path.Path()/folder/'{}.gif'.format(gif_name),
         format='GIF',
         append_images=frames_list,
         save_all=True,
-        duration=100,
+        duration=ms_per_frame,
         loop=0
     )
 

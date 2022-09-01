@@ -7,6 +7,7 @@ from .lib.utils import graph
 def animate_from_filenames(
     list_of_filenames,
     output_gif_filename,
+    ms_per_frame=100,
     input_folder_or_list=data.TEMP_FOLDER,
     output_folder=data.TEMP_FOLDER
 ):
@@ -21,19 +22,22 @@ def animate_from_filenames(
             ) for filename, input_folder in zip(list_of_filenames, input_folder_list)
         ],
         output_gif_filename,
-        output_folder
+        output_folder,
+        ms_per_frame=ms_per_frame
     )
 
 def animate_rollout(
     rollout_handle,
     number_of_steps,
     output_filename='rollout_animation',
+    ms_per_frame=100,
     input_folder=data.TEMP_FOLDER,
     output_folder=data.TEMP_FOLDER
 ):
     animate_from_filenames(
         ['{0}-{1}'.format(rollout_handle, i) for i in range(number_of_steps)],
         output_filename,
+        ms_per_frame=ms_per_frame,
         input_folder_or_list=input_folder,
         output_folder=output_folder
     )
@@ -42,6 +46,7 @@ def animate_full_sweep(
     sweep_name,
     run_names,
     figure_prefix_list,
+    ms_per_frame=100,
     experiment_folder=data.EXPERIMENT_FOLDER
 ):
 
@@ -50,6 +55,7 @@ def animate_full_sweep(
         animate_from_filenames(
             ['-'.join([figure_prefix, run_name]) for run_name in run_names],
             '-'.join(['animation', figure_prefix, sweep_name]),
+            ms_per_frame=ms_per_frame,
             input_folder_or_list=[path.Path()/experiment_folder/sweep_name/run_name for run_name in run_names],
             output_folder=path.Path()/experiment_folder/sweep_name
         )
@@ -60,6 +66,7 @@ def generate_sweep_animations(
     is_multiagent=False,
     figure_prefix=None,
     fixed_param_values={},
+    ms_per_frame=100,
     experiment_folder=data.EXPERIMENT_FOLDER
 ):
     sweep = data.load_full_sweep(sweep_name, folder=experiment_folder)
@@ -88,6 +95,12 @@ def generate_sweep_animations(
         )
     ]
 
-    animate_full_sweep(sweep_name, run_names, figure_prefix_list, experiment_folder=experiment_folder)
+    animate_full_sweep(
+        sweep_name,
+        run_names,
+        figure_prefix_list,
+        ms_per_frame=ms_per_frame,
+        experiment_folder=experiment_folder
+    )
 
 

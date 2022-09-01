@@ -47,7 +47,7 @@ from src import base
 
 # TODO NEXT:
 # - Make Agent A and Agent B move jointly, instead of in turns
-# -- Update rollout visualization code for joint transitions
+# -- Refactor plot_rollout_powers
 # -- Update base code for rollout
 # -- Test rollout code
 # --- Single-agent case and joint multiagent case

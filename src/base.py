@@ -53,9 +53,15 @@ def update_mdp_graph_with_interface(input_mdp):
         for new_action in new_actions_:
             if new_action in graph.get_available_actions_from_graph_state(input_mdp, state):
                 print(
-                    'Action \'{0}\' from state \'{1}\' currently has the following next-state probabilities:'.format(new_action, state)
+                    'Action \'{0}\' from state \'{1}\' currently has the following next-state probabilities:'.format(
+                        new_action, state
+                    )
                 )
-                print(graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(input_mdp, state, new_action))
+                print(
+                    graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(
+                        input_mdp, state, new_action
+                    )
+                )
             
             new_next_state_ = input(
                 'Input new next state for action \'{0}\' from state \'{1}\'{2}: '.format(
@@ -66,7 +72,9 @@ def update_mdp_graph_with_interface(input_mdp):
             )
 
             new_next_states_dicts_ += [
-                { new_next_state_: 1 } if new_next_state_ else graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(
+                { new_next_state_: 1 } if (
+                    new_next_state_
+                ) else graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(
                     input_mdp, state, new_action
                 )
             ]
@@ -321,6 +329,7 @@ def visualize_full_gridworld_rollout(
     reward_sample_index=0,
     number_of_steps=20,
     agent_whose_rewards_are_displayed='A',
+    ms_per_frame=400,
     show=True,
     save_handle='gridworld_rollout',
     save_folder=data.TEMP_FOLDER
@@ -335,12 +344,13 @@ def visualize_full_gridworld_rollout(
         policy.simulate_policy_rollout(
             initial_state,
             policy_data['policy_graph_A'],
-            policy_data['mdp_graph_A'],
+            policy_data['mdp_graph'],
             policy_graph_B=policy_data['policy_graph_B'],
-            mdp_graph_B=policy_data['mdp_graph_B'],
-            number_of_steps=number_of_steps
+            number_of_steps=number_of_steps,
+            random_seed=0
         ),
         reward_function=policy_data['reward_function_{}'.format(agent_whose_rewards_are_displayed)],
+        ms_per_frame=ms_per_frame,
         show=show,
         agent_whose_rewards_are_displayed=agent_whose_rewards_are_displayed,
         save_handle=save_handle,

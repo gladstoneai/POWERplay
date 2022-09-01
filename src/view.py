@@ -12,6 +12,7 @@ def plot_gridworld_rollout(
     state_rollout,
     reward_function=None,
     show=True,
+    ms_per_frame=200,
     agent_whose_rewards_are_displayed='A',
     save_handle='gridworld_rollout',
     save_folder=data.TEMP_FOLDER
@@ -29,6 +30,7 @@ def plot_gridworld_rollout(
     anim.animate_rollout(
         save_handle,
         len(state_rollout),
+        ms_per_frame=ms_per_frame,
         output_filename='{}-animation'.format(save_handle),
         input_folder=save_folder,
         output_folder=save_folder

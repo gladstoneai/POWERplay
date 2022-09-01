@@ -93,15 +93,24 @@ def generate_standard_fig_data(state_indices, sharey=False):
 # - Which B states are we plotting
 # - Where are we plotting them on the grid
 # - Where is agent A on the grid (None is an option we pick if we don't want Agent A's cyan box rendered)
-def render_gridworld_rollout_snapshot(state_list, current_state, reward_function=None, agent_whose_rewards_are_displayed='A'):
+def render_gridworld_rollout_snapshot(
+    state_list,
+    current_state,
+    reward_function=None,
+    agent_whose_rewards_are_displayed='A'
+):
     agent_B_default_state = '(0, 0)'
-    agent_A_color = 'cyan'
+    agent_A_color = 'blue'
     agent_B_color = 'red'
 
     if graph.are_gridworld_states_multiagent(state_list):
         both_agent_states = np.array(graph.multiagent_states_to_single_agent_states(state_list)).T
-        agent_A_states, agent_B_states = both_agent_states if agent_whose_rewards_are_displayed == 'A' else both_agent_states[::-1]
-        # When we want to visualize the Agent B rewards, we swap the state labels of the 2 agents (but we DON'T swap the COLORS of the agents as they move around on the gridworld)
+        # When we want to visualize the Agent B rewards, we swap the state labels of the 2 agents (but we DON'T swap the
+        # COLORS of the agents as they move around on the gridworld)
+        agent_A_states, agent_B_states = both_agent_states if (
+            agent_whose_rewards_are_displayed == 'A'
+        ) else both_agent_states[::-1]
+
         agent_A_display_state, agent_B_display_state = graph.multiagent_state_to_single_agent_states(current_state)
         agent_B_current_state = agent_B_display_state if agent_whose_rewards_are_displayed == 'A' else agent_A_display_state
         
