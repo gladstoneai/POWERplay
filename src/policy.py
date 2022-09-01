@@ -203,7 +203,7 @@ def sample_optimal_policy_data_from_run(run_properties, reward_sample_index=0):
                 runex.find_optimal_policy(
                     reward_function_B,
                     discount_rate_B,
-                    graph.graphs_to_full_multiagent_transition_tensor(
+                    graph.graphs_to_full_transition_tensor(
                         *transition_graphs, acting_agent_is_A=False
                     )
                 ),
@@ -213,41 +213,52 @@ def sample_optimal_policy_data_from_run(run_properties, reward_sample_index=0):
             'reward_function_B': reward_function_B
         }
 
-def next_state_rollout(current_state, policy_graph, mdp_graph):
-    state_list = graph.get_states_from_graph(policy_graph)
+def next_state_rollout(current_state, mdp_graph, policy_graph_A, policy_graph_B=None):
+    state_list = graph.get_states_from_graph(mdp_graph)
+
+    state_vector = graph.state_to_vector(current_state, state_list)
+    policy_tensor_A = graph.graph_to_policy_tensor(policy_graph_A)
+
+    full_transition_tensor = graph.graph_to_transition_tensor(mdp_graph) if (
+        policy_graph_B is None
+    ) else graph.graphs_to_full_transition_tensor(mdp_graph, policy_graph_B, acting_agent_is_A=True)
+
     return dist.sample_from_state_list(
         state_list,
         graph.one_step_rollout(
-            graph.state_to_vector(current_state, state_list),
-            graph.graph_to_policy_tensor(policy_graph),
-            graph.graph_to_transition_tensor(mdp_graph)
+            graph.compute_state_transition_matrix(full_transition_tensor, policy_tensor_A),
+            state_vector
         )
     )
 
 def simulate_policy_rollout(
     initial_state,
     policy_graph_A,
-    mdp_graph_A,
+    mdp_graph,
     policy_graph_B=None,
-    mdp_graph_B=None,
     number_of_steps=20,
     random_seed=0
 ):
-    check.check_full_graph_compatibility(policy_graph_A, mdp_graph_A)
-    check.check_state_in_graph_states(mdp_graph_A, initial_state)
+    check.check_state_in_graph_states(mdp_graph, initial_state)
+    check.check_policy_graph(policy_graph_A)
 
-    if policy_graph_B is not None:
-        check.check_full_graph_compatibility(policy_graph_B, mdp_graph_B)
-        check.check_graph_state_compatibility(mdp_graph_A, mdp_graph_B)
+    if policy_graph_B is None:
+        check.check_mdp_graph(mdp_graph)
+        check.check_full_graph_compatibility(mdp_graph, policy_graph_A)
+    
+    else:
+        check.check_joint_mdp_graph(mdp_graph)
+        check.check_policy_graph(policy_graph_B)
+        check.check_joint_mdp_and_policy_compatibility(mdp_graph, policy_graph_A, policy_is_for_agent_A=True)
+        check.check_joint_mdp_and_policy_compatibility(mdp_graph, policy_graph_B, policy_is_for_agent_A=False)
     
     misc.set_global_random_seed(random_seed)
-    
-    state_rollout_ = [initial_state]
-    
-    for _ in range(number_of_steps):
-        state_rollout_ += [next_state_rollout(state_rollout_[-1], policy_graph_A, mdp_graph_A)]
 
-        if policy_graph_B is not None:
-            state_rollout_ += [next_state_rollout(state_rollout_[-1], policy_graph_B, mdp_graph_B)]
-    
+    state_rollout_ = [initial_state]
+
+    for _ in range(number_of_steps):
+        state_rollout_ += [
+            next_state_rollout(state_rollout_[-1], mdp_graph, policy_graph_A, policy_graph_B=policy_graph_B)
+        ]
+
     return state_rollout_

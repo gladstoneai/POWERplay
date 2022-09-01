@@ -80,7 +80,7 @@ def run_multiagent_fixed_policy_experiment(
     all_optimal_values = proc.samples_to_outputs(
         reward_samples,
         discount_rate,
-        graph.graphs_to_full_multiagent_transition_tensor(*transition_graphs, acting_agent_is_A=True),
+        graph.graphs_to_full_transition_tensor(*transition_graphs, acting_agent_is_A=True),
         iteration_function=learn.value_iteration,
         number_of_samples=len(reward_samples),
         num_workers=num_workers,
@@ -119,7 +119,7 @@ def run_multiagent_with_reward_experiment(
     print('Computing Agent A policies:')
     print()
 
-    full_transition_tensor_A = graph.compute_full_multiagent_transition_tensor( # Full Agent A transition tensor assuming Agent B seed policy
+    full_transition_tensor_A = graph.compute_full_transition_tensor( # Full Agent A transition tensor assuming Agent B seed policy
         joint_transition_tensor, seed_policy_tensor_B, acting_agent_is_A=True
     )
 
@@ -140,7 +140,7 @@ def run_multiagent_with_reward_experiment(
     ])
 
     all_full_transition_tensors_B = torch.stack([
-        graph.compute_full_multiagent_transition_tensor(
+        graph.compute_full_transition_tensor(
             joint_transition_tensor, policy_tensor_A, acting_agent_is_A=False
         ) for policy_tensor_A in all_policy_tensors_A
     ])
@@ -204,7 +204,7 @@ def run_multiagent_with_reward_experiment(
     ])
 
     all_full_transition_tensors_A = torch.stack([
-        graph.compute_full_multiagent_transition_tensor(
+        graph.compute_full_transition_tensor(
             joint_transition_tensor, policy_tensor_B, acting_agent_is_A=True
         ) for policy_tensor_B in all_policy_tensors_B
     ])

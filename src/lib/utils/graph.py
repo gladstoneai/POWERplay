@@ -246,7 +246,7 @@ def graph_to_policy_tensor(policy_graph):
     return policy_tensor_.to(torch.float)
 
 # Relevant calculation: https://drive.google.com/file/d/1XwM_HXkFu1VglsYhsew6SM3BMqb9T_9R/view
-def compute_full_multiagent_transition_tensor(
+def compute_full_transition_tensor(
     joint_transition_tensor,
     policy_tensor,
     acting_agent_is_A=True
@@ -293,8 +293,8 @@ def graphs_to_multiagent_transition_tensor(mdp_graph_A, policy_graph_B, mdp_grap
         graph_to_transition_tensor(mdp_graph_B)
     )
 
-def graphs_to_full_multiagent_transition_tensor(joint_mdp_graph, policy_graph, acting_agent_is_A=True):
-    return compute_full_multiagent_transition_tensor(
+def graphs_to_full_transition_tensor(joint_mdp_graph, policy_graph, acting_agent_is_A=True):
+    return compute_full_transition_tensor(
         graph_to_joint_transition_tensor(joint_mdp_graph),
         graph_to_policy_tensor(policy_graph),
         acting_agent_is_A=acting_agent_is_A
@@ -305,27 +305,23 @@ def any_graphs_to_transition_tensor(*transition_graphs, acting_agent_is_A=True):
         return graph_to_transition_tensor(transition_graphs[0])
 
     else: # Multiagent case
-        return graphs_to_full_multiagent_transition_tensor(
+        return graphs_to_full_transition_tensor(
             *transition_graphs, acting_agent_is_A=acting_agent_is_A
         )
 
 # Calculation details here:
 # https://drive.google.com/file/d/1t3wx0P-j3IBKZfD7td9Cewz2-sO5zzDz/view
-def one_step_rollout(state_vector, policy_tensor, transition_tensor):
-    return ( 
-        transition_tensor
-        * torch.tile(policy_tensor, (policy_tensor.shape[0], 1, 1)).transpose(0, 1).transpose(1, 2)
-        * torch.tile(state_vector, (policy_tensor.shape[0], policy_tensor.shape[1], 1)).transpose(0, 2)
-    ).sum(dim=[0, 1])
-
-def one_step_joint_rollout(state_vector, policy_tensor_A, policy_tensor_B, joint_transition_tensor):
-    return one_step_rollout(
-        state_vector,
-        policy_tensor_A,
-        compute_full_multiagent_transition_tensor(
-            joint_transition_tensor, policy_tensor_B, acting_agent_is_A=True
+def compute_state_transition_matrix(full_transition_tensor, policy_tensor):
+    return (
+        (
+            full_transition_tensor
+        ) * (
+            torch.tile(policy_tensor, (policy_tensor.shape[0], 1, 1)).transpose(0, 1).transpose(1, 2)
         )
-    )
+    ).sum(dim=1).transpose(0, 1)
+
+def one_step_rollout(state_transition_matrix, state_vector):
+    return torch.matmul(state_transition_matrix, state_vector)
 
 def state_to_vector(state, state_list):
-    return tf.one_hot(torch.tensor(state_list.index(state)), num_classes=len(state_list))
+    return tf.one_hot(torch.tensor(state_list.index(state)), num_classes=len(state_list)).to(torch.float)

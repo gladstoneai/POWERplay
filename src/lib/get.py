@@ -70,7 +70,7 @@ def get_transition_graphs(
         policy_graph_B = data.load_graph_from_dot_file(run_params['policy_graph_agent_B'], folder=policies_folder)
 
         if check_graph_compatibilities:
-            check.check_policy_and_joint_mdp_compatibility(
+            check.check_joint_mdp_and_policy_compatibility(
                 joint_mdp_graph, policy_graph_B, policy_is_for_agent_A=False
             )
 
@@ -81,7 +81,7 @@ def get_transition_graphs(
         seed_policy_graph_B = data.load_graph_from_dot_file(run_params['seed_policy_graph_agent_B'], folder=policies_folder)
 
         if check_graph_compatibilities:
-            check.check_policy_and_joint_mdp_compatibility(
+            check.check_joint_mdp_and_policy_compatibility(
                 joint_mdp_graph, seed_policy_graph_B, policy_is_for_agent_A=False
             )
 

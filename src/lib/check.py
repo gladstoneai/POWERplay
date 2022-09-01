@@ -4,7 +4,6 @@ import torch
 
 from .utils import dist
 from .utils import graph
-from .utils import misc
 from . import data
 
 ################################################################################
@@ -75,7 +74,7 @@ def check_full_graph_compatibility(graph_1, graph_2):
                 'The action set for graph_1 and graph_2 must be identical at state {}.'.format(state)
             )
 
-def check_policy_and_joint_mdp_compatibility(joint_mdp_graph, policy_graph, policy_is_for_agent_A=True):
+def check_joint_mdp_and_policy_compatibility(joint_mdp_graph, policy_graph, policy_is_for_agent_A=True):
     check_graph_state_compatibility(policy_graph, joint_mdp_graph)
 
     if policy_is_for_agent_A:
@@ -165,32 +164,32 @@ def check_noise_bias(noise_bias, stochastic_noise_level):
     if any([noise < 0 for noise in noise_bias.values()]):
         raise Exception('Every value of the noise bias must be greater than 0.')
 
-def check_mdp_graph(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.MDPS_FOLDER):
-    mdp_graph = data.load_graph_from_dot_file(mdp_key, folder=mdps_folder)
+def check_mdp_graph(mdp_graph, tolerance=PROBABILITY_TOLERANCE):
     transition_tensor = graph.graph_to_transition_tensor(mdp_graph)
     state_list, action_list = graph.get_states_from_graph(mdp_graph), graph.get_actions_from_graph(mdp_graph)
 
     if list(transition_tensor.shape) != [len(state_list), len(action_list), len(state_list)]:
-        raise Exception('The transition tensor for MDP {0} must have shape [{1}, {2}, {1}].'.format(
-            mdp_key, len(state_list), len(action_list)
+        raise Exception('The full transition tensor for this MDP must have shape [{0}, {1}, {0}].'.format(
+            len(state_list), len(action_list)
         ))
     
     for state_tensor in transition_tensor:
         for action_tensor in state_tensor:
             if (not (action_tensor == 0).all()) and (action_tensor.sum() - 1).abs() > tolerance:
                 raise Exception(
-                    'Every inner row of the transition tensor {} must either be all zeros ' \
+                    'Every inner row of the full transition tensor must either be all zeros ' \
                     '(if the action can\'t be taken) or sum to 1 ' \
-                    '(the total probability of ending up in any downstream state).'.format(mdp_key)
+                    '(the total probability of ending up in any downstream state).'
                 )
 
-def check_joint_mdp_graph(joint_mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.MDPS_FOLDER):
-    joint_mdp_graph = data.load_graph_from_dot_file(joint_mdp_key, folder=mdps_folder)
+def check_mdp_graph_by_key(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.MDPS_FOLDER):
+    check_mdp_graph(data.load_graph_from_dot_file(mdp_key, folder=mdps_folder), tolerance=tolerance)
 
+def check_joint_mdp_graph(joint_mdp_graph, tolerance=PROBABILITY_TOLERANCE):
     try:
         joint_transition_tensor = graph.graph_to_joint_transition_tensor(joint_mdp_graph)
     except IndexError:
-        raise Exception('The MDP graph {} doesn\'t seem to be a joint MDP graph.'.format(joint_mdp_key))
+        raise Exception('This MDP graph should be a joint MDP graph.')
 
     state_list = graph.get_states_from_graph(joint_mdp_graph)
     action_list_A, action_list_B = graph.get_single_agent_actions_from_joint_mdp_graph(joint_mdp_graph)
@@ -198,8 +197,8 @@ def check_joint_mdp_graph(joint_mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_f
     if list(joint_transition_tensor.shape) != [
         len(state_list), len(action_list_A), len(action_list_B), len(state_list)
     ]:
-        raise Exception('The transition tensor for MDP {0} must have shape [{1}, {2}, {3}, {1}].'.format(
-            joint_mdp_key, len(state_list), len(action_list_A), len(action_list_B)
+        raise Exception('The joint transition tensor for this MDP must have shape [{0}, {1}, {2}, {0}].'.format(
+            len(state_list), len(action_list_A), len(action_list_B)
         ))
     
     for state_tensor in joint_transition_tensor:
@@ -207,27 +206,32 @@ def check_joint_mdp_graph(joint_mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_f
             for action_tensor_B in action_tensor_A:
                 if (not (action_tensor_B == 0).all()) and (action_tensor_B.sum() - 1).abs() > tolerance:
                     raise Exception(
-                        'Every inner row of the joint transition tensor {} must either be all zeros '\
+                        'Every inner row of the joint transition tensor must either be all zeros '\
                         '(if the action pair can\'t be taken) or sum to 1 '\
-                        '(the total probability of ending up in any downstream state).'.format(joint_mdp_key)
+                        '(the total probability of ending up in any downstream state).'
                     )
 
-def check_policy_graph(policy_key, tolerance=PROBABILITY_TOLERANCE, policy_folder=data.POLICIES_FOLDER):
-    policy_graph = data.load_graph_from_dot_file(policy_key, folder=policy_folder)
+def check_joint_mdp_graph_by_key(joint_mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder=data.MDPS_FOLDER):
+    check_joint_mdp_graph(
+        data.load_graph_from_dot_file(joint_mdp_key, folder=mdps_folder), tolerance=tolerance
+    )
+
+def check_policy_graph(policy_graph, tolerance=PROBABILITY_TOLERANCE):
     policy_tensor = graph.graph_to_policy_tensor(policy_graph)
     state_list, action_list = graph.get_states_from_graph(policy_graph), graph.get_actions_from_graph(policy_graph)
 
     if list(policy_tensor.shape) != [len(state_list), len(action_list)]:
-        raise Exception('The policy tensor for policy {0} must have shape [{1}, {2}].'.format(
-            policy_key, len(state_list), len(action_list)
-        ))
+        raise Exception('Policy tensor must have shape [{0}, {1}].'.format(len(state_list), len(action_list)))
     
     for state_tensor in policy_tensor:
         if (state_tensor.sum() - 1).abs() > tolerance:
             raise Exception(
-                'Every row of the policy tensor {} must sum to 1 ' \
-                '(the total probability of taking any action from that state.'.format(policy_key)
+                'Every row of the policy tensor must sum to 1 ' \
+                '(the total probability of taking any action from that state).'
             )
+
+def check_policy_graph_by_key(policy_key, tolerance=PROBABILITY_TOLERANCE, policy_folder=data.POLICIES_FOLDER):
+    check_policy_graph(data.load_graph_from_dot_file(policy_key, folder=policy_folder), tolerance=tolerance)
 
 def noop(_):
     pass
@@ -308,10 +312,10 @@ def check_sweep_param(param_name, value_dict, checker_function):
 
 def check_sweep_params(sweep_params):
     all_param_checkers = {
-        'mdp_graph': check_mdp_graph,
-        'joint_mdp_graph': check_joint_mdp_graph,
-        'policy_graph_agent_B': check_policy_graph,
-        'seed_policy_graph_agent_B': check_policy_graph,
+        'mdp_graph': check_mdp_graph_by_key,
+        'joint_mdp_graph': check_joint_mdp_graph_by_key,
+        'policy_graph_agent_B': check_policy_graph_by_key,
+        'seed_policy_graph_agent_B': check_policy_graph_by_key,
         'reward_correlation': noop,
         'discount_rate': check_discount_rate,
         'discount_rate_agent_B': check_discount_rate,
