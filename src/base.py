@@ -1,7 +1,6 @@
-import matplotlib.pyplot as plt
-import torch
 import copy as cp
 
+from .lib.utils import dist
 from .lib.utils import graph
 from .lib import data
 from .lib import get
@@ -88,67 +87,6 @@ def update_mdp_graph_with_interface(input_mdp):
             )
     
     return output_mdp_
-
-# y_axis_bounds is either None (and set the y-axis bounds by default based on the data) or a 2-element list
-# with the lower bound as the first element, and the upper bound as the second element.
-def visualize_alignment_curves(
-    sweep_id,
-    show=True,
-    plot_title='Alignment curves',
-    fig_name='',
-    y_axis_bounds=None,
-    data_folder=data.EXPERIMENT_FOLDER,
-    save_folder=data.TEMP_FOLDER
-):
-    view.plot_alignment_curves(
-        sweep_id,
-        show=show,
-        plot_title=plot_title,
-        fig_name=fig_name,
-        y_axis_bounds=y_axis_bounds,
-        data_folder=data_folder,
-        save_folder=save_folder
-    )
-
-def visualize_all_alignment_curves(
-    sweep_ids_list,
-    show=False,
-    plot_titles=None,
-    fig_names=None,
-    data_folder=data.EXPERIMENT_FOLDER,
-    save_folder=data.TEMP_FOLDER
-):
-    plot_titles_list =  ['Alignment curves'] * len(sweep_ids_list) if plot_titles is None else plot_titles
-    fig_names_list = [None] * len(sweep_ids_list) if fig_names is None else fig_names
-
-    for sweep_id, plot_title, fig_name in zip(sweep_ids_list, plot_titles_list, fig_names_list):
-        view.plot_alignment_curves(
-            sweep_id,
-            show=show,
-            plot_title=plot_title,
-            fig_name=fig_name,
-            data_folder=data_folder,
-            save_folder=save_folder
-        )
-
-def visualize_specific_power_alignments(
-    sweep_id,
-    show=True,
-    ms_per_frame=100,
-    fig_name=None,
-    include_baseline_powers=True,
-    data_folder=data.EXPERIMENT_FOLDER,
-    save_folder=data.TEMP_FOLDER
-):
-    view.plot_specific_power_alignments(
-        sweep_id,
-        show=show,
-        ms_per_frame=ms_per_frame,
-        fig_name=fig_name,
-        include_baseline_powers=include_baseline_powers,
-        data_folder=data_folder,
-        save_folder=save_folder
-    )
 
 def construct_single_agent_gridworld_mdp(num_rows, num_cols, mdp_save_name=None):
     stochastic_graph = mdp.gridworld_to_stochastic_graph(
@@ -242,6 +180,67 @@ def construct_multiagent_gridworld_mdps_with_interactions(num_rows, num_cols, md
     
     return joint_mdp_graph
 
+# y_axis_bounds is either None (and set the y-axis bounds by default based on the data) or a 2-element list
+# with the lower bound as the first element, and the upper bound as the second element.
+def visualize_alignment_curves(
+    sweep_id,
+    show=True,
+    plot_title='Alignment curves',
+    fig_name='',
+    y_axis_bounds=None,
+    data_folder=data.EXPERIMENT_FOLDER,
+    save_folder=data.TEMP_FOLDER
+):
+    view.plot_alignment_curves(
+        sweep_id,
+        show=show,
+        plot_title=plot_title,
+        fig_name=fig_name,
+        y_axis_bounds=y_axis_bounds,
+        data_folder=data_folder,
+        save_folder=save_folder
+    )
+
+def visualize_all_alignment_curves(
+    sweep_ids_list,
+    show=False,
+    plot_titles=None,
+    fig_names=None,
+    data_folder=data.EXPERIMENT_FOLDER,
+    save_folder=data.TEMP_FOLDER
+):
+    plot_titles_list =  ['Alignment curves'] * len(sweep_ids_list) if plot_titles is None else plot_titles
+    fig_names_list = [None] * len(sweep_ids_list) if fig_names is None else fig_names
+
+    for sweep_id, plot_title, fig_name in zip(sweep_ids_list, plot_titles_list, fig_names_list):
+        view.plot_alignment_curves(
+            sweep_id,
+            show=show,
+            plot_title=plot_title,
+            fig_name=fig_name,
+            data_folder=data_folder,
+            save_folder=save_folder
+        )
+
+def visualize_specific_power_alignments(
+    sweep_id,
+    show=True,
+    ms_per_frame=100,
+    fig_name=None,
+    include_baseline_powers=True,
+    data_folder=data.EXPERIMENT_FOLDER,
+    save_folder=data.TEMP_FOLDER
+):
+    view.plot_specific_power_alignments(
+        sweep_id,
+        show=show,
+        ms_per_frame=ms_per_frame,
+        fig_name=fig_name,
+        include_baseline_powers=include_baseline_powers,
+        data_folder=data_folder,
+        save_folder=save_folder
+    )
+
 def visualize_full_gridworld_rollout(
     sweep_id,
     run_suffix='',
@@ -277,14 +276,19 @@ def visualize_full_gridworld_rollout(
         save_folder=save_folder
     )
 
+def visualize_correlated_reward_samples(
+    num_samples,
+    distribution_config={ 'dist_name': 'uniform', 'params': [0, 1] },
+    correlation=0,
+    symmetric_interval=None
+):
+    view.plot_correlated_reward_samples(
+        num_samples,
+        distribution_config=distribution_config,
+        correlation=correlation,
+        symmetric_interval=symmetric_interval,
+        distribution_dict=dist.DISTRIBUTION_DICT
+    )
+
 def build_quick_random_policy(mdp_graph):
     return policy.quick_mdp_to_policy(mdp_graph)
-
-def calculate_power_baseline(sweep_id, run_suffix='', agent_label='A'):
-   check.check_agent_label(agent_label)
-
-   run_props = get.get_properties_from_run(sweep_id, run_suffix=run_suffix)
-
-   return run_props['power_samples'].mean().item() if (
-    agent_label == 'A'
-   ) else run_props['power_samples_agent_B'].mean().item()

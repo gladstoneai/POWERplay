@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
 import torch
+import numpy as np
 
 from .lib.utils import render
 from .lib.utils import graph
+from .lib.utils import dist
 from .lib import data
 from .lib import get
 from . import anim
@@ -235,3 +237,24 @@ def plot_specific_power_alignments(
 
     if show:
         plt.show()
+
+def plot_correlated_reward_samples(
+    num_samples,
+    distribution_config={ 'dist_name': 'uniform', 'params': [0, 1] },
+    correlation=0,
+    symmetric_interval=None,
+    distribution_dict=dist.DISTRIBUTION_DICT
+):
+    agent_A_dist = dist.config_to_reward_distribution(
+        ['TEMP'], { 'default_dist': distribution_config }, distribution_dict=distribution_dict
+    )
+    agent_A_samples = agent_A_dist(num_samples)
+    agent_B_samples = dist.generate_correlated_reward_samples(
+        agent_A_dist, agent_A_samples, correlation=correlation, symmetric_interval=symmetric_interval
+    )
+
+    plt.plot(np.array(agent_A_samples.T[0]), np.array(agent_B_samples.T[0]), 'mh')
+    plt.xlabel('Agent A reward samples')
+    plt.ylabel('Agent B reward samples')
+
+    plt.show()

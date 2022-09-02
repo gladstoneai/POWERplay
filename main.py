@@ -49,6 +49,7 @@ from src import base
 # - Understand why Agent A has weird POWERs in Correlation 0 MOTIONLESS plot (timebox); maybe statistical: we only have ~1k samples per Agent B position with 10k total samples
 # -- Switch to Pareto distributions to smooth our results? (This didn't work)
 # -- Does this issue persist outside the MOTIONLESS Agent B seed policy?
+# - Refactor to make discount_rate_A and discount_rate_B a 2-list so we can sweep across them in combination
 # - Run alignment curves for fixed correlation 0 with gamma, etc., to see what causes the most misalignment at correlation 0
 # - Build robust alignment curve plotting code for our results
 # - Update README to handle joint multiagent graphs
