@@ -139,7 +139,7 @@ def get_reward_correlations_and_powers_from_sweep(sweep_id, include_baseline_pow
         'all_powers_B': [run_props['power_samples_agent_B'].mean(dim=0) for run_props in all_run_props_],
         **(
             {
-                'baseline_avg_power_A': all_run_props_[0]['power_samples_A_against_seed'].mean()
+                'baseline_powers_A': all_run_props_[0]['power_samples_A_against_seed'].mean(dim=0)
             } if include_baseline_power else {}
         )
     }

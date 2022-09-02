@@ -19,29 +19,31 @@ def plot_gridworld_rollout(
     save_handle='gridworld_rollout',
     save_folder=data.TEMP_FOLDER
 ):
-    all_figs_ = []
-    for i in range(len(state_rollout)):
-        all_figs_ += [render.render_gridworld_rollout_snapshot(
+    all_figs = [
+        render.render_gridworld_rollout_snapshot(
             state_list,
-            state_rollout[i],
+            current_state,
             reward_function=reward_function,
             agent_whose_rewards_are_displayed=agent_whose_rewards_are_displayed
-        )]
-        data.save_figure(all_figs_[-1], '{0}-{1}'.format(save_handle, i), folder=save_folder)
+        ) for current_state in state_rollout
+    ]
+    fig_names = ['{0}-{1}'.format(save_handle, i) for i in range(len(state_rollout))]
 
-    anim.animate_rollout(
-        save_handle,
-        len(state_rollout),
+    for fig, fig_name in zip(all_figs, fig_names):
+        data.save_figure(fig, fig_name, folder=save_folder)
+    
+    anim.animate_from_filenames(
+        fig_names,
+        'rollout_animation',
         ms_per_frame=ms_per_frame,
-        output_filename='{}-animation'.format(save_handle),
-        input_folder=save_folder,
+        input_folder_or_list=save_folder,
         output_folder=save_folder
     )
 
     if show:
         plt.show()
 
-    return all_figs_
+    return all_figs
 
 # TODO: Document.
 def plot_policy_sample(
@@ -122,19 +124,21 @@ def plot_alignment_curves(
         power_correlation_data['reward_correlations'],
         [powers_A.mean() for powers_A in power_correlation_data['all_powers_A']],
         [powers_B.mean() for powers_B in power_correlation_data['all_powers_B']],
-        power_correlation_data.get('baseline_avg_power_A')
+        power_correlation_data.get('baseline_powers_A', torch.tensor(0.)).mean()
     )
 
     fig, ax = plt.subplots()
 
     ax.plot(reward_correlations, all_avg_powers_B, 'rs', label='Agent B POWER, avg over states')
     ax.plot(reward_correlations, all_avg_powers_A, 'bo', label='Agent A POWER, avg over states')
-    ax.plot(
-        reward_correlations,
-        [baseline_avg_power_A] * len(reward_correlations),
-        'b-',
-        label='Agent A baseline POWER, avg over states'
-    )
+    
+    if include_baseline_power:
+        ax.plot(
+            reward_correlations,
+            [baseline_avg_power_A] * len(reward_correlations),
+            'b-',
+            label='Agent A baseline POWER, avg over states'
+        )
 
     ax.set_xlabel('Reward correlation coefficient')
     ax.set_ylabel('POWER')
@@ -159,19 +163,22 @@ def plot_specific_power_alignments(
     sweep_id,
     show=True,
     fig_name=None,
+    include_baseline_powers=True,
+    ms_per_frame=200,
     data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
 ):
     graph_padding = 0.1
 
     power_correlation_data = get.get_reward_correlations_and_powers_from_sweep(
-        sweep_id, include_baseline_power=False, folder=data_folder
+        sweep_id, include_baseline_power=True, folder=data_folder
     )
 
-    reward_correlations, all_powers_A, all_powers_B = (
+    reward_correlations, all_powers_A, all_powers_B, baseline_powers_A = (
         power_correlation_data['reward_correlations'],
         power_correlation_data['all_powers_A'],
-        power_correlation_data['all_powers_B']
+        power_correlation_data['all_powers_B'],
+        power_correlation_data['baseline_powers_A']
     )
 
     min_A_power = min([powers_A.min() for powers_A in all_powers_A]) * (1 - graph_padding)
@@ -179,12 +186,19 @@ def plot_specific_power_alignments(
     min_B_power = min([powers_B.min() for powers_B in all_powers_B]) * (1 - graph_padding)
     max_B_power = max([powers_B.max() for powers_B in all_powers_B]) * (1 + graph_padding)
 
-    power_correlations = []
+    power_correlations_ = []
+    all_fig_names_ = []
 
     for correlation, power_samples_A, power_samples_B in zip(reward_correlations, all_powers_A, all_powers_B):
         fig, ax = plt.subplots()
+        current_fig_name = '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(fig_name, sweep_id, str(correlation))
 
-        ax.plot(power_samples_A, power_samples_B, 'ho')
+        if include_baseline_powers:
+            for baseline_power in baseline_powers_A:
+                ax.plot([baseline_power.item()] * 2, [min_B_power, max_B_power], 'b-', alpha=0.25)
+
+        ax.plot(power_samples_A, power_samples_B, 'mh')
+
         ax.set_xlabel('State POWER values, Agent A')
         ax.set_ylabel('State POWER values, Agent B')
         ax.set_title('Reward correlation value {}'.format(correlation))
@@ -192,17 +206,22 @@ def plot_specific_power_alignments(
         ax.set_ylim([min_B_power, max_B_power])
 
         if fig_name:
-            data.save_figure(
-                fig,
-                '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(fig_name, sweep_id, str(correlation)),
-                folder=save_folder
-            )
+            data.save_figure(fig, current_fig_name, folder=save_folder)
 
-        power_correlations += [torch.corrcoef(torch.stack([power_samples_A, power_samples_B]))[0][1]]
+        power_correlations_ += [torch.corrcoef(torch.stack([power_samples_A, power_samples_B]))[0][1]]
+        all_fig_names_ += [current_fig_name]
 
     fig, ax = plt.subplots()
 
-    ax.plot(reward_correlations, power_correlations, 'ho')
+    anim.animate_from_filenames(
+        all_fig_names_,
+        'specific_power_alignment_animation',
+        ms_per_frame=ms_per_frame,
+        input_folder_or_list=save_folder,
+        output_folder=save_folder
+    )
+
+    ax.plot(reward_correlations, power_correlations_, 'mh')
     ax.set_xlabel('Reward correlation value')
     ax.set_ylabel('State-by-state POWER correlation value')
     ax.set_title('Correlation coefficients plot')

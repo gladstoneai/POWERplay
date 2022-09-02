@@ -46,8 +46,6 @@ from src import base
 # --- Content-wise, this is really strong already.
 
 # TODO NEXT:
-# - Make Agent A and Agent B move jointly, instead of in turns
-# -- Add animations to specific power alignment plots
 # - Understand why Agent A has weird POWERs in Correlation 0 MOTIONLESS plot (timebox); maybe statistical: we only have ~1k samples per Agent B position with 10k total samples
 # -- Switch to Pareto distributions to smooth our results? (This didn't work)
 # -- Does this issue persist outside the MOTIONLESS Agent B seed policy?

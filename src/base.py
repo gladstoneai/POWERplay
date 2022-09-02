@@ -134,14 +134,18 @@ def visualize_all_alignment_curves(
 def visualize_specific_power_alignments(
     sweep_id,
     show=True,
+    ms_per_frame=100,
     fig_name=None,
+    include_baseline_powers=True,
     data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
 ):
     view.plot_specific_power_alignments(
         sweep_id,
         show=show,
+        ms_per_frame=ms_per_frame,
         fig_name=fig_name,
+        include_baseline_powers=include_baseline_powers,
         data_folder=data_folder,
         save_folder=save_folder
     )
