@@ -117,3 +117,29 @@ def get_properties_from_run(
         **extra_props,
         **diagnostics
     }
+
+def get_reward_correlations_and_powers_from_sweep(sweep_id, include_baseline_power=True, folder=data.EXPERIMENT_FOLDER):
+    run_suffixes = get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=folder)
+
+    all_run_props_ = []
+
+    print()
+
+    for run_suffix in run_suffixes:
+
+        print('Accessing run {}...'.format(run_suffix))
+
+        all_run_props_ += [get_properties_from_run(sweep_id, run_suffix=run_suffix)]
+    
+    print()
+
+    return {
+        'reward_correlations': [run_props['reward_correlation'] for run_props in all_run_props_],
+        'all_powers_A': [run_props['power_samples'].mean(dim=0) for run_props in all_run_props_],
+        'all_powers_B': [run_props['power_samples_agent_B'].mean(dim=0) for run_props in all_run_props_],
+        **(
+            {
+                'baseline_avg_power_A': all_run_props_[0]['power_samples_A_against_seed'].mean()
+            } if include_baseline_power else {}
+        )
+    }

@@ -91,78 +91,39 @@ def update_mdp_graph_with_interface(input_mdp):
 
 # y_axis_bounds is either None (and set the y-axis bounds by default based on the data) or a 2-element list
 # with the lower bound as the first element, and the upper bound as the second element.
-def plot_alignment_curves(
+def visualize_alignment_curves(
     sweep_id,
     show=True,
-    plot_title='',
+    plot_title='Alignment curves',
     fig_name='',
     y_axis_bounds=None,
     data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
 ):
-    run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=data_folder)
+    view.plot_alignment_curves(
+        sweep_id,
+        show=show,
+        plot_title=plot_title,
+        fig_name=fig_name,
+        y_axis_bounds=y_axis_bounds,
+        data_folder=data_folder,
+        save_folder=save_folder
+    )
 
-    all_run_props_ = []
-
-    print()
-
-    for run_suffix in run_suffixes:
-
-        print('Accessing run {}...'.format(run_suffix))
-        all_run_props_ += [get.get_properties_from_run(sweep_id, run_suffix=run_suffix)]
-    
-    print()
-
-    all_correlations = [run_props['reward_correlation'] for run_props in all_run_props_]
-    all_powers_A = [run_props['power_samples'].mean() for run_props in all_run_props_]
-    all_powers_B = [run_props['power_samples_agent_B'].mean() for run_props in all_run_props_]
-    agent_A_baseline_power = all_run_props_[0]['power_samples_A_against_seed'].mean()
-
-    fig, ax = plt.subplots()
-
-    ax.plot(all_correlations, all_powers_A, 'b.', label='Agent A POWER')
-    ax.plot(all_correlations, all_powers_B, 'r.', label='Agent B POWER')
-    ax.set_xlabel('Reward correlation')
-    ax.set_ylabel('POWER')
-    ax.set_title(plot_title)
-
-    if y_axis_bounds is not None:
-        ax.set_ylim(y_axis_bounds)
-
-    ax.plot(all_correlations, [agent_A_baseline_power] * len(all_correlations), 'b-', label='Agent A baseline POWER')
-    ax.legend()
-
-    if fig_name:
-        data.save_figure(
-            fig,
-            '{0}-sweep_id_{1}-alignment_curve'.format(fig_name, sweep_id),
-            folder=save_folder
-        )
-
-    if show:
-        plt.show()
-
-def plot_all_alignment_curves(
+def visualize_all_alignment_curves(
     sweep_ids_list,
-    agent_B_baseline_powers=None,
     show=False,
     plot_titles=None,
     fig_names=None,
     data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
 ):
-    agent_B_baseline_powers_list = agent_B_baseline_powers if (
-        agent_B_baseline_powers
-    ) is not None else [None] * len(sweep_ids_list)
-    plot_titles_list = plot_titles if plot_titles is not None else [None] * len(sweep_ids_list)
-    fig_names_list = fig_names if fig_names is not None else [None] * len(sweep_ids_list)
+    plot_titles_list =  ['Alignment curves'] * len(sweep_ids_list) if plot_titles is None else plot_titles
+    fig_names_list = [None] * len(sweep_ids_list) if fig_names is None else fig_names
 
-    for sweep_id, agent_B_baseline_power, plot_title, fig_name in zip(
-        sweep_ids_list, agent_B_baseline_powers_list, plot_titles_list, fig_names_list
-    ):
-        plot_alignment_curves(
+    for sweep_id, plot_title, fig_name in zip(sweep_ids_list, plot_titles_list, fig_names_list):
+        view.plot_alignment_curves(
             sweep_id,
-            agent_B_baseline_power=agent_B_baseline_power,
             show=show,
             plot_title=plot_title,
             fig_name=fig_name,
@@ -170,65 +131,20 @@ def plot_all_alignment_curves(
             save_folder=save_folder
         )
 
-def plot_specific_alignment_curves(
+def visualize_specific_power_alignments(
     sweep_id,
     show=True,
-    fig_name='',
-    expt_folder=data.EXPERIMENT_FOLDER,
+    fig_name=None,
+    data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
 ):
-    graph_buffer = 0.1
-
-    print('Accessing sweep {}...'.format(sweep_id))
-
-    run_suffixes = get.get_sweep_run_suffixes_for_param(sweep_id, 'reward_correlation', folder=expt_folder)
-    all_run_props = [get.get_properties_from_run(sweep_id, run_suffix=run_suffix) for run_suffix in run_suffixes]
-    all_correlations = [run_props['reward_correlation'] for run_props in all_run_props]
-    all_powers_A = [run_props['power_samples'].mean(dim=0) for run_props in all_run_props]
-    all_powers_B = [run_props['power_samples_agent_B'].mean(dim=0) for run_props in all_run_props]
-
-    min_A_power = min([powers_A.min() for powers_A in all_powers_A]) * (1 - graph_buffer)
-    max_A_power = max([powers_A.max() for powers_A in all_powers_A]) * (1 + graph_buffer)
-    min_B_power = min([powers_B.min() for powers_B in all_powers_B]) * (1 - graph_buffer)
-    max_B_power = max([powers_B.max() for powers_B in all_powers_B]) * (1 + graph_buffer)
-
-    correlation_coefficients = []
-
-    for correlation, power_samples_A, power_samples_B in zip(all_correlations, all_powers_A, all_powers_B):
-        fig, ax = plt.subplots()
-
-        ax.plot(power_samples_A, power_samples_B, 'b.')
-        ax.set_xlabel('State POWER values, Agent A')
-        ax.set_ylabel('State POWER values, Agent B')
-        ax.set_title('Reward correlation value {}'.format(correlation))
-        ax.set_xlim([min_A_power, max_A_power])
-        ax.set_ylim([min_B_power, max_B_power])
-
-        if fig_name:
-            data.save_figure(
-                fig,
-                '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(fig_name, sweep_id, str(correlation)),
-                folder=save_folder
-            )
-
-        correlation_coefficients += [torch.corrcoef(torch.stack([power_samples_A, power_samples_B]))[0][1]]
-
-    fig, ax = plt.subplots()
-
-    ax.plot(all_correlations, correlation_coefficients, 'r.')
-    ax.set_xlabel('Reward correlation value')
-    ax.set_ylabel('State-by-state POWER correlation value')
-    ax.set_title('Correlation coefficients plot')
-
-    if fig_name:
-        data.save_figure(
-            fig,
-            '{0}-sweep_id_{1}-specific_alignment_curve-correlation_FULL'.format(fig_name, sweep_id),
-            folder=save_folder
-        )
-
-    if show:
-        plt.show()
+    view.plot_specific_power_alignments(
+        sweep_id,
+        show=show,
+        fig_name=fig_name,
+        data_folder=data_folder,
+        save_folder=save_folder
+    )
 
 def construct_single_agent_gridworld_mdp(num_rows, num_cols, mdp_save_name=None):
     stochastic_graph = mdp.gridworld_to_stochastic_graph(

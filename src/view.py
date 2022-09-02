@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
+import torch
 
 from .lib.utils import render
 from .lib.utils import graph
 from .lib import data
+from .lib import get
 from . import anim
 from . import viz
 from . import policy
@@ -99,3 +101,118 @@ def plot_rollout_powers(run_properties, initial_state, number_of_rollouts=10, nu
     plt.show()
 
     return all_power_plot_rollouts_
+
+# y_axis_bounds is either None (and set the y-axis bounds by default based on the data) or a 2-element list
+# with the lower bound as the first element, and the upper bound as the second element.
+def plot_alignment_curves(
+    sweep_id,
+    show=True,
+    plot_title='Alignment curves',
+    fig_name=None,
+    y_axis_bounds=None,
+    include_baseline_power=True,
+    data_folder=data.EXPERIMENT_FOLDER,
+    save_folder=data.TEMP_FOLDER
+):
+    power_correlation_data = get.get_reward_correlations_and_powers_from_sweep(
+        sweep_id, include_baseline_power=include_baseline_power, folder=data_folder
+    )
+
+    reward_correlations, all_avg_powers_A, all_avg_powers_B, baseline_avg_power_A = (
+        power_correlation_data['reward_correlations'],
+        [powers_A.mean() for powers_A in power_correlation_data['all_powers_A']],
+        [powers_B.mean() for powers_B in power_correlation_data['all_powers_B']],
+        power_correlation_data.get('baseline_avg_power_A')
+    )
+
+    fig, ax = plt.subplots()
+
+    ax.plot(reward_correlations, all_avg_powers_B, 'rs', label='Agent B POWER, avg over states')
+    ax.plot(reward_correlations, all_avg_powers_A, 'bo', label='Agent A POWER, avg over states')
+    ax.plot(
+        reward_correlations,
+        [baseline_avg_power_A] * len(reward_correlations),
+        'b-',
+        label='Agent A baseline POWER, avg over states'
+    )
+
+    ax.set_xlabel('Reward correlation coefficient')
+    ax.set_ylabel('POWER')
+    ax.set_title(plot_title)
+
+    if y_axis_bounds is not None:
+        ax.set_ylim(y_axis_bounds)
+
+    ax.legend()
+
+    if fig_name is not None:
+        data.save_figure(
+            fig,
+            '{0}-sweep_id_{1}-alignment_curve'.format(fig_name, sweep_id),
+            folder=save_folder
+        )
+
+    if show:
+        plt.show()
+
+def plot_specific_power_alignments(
+    sweep_id,
+    show=True,
+    fig_name=None,
+    data_folder=data.EXPERIMENT_FOLDER,
+    save_folder=data.TEMP_FOLDER
+):
+    graph_padding = 0.1
+
+    power_correlation_data = get.get_reward_correlations_and_powers_from_sweep(
+        sweep_id, include_baseline_power=False, folder=data_folder
+    )
+
+    reward_correlations, all_powers_A, all_powers_B = (
+        power_correlation_data['reward_correlations'],
+        power_correlation_data['all_powers_A'],
+        power_correlation_data['all_powers_B']
+    )
+
+    min_A_power = min([powers_A.min() for powers_A in all_powers_A]) * (1 - graph_padding)
+    max_A_power = max([powers_A.max() for powers_A in all_powers_A]) * (1 + graph_padding)
+    min_B_power = min([powers_B.min() for powers_B in all_powers_B]) * (1 - graph_padding)
+    max_B_power = max([powers_B.max() for powers_B in all_powers_B]) * (1 + graph_padding)
+
+    power_correlations = []
+
+    for correlation, power_samples_A, power_samples_B in zip(reward_correlations, all_powers_A, all_powers_B):
+        fig, ax = plt.subplots()
+
+        ax.plot(power_samples_A, power_samples_B, 'ho')
+        ax.set_xlabel('State POWER values, Agent A')
+        ax.set_ylabel('State POWER values, Agent B')
+        ax.set_title('Reward correlation value {}'.format(correlation))
+        ax.set_xlim([min_A_power, max_A_power])
+        ax.set_ylim([min_B_power, max_B_power])
+
+        if fig_name:
+            data.save_figure(
+                fig,
+                '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(fig_name, sweep_id, str(correlation)),
+                folder=save_folder
+            )
+
+        power_correlations += [torch.corrcoef(torch.stack([power_samples_A, power_samples_B]))[0][1]]
+
+    fig, ax = plt.subplots()
+
+    ax.plot(reward_correlations, power_correlations, 'ho')
+    ax.set_xlabel('Reward correlation value')
+    ax.set_ylabel('State-by-state POWER correlation value')
+    ax.set_title('Correlation coefficients plot')
+
+    if fig_name is not None:
+        data.save_figure(
+            fig,
+            '{0}-sweep_id_{1}-specific_alignment_curve-correlation_FULL'.format(fig_name, sweep_id),
+            folder=save_folder
+        )
+
+    if show:
+        plt.show()
