@@ -9,6 +9,7 @@ from . import mdp
 from . import policy
 from . import multi
 from . import view
+from . import anim
 
 def update_mdp_graph_with_interface(input_mdp):
     output_mdp_ = cp.deepcopy(input_mdp)
@@ -280,14 +281,59 @@ def visualize_correlated_reward_samples(
     num_samples,
     distribution_config={ 'dist_name': 'uniform', 'params': [0, 1] },
     correlation=0,
-    symmetric_interval=None
+    symmetric_interval=None,
+    random_seed=0,
+    show=True,
+    fig_name=None,
+    save_folder=data.TEMP_FOLDER
 ):
     view.plot_correlated_reward_samples(
         num_samples,
         distribution_config=distribution_config,
         correlation=correlation,
         symmetric_interval=symmetric_interval,
-        distribution_dict=dist.DISTRIBUTION_DICT
+        distribution_dict=dist.DISTRIBUTION_DICT,
+        random_seed=random_seed,
+        show=show,
+        fig_name=fig_name,
+        save_folder=save_folder
+    )
+
+def visualize_all_correlated_reward_samples(
+    num_samples,
+    distribution_config={ 'dist_name': 'uniform', 'params': [0, 1] },
+    correlations_list=[],
+    symmetric_interval=None,
+    random_seed=0,
+    ms_per_frame=100,
+    fig_name='correlated_reward_animation',
+    save_folder=data.TEMP_FOLDER
+):
+    fig_filenames_ = []
+
+    for correlation in correlations_list + [correlations_list[-1]] * 4: # This freezes the last frame for a few seconds
+        fig_filename = '{0}-correlation_{1}'.format(fig_name, correlation)
+
+        view.plot_correlated_reward_samples(
+            num_samples,
+            distribution_config=distribution_config,
+            correlation=correlation,
+            symmetric_interval=symmetric_interval,
+            distribution_dict=dist.DISTRIBUTION_DICT,
+            random_seed=random_seed,
+            show=False,
+            fig_name=fig_filename,
+            save_folder=data.TEMP_FOLDER
+        )
+
+        fig_filenames_ += [fig_filename]
+
+    anim.animate_from_filenames(
+        fig_filenames_,
+        fig_name,
+        ms_per_frame=ms_per_frame,
+        input_folder_or_list=data.TEMP_FOLDER,
+        output_folder=save_folder
     )
 
 def build_quick_random_policy(mdp_graph):

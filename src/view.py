@@ -5,6 +5,7 @@ import numpy as np
 from .lib.utils import render
 from .lib.utils import graph
 from .lib.utils import dist
+from .lib.utils import misc
 from .lib import data
 from .lib import get
 from . import anim
@@ -207,7 +208,7 @@ def plot_specific_power_alignments(
         ax.set_xlim([min_A_power, max_A_power])
         ax.set_ylim([min_B_power, max_B_power])
 
-        if fig_name:
+        if fig_name is not None:
             data.save_figure(fig, current_fig_name, folder=save_folder)
 
         power_correlations_ += [torch.corrcoef(torch.stack([power_samples_A, power_samples_B]))[0][1]]
@@ -243,8 +244,15 @@ def plot_correlated_reward_samples(
     distribution_config={ 'dist_name': 'uniform', 'params': [0, 1] },
     correlation=0,
     symmetric_interval=None,
-    distribution_dict=dist.DISTRIBUTION_DICT
+    random_seed=0,
+    show=True,
+    fig_name=None,
+    distribution_dict=dist.DISTRIBUTION_DICT,
+    save_folder=data.TEMP_FOLDER
 ):
+    if random_seed:
+        misc.set_global_random_seed(random_seed)
+
     agent_A_dist = dist.config_to_reward_distribution(
         ['TEMP'], { 'default_dist': distribution_config }, distribution_dict=distribution_dict
     )
@@ -253,8 +261,15 @@ def plot_correlated_reward_samples(
         agent_A_dist, agent_A_samples, correlation=correlation, symmetric_interval=symmetric_interval
     )
 
-    plt.plot(np.array(agent_A_samples.T[0]), np.array(agent_B_samples.T[0]), 'mh')
-    plt.xlabel('Agent A reward samples')
-    plt.ylabel('Agent B reward samples')
+    fig, ax = plt.subplots()
 
-    plt.show()
+    ax.plot(np.array(agent_A_samples.T[0]), np.array(agent_B_samples.T[0]), 'mh')
+    ax.set_xlabel('Agent A reward samples')
+    ax.set_ylabel('Agent B reward samples')
+    ax.set_title('Correlation = {:.2f}'.format(correlation))
+
+    if fig_name is not None:
+        data.save_figure(fig, fig_name, folder=save_folder)
+
+    if show:
+        plt.show()
