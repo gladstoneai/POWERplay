@@ -1,8 +1,8 @@
 import pathlib as path
 
 from .lib import data
+from .lib import get
 from .lib.utils import misc
-from .lib.utils import graph
 
 def animate_from_filenames(
     list_of_filenames,
@@ -43,61 +43,67 @@ def animate_rollout(
     )
 
 def animate_full_sweep(
-    sweep_name,
-    run_names,
+    sweep_id,
+    run_suffixes,
     figure_prefix_list,
     ms_per_frame=100,
     experiment_folder=data.EXPERIMENT_FOLDER
 ):
+    sweep_name = data.get_full_sweep_name_from_id(sweep_id)
+    run_names = [misc.build_run_name_from_run_suffix(sweep_name, run_suffix) for run_suffix in run_suffixes]
 
     for figure_prefix in figure_prefix_list:
-
-        animate_from_filenames(
-            ['-'.join([figure_prefix, run_name]) for run_name in run_names],
-            '-'.join(['animation', figure_prefix, sweep_name]),
-            ms_per_frame=ms_per_frame,
-            input_folder_or_list=[path.Path()/experiment_folder/sweep_name/run_name for run_name in run_names],
-            output_folder=path.Path()/experiment_folder/sweep_name
-        )
+        
+        try:
+            animate_from_filenames(
+                ['-'.join([figure_prefix, run_name]) for run_name in run_names],
+                '-'.join(['animation', figure_prefix, sweep_name]),
+                ms_per_frame=ms_per_frame,
+                input_folder_or_list=[path.Path()/experiment_folder/sweep_name/run_name for run_name in run_names],
+                output_folder=path.Path()/experiment_folder/sweep_name
+            )
+        
+        except FileNotFoundError:
+            print(
+                'No image files corresponding to figure {0} of sweep {1}; skipping animation.'.format(
+                    figure_prefix, sweep_id
+                )
+            )
         
 def generate_sweep_animations(
-    sweep_name,
+    sweep_id,
     animation_param,
-    is_multiagent=False,
     figure_prefix=None,
-    fixed_param_values={},
     ms_per_frame=100,
     experiment_folder=data.EXPERIMENT_FOLDER
 ):
-    sweep = data.load_full_sweep(sweep_name, folder=experiment_folder)
-    mdp_param_key = 'joint_mdp_graph' if is_multiagent else 'mdp_graph'
+    if figure_prefix is None:
+        state_list = get.get_sweep_state_list(sweep_id, folder=experiment_folder)
+        sweep_type = get.get_sweep_type(sweep_id, folder=experiment_folder)
 
-    run_names = [
-        misc.build_run_name(
-            sweep_name,
-            { animation_param: anim_value, **fixed_param_values },
-            list(fixed_param_values.keys()) + [animation_param]
-        ) for anim_value in sweep['parameters'][animation_param]['values']
-    ]
+        if sweep_type == 'single_agent' or sweep_type == 'multiagent_fixed_policy':
+            figure_prefix_list_ = [
+                'POWER_means', 'POWER_samples'
+            ] + [
+                'POWER_correlations_{}'.format(state) for state in state_list
+            ]
+        
+        elif sweep_type == 'multiagent_with_reward':
+            figure_prefix_list_ = [
+                'POWER_means-agent_A', 'POWER_means-agent_B', 'POWER_samples-agent_A', 'POWER_samples-agent_B'
+            ] + [
+                'POWER_correlations_{}-agent_A'.format(state) for state in state_list
+            ] + [
+                'POWER_correlations_{}-agent_B'.format(state) for state in state_list
+            ]
 
-    try:
-        mdp_key = sweep['parameters'][mdp_param_key]['value']
-    except KeyError:
-        mdp_key = sweep['parameters'][mdp_param_key]['values'][0][0]
-
-    figure_prefix_list = [figure_prefix] if figure_prefix is not None else [
-        'POWER_means',
-        'POWER_samples'
-    ] + [
-        'POWER_correlations_{}'.format(state) for state in graph.get_states_from_graph(
-            data.load_graph_from_dot_file(mdp_key)
-        )
-    ]
+    else:
+        figure_prefix_list_ = [figure_prefix]
 
     animate_full_sweep(
-        sweep_name,
-        run_names,
-        figure_prefix_list,
+        sweep_id,
+        get.get_sweep_run_suffixes_for_param(sweep_id, animation_param, folder=experiment_folder),
+        figure_prefix_list_,
         ms_per_frame=ms_per_frame,
         experiment_folder=experiment_folder
     )

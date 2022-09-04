@@ -74,8 +74,11 @@ def build_run_suffix(run_config, sweep_variable_params):
         )
     ])
 
+def build_run_name_from_run_suffix(local_sweep_name, run_suffix):
+    return '-'.join([local_sweep_name, run_suffix])
+
 def build_run_name(local_sweep_name, run_config, sweep_variable_params):
-    return '-'.join([local_sweep_name, build_run_suffix(run_config, sweep_variable_params)])
+    return build_run_name_from_run_suffix(local_sweep_name, build_run_suffix(run_config, sweep_variable_params))
 
 def get_variable_params(sweep_config):
     return [

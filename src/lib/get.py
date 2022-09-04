@@ -22,6 +22,11 @@ def get_sweep_run_results(sweep_id, run_suffix, results_type='outputs', folder=d
         sweep_name, folder=folder
     )['all_runs_data']['{0}-{1}'.format(sweep_name, run_suffix)].get(results_type, {})
 
+def get_sweep_type(sweep_id, folder=data.EXPERIMENT_FOLDER):
+    return misc.determine_sweep_type(
+        data.load_full_sweep(data.get_full_sweep_name_from_id(sweep_id, folder=folder), folder=folder)['parameters']
+    )
+
 # TODO: Document this function. This is a convenience function that lets you quickly retrieve
 # the state_list for a sweep. IMPORTANT: This assumes that the state_list will be the same for all
 # runs in the sweep, even though the MDP itself may change. This seems sensible, since if you're sweeping
@@ -32,8 +37,8 @@ def get_sweep_run_results(sweep_id, run_suffix, results_type='outputs', folder=d
 def get_sweep_state_list(sweep_id, folder=data.EXPERIMENT_FOLDER):
     parameters = data.load_full_sweep(
         data.get_full_sweep_name_from_id(sweep_id, folder=folder), folder=folder
-    ).get('parameters')
-    mdp_graph_param = parameters.get('mdp_graph', parameters.get('mdp_graph_agent_A'))
+    )['parameters']
+    mdp_graph_param = parameters.get('mdp_graph', parameters.get('joint_mdp_graph'))
 
     if mdp_graph_param.get('value'):
         state_list = graph.get_states_from_graph(
