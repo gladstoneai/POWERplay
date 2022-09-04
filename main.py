@@ -53,6 +53,7 @@ from src import base
 # - Run alignment curves for fixed correlation 0 with gamma, etc., to see what causes the most misalignment at correlation 0
 # - Build robust alignment curve plotting code for our results
 # - Update README to handle joint multiagent graphs
+# - Run sweeps with gamma_A other than 0.5
 # - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability
@@ -63,5 +64,5 @@ if __name__ == '__main__':
     # test.test_stochastic()
     # test.test_multiagent()
     # test.test_reward_correlation()
-    
+
     pass

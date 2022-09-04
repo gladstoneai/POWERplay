@@ -70,7 +70,7 @@ def generate_sweep_animations(
     experiment_folder=data.EXPERIMENT_FOLDER
 ):
     sweep = data.load_full_sweep(sweep_name, folder=experiment_folder)
-    mdp_param_key = 'mdp_graph_agent_A' if is_multiagent else 'mdp_graph'
+    mdp_param_key = 'joint_mdp_graph' if is_multiagent else 'mdp_graph'
 
     run_names = [
         misc.build_run_name(
@@ -81,7 +81,6 @@ def generate_sweep_animations(
     ]
 
     try:
-
         mdp_key = sweep['parameters'][mdp_param_key]['value']
     except KeyError:
         mdp_key = sweep['parameters'][mdp_param_key]['values'][0][0]

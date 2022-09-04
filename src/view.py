@@ -165,7 +165,7 @@ def plot_alignment_curves(
 def plot_specific_power_alignments(
     sweep_id,
     show=True,
-    fig_name=None,
+    fig_name='temp',
     include_baseline_powers=True,
     ms_per_frame=200,
     data_folder=data.EXPERIMENT_FOLDER,
@@ -194,7 +194,9 @@ def plot_specific_power_alignments(
 
     for correlation, power_samples_A, power_samples_B in zip(reward_correlations, all_powers_A, all_powers_B):
         fig, ax = plt.subplots()
-        current_fig_name = '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(fig_name, sweep_id, str(correlation))
+        current_fig_name = '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(
+            fig_name, sweep_id, str(correlation)
+        )
 
         if include_baseline_powers:
             for baseline_power in baseline_powers_A:
@@ -208,8 +210,7 @@ def plot_specific_power_alignments(
         ax.set_xlim([min_A_power, max_A_power])
         ax.set_ylim([min_B_power, max_B_power])
 
-        if fig_name is not None:
-            data.save_figure(fig, current_fig_name, folder=save_folder)
+        data.save_figure(fig, current_fig_name, folder=save_folder)
 
         power_correlations_ += [torch.corrcoef(torch.stack([power_samples_A, power_samples_B]))[0][1]]
         all_fig_names_ += [current_fig_name]
@@ -229,12 +230,11 @@ def plot_specific_power_alignments(
     ax.set_ylabel('State-by-state POWER correlation value')
     ax.set_title('Correlation coefficients plot')
 
-    if fig_name is not None:
-        data.save_figure(
-            fig,
-            '{0}-sweep_id_{1}-specific_alignment_curve-correlation_FULL'.format(fig_name, sweep_id),
-            folder=save_folder
-        )
+    data.save_figure(
+        fig,
+        '{0}-sweep_id_{1}-specific_alignment_curve-correlation_FULL'.format(fig_name, sweep_id),
+        folder=save_folder
+    )
 
     if show:
         plt.show()
