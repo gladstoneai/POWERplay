@@ -188,6 +188,7 @@ def visualize_alignment_curves(
     show=True,
     plot_title='Alignment curves',
     fig_name='',
+    include_baseline_power=True,
     y_axis_bounds=None,
     data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
@@ -196,6 +197,7 @@ def visualize_alignment_curves(
         sweep_id,
         show=show,
         plot_title=plot_title,
+        include_baseline_power=include_baseline_power,
         fig_name=fig_name,
         y_axis_bounds=y_axis_bounds,
         data_folder=data_folder,

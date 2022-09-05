@@ -144,7 +144,7 @@ def plot_alignment_curves(
         )
 
     ax.set_xlabel('Reward correlation coefficient')
-    ax.set_ylabel('POWER')
+    ax.set_ylabel('POWER averages')
     ax.set_title(plot_title)
 
     if y_axis_bounds is not None:
