@@ -123,9 +123,6 @@ def run_multiagent_with_reward_experiment(
         joint_transition_tensor, seed_policy_tensor_B, acting_agent_is_A=True, return_sparse=True
     )
 
-    joint_transition_tensor = misc.densify_tensor(joint_transition_tensor) # TEMP TODO: Add sparse handling methods to all computations below
-    full_transition_tensor_A = misc.densify_tensor(full_transition_tensor_A) # TEMP TODO: Add sparse handling methods to all computations below
-
     all_optimal_values_A = proc.samples_to_outputs(
         reward_samples_A,
         discount_rate_agent_A,
@@ -135,6 +132,9 @@ def run_multiagent_with_reward_experiment(
         num_workers=num_workers,
         convergence_threshold=convergence_threshold
     )
+
+    joint_transition_tensor = misc.densify_tensor(joint_transition_tensor) # TEMP TODO: Add sparse handling methods to all computations below
+    full_transition_tensor_A = misc.densify_tensor(full_transition_tensor_A) # TEMP TODO: Add sparse handling methods to all computations below
 
     all_policy_tensors_A = torch.stack([
         learn.compute_optimal_policy_tensor(

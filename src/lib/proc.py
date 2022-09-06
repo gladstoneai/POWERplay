@@ -7,6 +7,52 @@ from .utils import learn
 from .utils import misc
 from . import check
 
+def is_manual_sparse_tensor(input_to_check):
+    return hasattr(input_to_check, 'keys') and set(input_to_check.keys()) == set(['indices', 'values', 'size'])
+
+# Multiprocessing doesn't support sparse tensors, see
+# https://github.com/pytorch/pytorch/issues/20248#issuecomment-490525946
+# So what we do instead is create a dict with the sparse tensor indices, values, and shape; and
+# then reconstruct the sparse tensor from that inside each worker. This is only needed for
+# multiprocessing.
+def sparse_tensor_to_manual_sparse_tensor(sparse_tensor):
+    return {
+        'indices': sparse_tensor.indices(),
+        'values': sparse_tensor.values(),
+        'size': sparse_tensor.size()
+    }
+
+def manual_sparse_tensor_to_sparse_tensor(manual_sparse_tensor):
+    return torch.sparse_coo_tensor(
+        manual_sparse_tensor['indices'],
+        manual_sparse_tensor['values'],
+        tuple(manual_sparse_tensor['size'])
+    )
+
+def split_1d_tensor_into_list_for_multiprocess(input_object, chunk_size):
+    input_tensor = input_object if torch.is_tensor(input_object) else torch.tensor(input_object)
+
+    if input_tensor.is_sparse:
+        number_of_chunks = input_tensor.size()[0] // chunk_size
+        total_indices_per_chunk = input_tensor.indices().shape[1] // number_of_chunks
+        selection_indices = input_tensor.indices()[0][:total_indices_per_chunk]
+
+        return [
+            sparse_tensor_to_manual_sparse_tensor(
+                torch.sparse_coo_tensor(
+                    torch.cat((selection_indices.unsqueeze(0), indices), dim=0),
+                    values,
+                    (chunk_size,) + tuple(input_tensor.size()[1:])
+                ).coalesce()
+            ) for indices, values in zip(
+                torch.split(input_tensor.indices()[1:], total_indices_per_chunk, dim=1),
+                torch.split(input_tensor.values(), total_indices_per_chunk, dim=0)
+            )
+        ]
+
+    else:
+        return [tensor for tensor in torch.split(input_tensor, chunk_size, dim=0)]
+
 def output_sample_calculator(
     *args,
     number_of_samples=1,
@@ -46,7 +92,14 @@ def output_sample_calculator(
     return torch.stack(all_output_samples_)
 
 def output_sample_calculator_mps(worker_id, *args, **kwargs):
-    return output_sample_calculator(*args, **{ **kwargs, **{ 'worker_id': worker_id } })
+    # Multiprocessing can't handle sparse tensors, so this hack transports the parameters
+    # in using a manually defined data structure
+    input_args = [
+        manual_sparse_tensor_to_sparse_tensor(arg_tensor) if (
+            is_manual_sparse_tensor(arg_tensor)
+        ) else arg_tensor for arg_tensor in args
+    ]
+    return output_sample_calculator(*input_args, **{ **kwargs, **{ 'worker_id': worker_id } })
 
 def samples_to_outputs(
     *args,
@@ -73,7 +126,7 @@ def samples_to_outputs(
             zip(
                 range(num_workers),
                 *[
-                    misc.split_1d_tensor_into_list(
+                    split_1d_tensor_into_list_for_multiprocess(
                         tiled_arg, number_of_samples // num_workers
                     ) for tiled_arg in [
                         arg if (
