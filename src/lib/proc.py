@@ -16,10 +16,11 @@ def is_manual_sparse_tensor(input_to_check):
 # then reconstruct the sparse tensor from that inside each worker. This is only needed for
 # multiprocessing.
 def sparse_tensor_to_manual_sparse_tensor(sparse_tensor):
+    coalesced_tensor = sparse_tensor.coalesce()
     return {
-        'indices': sparse_tensor.indices(),
-        'values': sparse_tensor.values(),
-        'size': sparse_tensor.size()
+        'indices': coalesced_tensor.indices(),
+        'values': coalesced_tensor.values(),
+        'size': coalesced_tensor.size()
     }
 
 def manual_sparse_tensor_to_sparse_tensor(manual_sparse_tensor):
@@ -33,25 +34,32 @@ def split_1d_tensor_into_list_for_multiprocess(input_object, chunk_size):
     input_tensor = input_object if torch.is_tensor(input_object) else torch.tensor(input_object)
 
     if input_tensor.is_sparse:
-        number_of_chunks = input_tensor.size()[0] // chunk_size
-        total_indices_per_chunk = input_tensor.indices().shape[1] // number_of_chunks
-        selection_indices = input_tensor.indices()[0][:total_indices_per_chunk]
+        coalesced_tensor = input_tensor.coalesce()
+        number_of_chunks = coalesced_tensor.size()[0] // chunk_size
+        total_indices_per_chunk = coalesced_tensor.indices().shape[1] // number_of_chunks
+        selection_indices = coalesced_tensor.indices()[0][:total_indices_per_chunk]
 
         return [
             sparse_tensor_to_manual_sparse_tensor(
                 torch.sparse_coo_tensor(
                     torch.cat((selection_indices.unsqueeze(0), indices), dim=0),
                     values,
-                    (chunk_size,) + tuple(input_tensor.size()[1:])
+                    (chunk_size,) + tuple(coalesced_tensor.size()[1:])
                 ).coalesce()
             ) for indices, values in zip(
-                torch.split(input_tensor.indices()[1:], total_indices_per_chunk, dim=1),
-                torch.split(input_tensor.values(), total_indices_per_chunk, dim=0)
+                torch.split(coalesced_tensor.indices()[1:], total_indices_per_chunk, dim=1),
+                torch.split(coalesced_tensor.values(), total_indices_per_chunk, dim=0)
             )
         ]
 
     else:
         return [tensor for tensor in torch.split(input_tensor, chunk_size, dim=0)]
+
+def is_input_already_tiled(input_object, number_of_samples):
+    if torch.is_tensor(input_object):
+        return input_object.size()[0] == number_of_samples
+    else:
+        return hasattr(input_object, '__len__') and len(input_object) == number_of_samples
 
 def output_sample_calculator(
     *args,
@@ -130,7 +138,7 @@ def samples_to_outputs(
                         tiled_arg, number_of_samples // num_workers
                     ) for tiled_arg in [
                         arg if (
-                            hasattr(arg, '__len__') and len(arg) == number_of_samples
+                            is_input_already_tiled(arg, number_of_samples)
                         ) else misc.tile_tensor(arg, number_of_samples) for arg in args
                     ]
                 ]

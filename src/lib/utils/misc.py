@@ -145,15 +145,16 @@ def tile_tensor(input_object, number_of_copies):
     input_tensor = input_object if torch.is_tensor(input_object) else torch.tensor(input_object)
 
     if input_tensor.is_sparse:
+        coalesced_tensor = input_tensor.coalesce()
         return torch.sparse_coo_tensor(
             torch.cat((
                 torch.arange(number_of_copies).unsqueeze(-1).tile(
-                    input_tensor.indices().shape[1]
+                    coalesced_tensor.indices().shape[1]
                 ).reshape((-1,)).unsqueeze(0),
-                input_tensor.indices().tile((1, number_of_copies))
+                coalesced_tensor.indices().tile((1, number_of_copies))
             ), dim=0),
-            input_tensor.values().tile((1, number_of_copies))[0],
-            (number_of_copies,) + tuple(input_tensor.size())
+            coalesced_tensor.values().tile((1, number_of_copies))[0],
+            (number_of_copies,) + tuple(coalesced_tensor.size())
         ).coalesce()
     
     else:
@@ -163,7 +164,7 @@ def generate_sweep_id(sweep_id=None):
     return sweep_id if (sweep_id is not None) else time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
 
 def sparsify_tensor(input_tensor):
-    return input_tensor if input_tensor.is_sparse else input_tensor.to_sparse()
+    return input_tensor if input_tensor.is_sparse else input_tensor.to_sparse().coalesce()
 
 def densify_tensor(input_tensor):
     return input_tensor.to_dense() if input_tensor.is_sparse else input_tensor

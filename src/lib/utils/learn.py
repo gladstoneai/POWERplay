@@ -9,13 +9,16 @@ def value_iteration(
     discount_rate,
     transition_tensor,
     value_initialization=None,
-    convergence_threshold=1e-4
+    convergence_threshold=1e-4,
+    calculate_as_sparse=False
 ):
     value_function = torch.zeros(len(reward_function)) if (
         value_initialization is None
     ) else cp.deepcopy(value_initialization)
-    
-    transition_tensor_sparse = misc.sparsify_tensor(transition_tensor)
+
+    transition_tensor_input = misc.sparsify_tensor(transition_tensor) if (
+        calculate_as_sparse
+    ) else misc.densify_tensor(transition_tensor)
 
     is_first_iteration = True
 
@@ -24,9 +27,13 @@ def value_iteration(
         old_values = cp.deepcopy(value_function)
         
         for state_index in range(len(reward_function)):
-            value_function[state_index] = reward_function[state_index] + discount_rate * torch.max(
-                torch.sparse.mm(transition_tensor_sparse[state_index], value_function.unsqueeze(1))
+            matrix_product = torch.sparse.mm(
+                transition_tensor_input[state_index].coalesce(), value_function.unsqueeze(1)
+            ) if calculate_as_sparse else torch.matmul(
+                transition_tensor_input[state_index], value_function.unsqueeze(1)
             )
+
+            value_function[state_index] = reward_function[state_index] + discount_rate * torch.max(matrix_product)
 
         max_value_change = misc.calculate_value_convergence(old_values, value_function)
 
@@ -42,11 +49,16 @@ def policy_evaluation(
     transition_tensor,
     policy_tensor,
     value_initialization=None,
-    convergence_threshold=1e-4
+    convergence_threshold=1e-4,
+    calculate_as_sparse=False
 ):
     value_function_ = torch.zeros(len(reward_function)) if (
         value_initialization is None
     ) else cp.deepcopy(value_initialization)
+
+    transition_tensor_input = misc.sparsify_tensor(transition_tensor) if (
+        calculate_as_sparse
+    ) else misc.densify_tensor(transition_tensor)
 
     is_first_iteration = True
 
@@ -55,10 +67,13 @@ def policy_evaluation(
         old_values_ = cp.deepcopy(value_function_)
 
         for state in range(len(reward_function)):
-            value_function_[state] = reward_function[state] + discount_rate * torch.dot(
-                torch.matmul(policy_tensor[state], transition_tensor[state]),
-                value_function_
+            matrix_product = torch.sparse.mm(
+                transition_tensor_input[state].t().coalesce(), policy_tensor[state].unsqueeze(-1)
+            ).t()[0] if calculate_as_sparse else torch.matmul(
+                policy_tensor[state], transition_tensor_input[state]
             )
+
+            value_function_[state] = reward_function[state] + discount_rate * torch.dot(matrix_product, value_function_)
             
         max_value_change = misc.calculate_value_convergence(old_values_, value_function_)
     
