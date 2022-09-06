@@ -162,6 +162,36 @@ def plot_alignment_curves(
     if show:
         plt.show()
 
+def plot_reward_power_relationship(
+    reward_correlations,
+    all_powers_A,
+    all_powers_B,
+    show=True,
+    fig_name='temp',
+    save_folder=data.TEMP_FOLDER
+):
+    fig, ax = plt.subplots()
+
+    power_correlations = [
+        torch.corrcoef(torch.stack([powers_A, powers_B]))[0][1] for (
+            powers_A, powers_B
+        ) in zip(all_powers_A, all_powers_B)
+    ]
+
+    ax.plot(reward_correlations, power_correlations, 'mh')
+    ax.set_xlabel('Reward correlation value')
+    ax.set_ylabel('State-by-state POWER correlation value')
+    ax.set_title('Correlation coefficients plot')
+
+    data.save_figure(
+        fig,
+        '{}-reward_power_relationship'.format(fig_name),
+        folder=save_folder
+    )
+
+    if show:
+        plt.show()
+
 def plot_specific_power_alignments(
     sweep_id,
     show=True,
@@ -192,7 +222,7 @@ def plot_specific_power_alignments(
     power_correlations_ = []
     all_fig_names_ = []
 
-    for correlation, power_samples_A, power_samples_B in zip(reward_correlations, all_powers_A, all_powers_B):
+    for correlation, powers_A, powers_B in zip(reward_correlations, all_powers_A, all_powers_B):
         fig, ax = plt.subplots()
         current_fig_name = '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(
             fig_name, sweep_id, str(correlation)
@@ -202,7 +232,7 @@ def plot_specific_power_alignments(
             for baseline_power in baseline_powers_A:
                 ax.plot([baseline_power.item()] * 2, [min_B_power, max_B_power], 'b-', alpha=0.25)
 
-        ax.plot(power_samples_A, power_samples_B, 'mh')
+        ax.plot(powers_A, powers_B, 'mh')
 
         ax.set_xlabel('State POWER values, Agent A')
         ax.set_ylabel('State POWER values, Agent B')
@@ -212,10 +242,8 @@ def plot_specific_power_alignments(
 
         data.save_figure(fig, current_fig_name, folder=save_folder)
 
-        power_correlations_ += [torch.corrcoef(torch.stack([power_samples_A, power_samples_B]))[0][1]]
+        power_correlations_ += [torch.corrcoef(torch.stack([powers_A, powers_B]))[0][1]]
         all_fig_names_ += [current_fig_name]
-
-    fig, ax = plt.subplots()
 
     anim.animate_from_filenames(
         all_fig_names_,
@@ -225,15 +253,13 @@ def plot_specific_power_alignments(
         output_folder=save_folder
     )
 
-    ax.plot(reward_correlations, power_correlations_, 'mh')
-    ax.set_xlabel('Reward correlation value')
-    ax.set_ylabel('State-by-state POWER correlation value')
-    ax.set_title('Correlation coefficients plot')
-
-    data.save_figure(
-        fig,
-        '{0}-sweep_id_{1}-specific_alignment_curve-correlation_FULL'.format(fig_name, sweep_id),
-        folder=save_folder
+    plot_reward_power_relationship(
+        reward_correlations,
+        all_powers_A,
+        all_powers_B,
+        show=show,
+        fig_name='{0}-sweep_id_{1}'.format(fig_name, sweep_id),
+        save_folder=save_folder
     )
 
     if show:
