@@ -172,9 +172,6 @@ def run_multiagent_with_reward_experiment(
                 reward_sample_B, values_B, discount_rate_agent_B
             ) for reward_sample_B, values_B in zip(reward_samples_B, all_values_B)
         ])
-    
-    joint_transition_tensor = misc.densify_tensor(joint_transition_tensor) # TEMP TODO: Add sparse handling methods to all computations below
-    all_full_transition_tensors_B = misc.densify_tensor(all_full_transition_tensors_B) # TEMP TODO: Add sparse handling methods to all computations below
 
     print()
     print('Computing Agent B POWER samples:')
@@ -202,13 +199,15 @@ def run_multiagent_with_reward_experiment(
 
     all_policy_tensors_B = torch.stack([
         learn.compute_optimal_policy_tensor(
-            optimal_values_B, full_transition_tensor_B
-        ) for optimal_values_B, full_transition_tensor_B in zip(all_optimal_values_B, all_full_transition_tensors_B)
+            optimal_values_B, full_transition_tensor_B_chunk[0]
+        ) for optimal_values_B, full_transition_tensor_B_chunk in zip(
+            all_optimal_values_B, misc.chunk_1d_tensor_into_list(all_full_transition_tensors_B, len(all_optimal_values_B))
+        )
     ])
 
     all_full_transition_tensors_A = torch.stack([
         graph.compute_full_transition_tensor(
-            joint_transition_tensor, policy_tensor_B, acting_agent_is_A=True
+            joint_transition_tensor, policy_tensor_B, acting_agent_is_A=True, return_sparse=True
         ) for policy_tensor_B in all_policy_tensors_B
     ])
     

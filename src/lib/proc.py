@@ -30,30 +30,18 @@ def manual_sparse_tensor_to_sparse_tensor(manual_sparse_tensor):
         tuple(manual_sparse_tensor['size'])
     )
 
-def split_1d_tensor_into_list_for_multiprocess(input_object, chunk_size):
+def chunk_1d_tensor_into_list_for_multiprocess(input_object, number_of_chunks):
     input_tensor = input_object if torch.is_tensor(input_object) else torch.tensor(input_object)
 
     if input_tensor.is_sparse:
-        coalesced_tensor = input_tensor.coalesce()
-        number_of_chunks = coalesced_tensor.size()[0] // chunk_size
-        total_indices_per_chunk = coalesced_tensor.indices().shape[1] // number_of_chunks
-        selection_indices = coalesced_tensor.indices()[0][:total_indices_per_chunk]
-
         return [
-            sparse_tensor_to_manual_sparse_tensor(
-                torch.sparse_coo_tensor(
-                    torch.cat((selection_indices.unsqueeze(0), indices), dim=0),
-                    values,
-                    (chunk_size,) + tuple(coalesced_tensor.size()[1:])
-                ).coalesce()
-            ) for indices, values in zip(
-                torch.split(coalesced_tensor.indices()[1:], total_indices_per_chunk, dim=1),
-                torch.split(coalesced_tensor.values(), total_indices_per_chunk, dim=0)
+            sparse_tensor_to_manual_sparse_tensor(tensor) for tensor in misc.chunk_1d_tensor_into_list(
+                input_tensor, number_of_chunks
             )
         ]
 
     else:
-        return [tensor for tensor in torch.split(input_tensor, chunk_size, dim=0)]
+        return misc.chunk_1d_tensor_into_list(input_tensor, number_of_chunks)
 
 def is_input_already_tiled(input_object, number_of_samples):
     if torch.is_tensor(input_object):
@@ -134,8 +122,8 @@ def samples_to_outputs(
             zip(
                 range(num_workers),
                 *[
-                    split_1d_tensor_into_list_for_multiprocess(
-                        tiled_arg, number_of_samples // num_workers
+                    chunk_1d_tensor_into_list_for_multiprocess(
+                        tiled_arg, num_workers
                     ) for tiled_arg in [
                         arg if (
                             is_input_already_tiled(arg, number_of_samples)

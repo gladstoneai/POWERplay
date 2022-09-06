@@ -171,3 +171,24 @@ def densify_tensor(input_tensor):
 
 def to_tensor_representation(input_tensor, to_sparse=True):
     return sparsify_tensor(input_tensor) if to_sparse else densify_tensor(input_tensor)
+
+def chunk_1d_tensor_into_list(input_tensor, number_of_chunks):
+    
+    if input_tensor.is_sparse:
+        coalesced_tensor = input_tensor.coalesce()
+        total_indices_per_chunk = coalesced_tensor.indices().shape[1] // number_of_chunks
+        selection_indices = coalesced_tensor.indices()[0][:total_indices_per_chunk]
+
+        return [
+            torch.sparse_coo_tensor(
+                torch.cat((selection_indices.unsqueeze(0), indices), dim=0),
+                values,
+                (coalesced_tensor.size()[0] // number_of_chunks,) + tuple(coalesced_tensor.size()[1:])
+            ).coalesce() for indices, values in zip(
+                torch.split(coalesced_tensor.indices()[1:], total_indices_per_chunk, dim=1),
+                torch.split(coalesced_tensor.values(), total_indices_per_chunk, dim=0)
+            )
+        ]
+
+    else:
+        return [tensor for tensor in torch.chunk(input_tensor, number_of_chunks, dim=0)]

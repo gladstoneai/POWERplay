@@ -93,7 +93,7 @@ def compute_optimal_policy_tensor(optimal_values, transition_tensor):
     action_values = torch.sparse.sum(
         transition_tensor_sparse * optimal_values.expand(
             transition_tensor_sparse.shape
-        ).sparse_mask(transition_tensor_sparse),
+        ).sparse_mask(transition_tensor_sparse.coalesce()),
         dim=2
     ).to_dense()
     return tf.normalize(
