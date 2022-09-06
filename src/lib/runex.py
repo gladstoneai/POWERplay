@@ -112,16 +112,19 @@ def run_multiagent_with_reward_experiment(
     diagnostic_mode=False
 ):
     # We precompute these tensors here to avoid recomputation in one of the loops below
-    joint_transition_tensor = graph.graph_to_joint_transition_tensor(transition_graphs[0])
-    seed_policy_tensor_B = graph.graph_to_policy_tensor(transition_graphs[1]) # The fixed policy tensor we give Agent B, that Agent A initially optimizes against
+    joint_transition_tensor = graph.graph_to_joint_transition_tensor(transition_graphs[0], return_sparse=True)
+    seed_policy_tensor_B = graph.graph_to_policy_tensor(transition_graphs[1], return_sparse=False) # The fixed policy tensor we give Agent B, that Agent A initially optimizes against
 
     print()
     print('Computing Agent A policies:')
     print()
 
     full_transition_tensor_A = graph.compute_full_transition_tensor( # Full Agent A transition tensor assuming Agent B seed policy
-        joint_transition_tensor, seed_policy_tensor_B, acting_agent_is_A=True
+        joint_transition_tensor, seed_policy_tensor_B, acting_agent_is_A=True, return_sparse=True
     )
+
+    joint_transition_tensor = misc.densify_tensor(joint_transition_tensor) # TEMP TODO: Add sparse handling methods to all computations below
+    full_transition_tensor_A = misc.densify_tensor(full_transition_tensor_A) # TEMP TODO: Add sparse handling methods to all computations below
 
     all_optimal_values_A = proc.samples_to_outputs(
         reward_samples_A,

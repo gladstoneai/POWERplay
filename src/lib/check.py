@@ -187,7 +187,7 @@ def check_mdp_graph_by_key(mdp_key, tolerance=PROBABILITY_TOLERANCE, mdps_folder
 
 def check_joint_mdp_graph(joint_mdp_graph, tolerance=PROBABILITY_TOLERANCE):
     try:
-        joint_transition_tensor = graph.graph_to_joint_transition_tensor(joint_mdp_graph)
+        joint_transition_tensor = graph.graph_to_joint_transition_tensor(joint_mdp_graph, return_sparse=False)
     except IndexError:
         raise Exception('This MDP graph should be a joint MDP graph.')
 
@@ -217,7 +217,7 @@ def check_joint_mdp_graph_by_key(joint_mdp_key, tolerance=PROBABILITY_TOLERANCE,
     )
 
 def check_policy_graph(policy_graph, tolerance=PROBABILITY_TOLERANCE):
-    policy_tensor = graph.graph_to_policy_tensor(policy_graph)
+    policy_tensor = graph.graph_to_policy_tensor(policy_graph, return_sparse=False)
     state_list, action_list = graph.get_states_from_graph(policy_graph), graph.get_actions_from_graph(policy_graph)
 
     if list(policy_tensor.shape) != [len(state_list), len(action_list)]:

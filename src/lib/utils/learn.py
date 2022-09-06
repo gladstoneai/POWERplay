@@ -14,7 +14,8 @@ def value_iteration(
     value_function = torch.zeros(len(reward_function)) if (
         value_initialization is None
     ) else cp.deepcopy(value_initialization)
-    transition_tensor_sparse = transition_tensor.to_sparse()
+    
+    transition_tensor_sparse = misc.sparsify_tensor(transition_tensor)
 
     is_first_iteration = True
 

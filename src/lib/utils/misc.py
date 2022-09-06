@@ -143,7 +143,54 @@ def determine_sweep_type(run_params):
     
 def tile_tensor(input_object, number_of_copies):
     input_tensor = input_object if torch.is_tensor(input_object) else torch.tensor(input_object)
-    return torch.tile(input_tensor, [number_of_copies, *([1] * len(input_tensor.shape))])
+
+    if input_tensor.is_sparse:
+        return torch.sparse_coo_tensor(
+            torch.cat((
+                torch.arange(number_of_copies).unsqueeze(-1).tile(
+                    input_tensor.indices().shape[1]
+                ).reshape((-1,)).unsqueeze(0),
+                input_tensor.indices().tile((1, number_of_copies))
+            ), dim=0),
+            input_tensor.values().tile((1, number_of_copies))[0],
+            (number_of_copies,) + tuple(input_tensor.size())
+        ).coalesce()
+    
+    else:
+        return torch.tile(input_tensor, [number_of_copies, *([1] * len(input_tensor.shape))])
+
+def split_1d_tensor_into_list(input_object, chunk_size):
+    input_tensor = input_object if torch.is_tensor(input_object) else torch.tensor(input_object)
+
+    if input_tensor.is_sparse:
+        number_of_chunks = input_tensor.size()[0] // chunk_size
+        total_indices_per_chunk = input_tensor.indices().shape[1] // number_of_chunks
+        selection_indices = input_tensor.indices()[0][:total_indices_per_chunk]
+
+        return [
+            torch.sparse_coo_tensor(
+                torch.cat((selection_indices.unsqueeze(0), indices), dim=0),
+                values,
+                (chunk_size,) + tuple(input_tensor.size()[1:])
+            ).coalesce() for indices, values in zip(
+                torch.split(input_tensor.indices()[1:], total_indices_per_chunk, dim=1),
+                torch.split(input_tensor.values(), total_indices_per_chunk, dim=0)
+            )
+        ]
+
+    else:
+        return [tensor for tensor in torch.split(input_tensor, chunk_size, dim=0)]
+
+    pass
 
 def generate_sweep_id(sweep_id=None):
     return sweep_id if (sweep_id is not None) else time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
+
+def sparsify_tensor(input_tensor):
+    return input_tensor if input_tensor.is_sparse else input_tensor.to_sparse()
+
+def densify_tensor(input_tensor):
+    return input_tensor.to_dense() if input_tensor.is_sparse else input_tensor
+
+def to_tensor_representation(input_tensor, to_sparse=True):
+    return sparsify_tensor(input_tensor) if to_sparse else densify_tensor(input_tensor)

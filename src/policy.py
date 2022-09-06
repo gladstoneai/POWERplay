@@ -217,7 +217,7 @@ def next_state_rollout(current_state, mdp_graph, policy_graph_A, policy_graph_B=
     state_list = graph.get_states_from_graph(mdp_graph)
 
     state_vector = graph.state_to_vector(current_state, state_list)
-    policy_tensor_A = graph.graph_to_policy_tensor(policy_graph_A)
+    policy_tensor_A = graph.graph_to_policy_tensor(policy_graph_A, return_sparse=False)
 
     full_transition_tensor = graph.graph_to_full_transition_tensor(mdp_graph) if (
         policy_graph_B is None

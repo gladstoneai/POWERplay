@@ -4,6 +4,8 @@ import torch
 import re
 import torch.nn.functional as tf
 
+from src.lib.utils import misc
+
 def gridworld_state_to_coords(gridworld_state):
     return [int(coord) for coord in str(gridworld_state)[1:-1].split(',')]
 
@@ -164,7 +166,7 @@ def transform_graph_for_plots(mdp_or_policy_graph, reward_to_plot=None, discount
 
     return mdp_or_policy_graph_
 
-def graph_to_joint_transition_tensor(mdp_graph):
+def graph_to_joint_transition_tensor(mdp_graph, return_sparse=False):
     if is_graph_stochastic(mdp_graph):
         state_list = get_states_from_graph(mdp_graph)
         action_list_A, action_list_B = get_single_agent_actions_from_joint_mdp_graph(mdp_graph)
@@ -197,7 +199,7 @@ def graph_to_joint_transition_tensor(mdp_graph):
         transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(mdp_graph)))
     
 # First index is current state s; second index is Agent A action a_A; third index is Agent B action a_B; fourth index is next state s'.
-    return transition_tensor_.to(torch.float)
+    return misc.to_tensor_representation(transition_tensor_.to(torch.float), to_sparse=return_sparse)
 
 def graph_to_full_transition_tensor(mdp_graph):
     if is_graph_stochastic(mdp_graph):
@@ -225,7 +227,7 @@ def graph_to_full_transition_tensor(mdp_graph):
 # First index is current state s; second index is action a; third index is next state s'.
     return transition_tensor_.to(torch.float)
 
-def graph_to_policy_tensor(policy_graph):
+def graph_to_policy_tensor(policy_graph, return_sparse=False):
     state_list, action_list = get_states_from_graph(policy_graph), get_actions_from_graph(policy_graph)
     policy_tensor_ = torch.zeros(len(state_list), len(action_list))
 
@@ -243,35 +245,43 @@ def graph_to_policy_tensor(policy_graph):
             except KeyError:
                 pass
     
-    return policy_tensor_.to(torch.float)
+    return misc.to_tensor_representation(policy_tensor_.to(torch.float), to_sparse=return_sparse)
 
 # Relevant calculation: https://drive.google.com/file/d/1XwM_HXkFu1VglsYhsew6SM3BMqb9T_9R/view
 def compute_full_transition_tensor(
     joint_transition_tensor,
     policy_tensor,
-    acting_agent_is_A=True
+    acting_agent_is_A=True,
+    return_sparse=False
 ):
+    joint_transition_tensor_sparse = misc.sparsify_tensor(joint_transition_tensor)
+    policy_tensor_dense = misc.densify_tensor(policy_tensor)
+
     # Canonical ordering of dimensions is (current state, agent A action, agent B action, next state).
     # If policy_tensor corresponds to the policy for Agent B (and therefore the currently acting agent
     # is A, i.e., acting_agent_is_A == True), transpose axis 1 (agent A action) and axis 2 (agent B action)
     # before proceeding.
-    transition_tensor = torch.transpose(joint_transition_tensor, 1, 2) if (
+    transition_tensor_sparse = torch.transpose(joint_transition_tensor_sparse, 1, 2) if (
         acting_agent_is_A
-    ) else joint_transition_tensor
+    ) else joint_transition_tensor_sparse
 
-    return (
-        transition_tensor * policy_tensor.unsqueeze(-1).expand(
-            -1, -1, transition_tensor.shape[2]
-        ).unsqueeze(-1).expand(
-            -1, -1, -1, transition_tensor.shape[3]
-        )
-    ).sum(dim=1)
+    return misc.to_tensor_representation(
+        torch.sparse.sum(
+            transition_tensor_sparse * policy_tensor_dense.unsqueeze(-1).expand(
+                -1, -1, transition_tensor_sparse.shape[2]
+            ).unsqueeze(-1).expand(
+                -1, -1, -1, transition_tensor_sparse.shape[3]
+            ).to_sparse(),
+            dim=1
+        ), to_sparse=return_sparse
+    )
 
-def graphs_to_full_transition_tensor(joint_mdp_graph, policy_graph, acting_agent_is_A=True):
+def graphs_to_full_transition_tensor(joint_mdp_graph, policy_graph, acting_agent_is_A=True, return_sparse=False):
     return compute_full_transition_tensor(
-        graph_to_joint_transition_tensor(joint_mdp_graph),
-        graph_to_policy_tensor(policy_graph),
-        acting_agent_is_A=acting_agent_is_A
+        graph_to_joint_transition_tensor(joint_mdp_graph, return_sparse=True),
+        graph_to_policy_tensor(policy_graph, return_sparse=False),
+        acting_agent_is_A=acting_agent_is_A,
+        return_sparse=return_sparse
     )
 
 def any_graphs_to_full_transition_tensor(*transition_graphs, acting_agent_is_A=True):

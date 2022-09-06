@@ -72,13 +72,15 @@ def samples_to_outputs(
             output_calculator,
             zip(
                 range(num_workers),
-                *[torch.split(
-                    tiled_arg, number_of_samples // num_workers, dim=0
-                ) for tiled_arg in [
-                    arg if (
-                        hasattr(arg, '__len__') and len(arg) == number_of_samples
-                    ) else misc.tile_tensor(arg, number_of_samples) for arg in args
-                ]]
+                *[
+                    misc.split_1d_tensor_into_list(
+                        tiled_arg, number_of_samples // num_workers
+                    ) for tiled_arg in [
+                        arg if (
+                            hasattr(arg, '__len__') and len(arg) == number_of_samples
+                        ) else misc.tile_tensor(arg, number_of_samples) for arg in args
+                    ]
+                ]
             )
         )
     
