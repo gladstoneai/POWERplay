@@ -133,14 +133,14 @@ def run_multiagent_with_reward_experiment(
         convergence_threshold=convergence_threshold
     )
 
-    joint_transition_tensor = misc.densify_tensor(joint_transition_tensor) # TEMP TODO: Add sparse handling methods to all computations below
-    full_transition_tensor_A = misc.densify_tensor(full_transition_tensor_A) # TEMP TODO: Add sparse handling methods to all computations below
-
     all_policy_tensors_A = torch.stack([
         learn.compute_optimal_policy_tensor(
             optimal_values_A, full_transition_tensor_A
         ) for optimal_values_A in all_optimal_values_A
     ])
+
+    joint_transition_tensor = misc.densify_tensor(joint_transition_tensor) # TEMP TODO: Add sparse handling methods to all computations below
+    full_transition_tensor_A = misc.densify_tensor(full_transition_tensor_A) # TEMP TODO: Add sparse handling methods to all computations below
 
     all_full_transition_tensors_B = torch.stack([
         graph.compute_full_transition_tensor(

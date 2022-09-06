@@ -74,10 +74,16 @@ def policy_evaluation(
 # A "tiebreaker" policy between two equally unrewarding states that's very deterministic for e.g. Agent A, is also
 # very exploitable for Agent B.
 def compute_optimal_policy_tensor(optimal_values, transition_tensor):
-    action_values = torch.matmul(transition_tensor, optimal_values.unsqueeze(1)).flatten(start_dim=1)
+    transition_tensor_sparse = misc.sparsify_tensor(transition_tensor)
+    action_values = torch.sparse.sum(
+        transition_tensor_sparse * optimal_values.expand(
+            transition_tensor_sparse.shape
+        ).sparse_mask(transition_tensor_sparse),
+        dim=2
+    ).to_dense()
     return tf.normalize(
         torch.eq(
             action_values,
-            action_values.max(dim=1)[0].unsqueeze(1).tile(1, transition_tensor.shape[1])
-        ).to(torch.float32) * transition_tensor.sum(dim=2), p=1, dim=1
+            action_values.max(dim=1)[0].unsqueeze(1).tile(1, transition_tensor_sparse.shape[1])
+        ).to(torch.float32) * torch.sparse.sum(transition_tensor_sparse, dim=2).to_dense(), p=1, dim=1
     )

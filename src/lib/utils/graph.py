@@ -271,7 +271,7 @@ def compute_full_transition_tensor(
                 -1, -1, transition_tensor_sparse.shape[2]
             ).unsqueeze(-1).expand(
                 -1, -1, -1, transition_tensor_sparse.shape[3]
-            ).to_sparse(),
+            ).sparse_mask(transition_tensor_sparse.coalesce()),
             dim=1
         ), to_sparse=return_sparse
     )

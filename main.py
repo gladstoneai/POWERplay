@@ -47,7 +47,7 @@ from src import base
 
 # TODO NEXT:
 # - Refactor all workhorse functions to handle sparse tensors for memory
-# -- Refactor compute_optimal_policy_tensor
+# -- Refactor all_full_transition_tensors_B
 # -- Refactor policy_evaluation
 # -- Refactor graphs_to_full_transition_tensor
 # - Refactor to make discount_rate_A and discount_rate_B a 2-list so we can sweep across them in combination
