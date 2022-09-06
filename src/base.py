@@ -338,5 +338,36 @@ def visualize_all_correlated_reward_samples(
         output_folder=save_folder
     )
 
+def visualize_power_relationship_over_multiple_sweeps(
+    x_axis_values,
+    sweep_ids_list,
+    show=True,
+    fig_name='temp',
+    x_axis_label='name of variable',
+    save_folder=data.TEMP_FOLDER
+):
+    power_correlation_data = [
+        get.get_reward_correlations_and_powers_from_sweep(sweep_id, include_baseline_power=False) for (
+            sweep_id
+        ) in sweep_ids_list
+    ]
+
+    all_powers_A_ = []
+    all_powers_B_ = []
+
+    for correlation_item in power_correlation_data:
+        all_powers_A_ += correlation_item['all_powers_A']
+        all_powers_B_ += correlation_item['all_powers_B']
+    
+    view.plot_power_correlation_relationship(
+        x_axis_values,
+        all_powers_A_,
+        all_powers_B_,
+        x_axis_label=x_axis_label,
+        show=show,
+        fig_name=fig_name,
+        save_folder=save_folder
+    )
+
 def build_quick_random_policy(mdp_graph):
     return policy.quick_mdp_to_policy(mdp_graph)

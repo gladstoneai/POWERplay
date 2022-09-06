@@ -162,12 +162,14 @@ def plot_alignment_curves(
     if show:
         plt.show()
 
-def plot_reward_power_relationship(
-    reward_correlations,
+# reward_correlations, all_powers_A, and all_powers_B are lists of tensors.
+def plot_power_correlation_relationship(
+    x_axis_values,
     all_powers_A,
     all_powers_B,
     show=True,
     fig_name='temp',
+    x_axis_label='Reward correlation value',
     save_folder=data.TEMP_FOLDER
 ):
     fig, ax = plt.subplots()
@@ -178,14 +180,14 @@ def plot_reward_power_relationship(
         ) in zip(all_powers_A, all_powers_B)
     ]
 
-    ax.plot(reward_correlations, power_correlations, 'mh')
-    ax.set_xlabel('Reward correlation value')
+    ax.plot(x_axis_values, power_correlations, 'mh')
+    ax.set_xlabel(x_axis_label)
     ax.set_ylabel('State-by-state POWER correlation value')
     ax.set_title('Correlation coefficients plot')
 
     data.save_figure(
         fig,
-        '{}-reward_power_relationship'.format(fig_name),
+        '{}-power_correlation_relationship'.format(fig_name),
         folder=save_folder
     )
 
@@ -253,12 +255,13 @@ def plot_specific_power_alignments(
         output_folder=save_folder
     )
 
-    plot_reward_power_relationship(
+    plot_power_correlation_relationship(
         reward_correlations,
         all_powers_A,
         all_powers_B,
+        x_axis_label='Reward correlation value',
         show=show,
-        fig_name='{0}-sweep_id_{1}'.format(fig_name, sweep_id),
+        fig_name='{0}-sweep_id_{1}-reward_correlation-'.format(fig_name, sweep_id),
         save_folder=save_folder
     )
 
