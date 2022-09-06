@@ -27,7 +27,7 @@ def augment_runs_data(sweep_runs_data, convert_mdp_to_stochastic=False, plot_as_
             'inputs': {
                 **run_data['inputs'],
                 'mdp_graph_networkx': mdp_graph,
-                'transition_tensor': graph.graph_to_full_transition_tensor(mdp_graph)
+                'transition_tensor': graph.graph_to_full_transition_tensor(mdp_graph, return_sparse=False)
             }
         }
     

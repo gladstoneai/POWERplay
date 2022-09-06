@@ -201,7 +201,7 @@ def graph_to_joint_transition_tensor(mdp_graph, return_sparse=False):
 # First index is current state s; second index is Agent A action a_A; third index is Agent B action a_B; fourth index is next state s'.
     return misc.to_tensor_representation(transition_tensor_.to(torch.float), to_sparse=return_sparse)
 
-def graph_to_full_transition_tensor(mdp_graph):
+def graph_to_full_transition_tensor(mdp_graph, return_sparse=False):
     if is_graph_stochastic(mdp_graph):
         state_list, action_list = get_states_from_graph(mdp_graph), get_actions_from_graph(mdp_graph)
         transition_tensor_ = torch.zeros(len(state_list), len(action_list), len(state_list))
@@ -225,7 +225,7 @@ def graph_to_full_transition_tensor(mdp_graph):
         transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(mdp_graph)))
 
 # First index is current state s; second index is action a; third index is next state s'.
-    return transition_tensor_.to(torch.float)
+    return misc.to_tensor_representation(transition_tensor_.to(torch.float), to_sparse=return_sparse)
 
 def graph_to_policy_tensor(policy_graph, return_sparse=False):
     state_list, action_list = get_states_from_graph(policy_graph), get_actions_from_graph(policy_graph)
@@ -284,13 +284,13 @@ def graphs_to_full_transition_tensor(joint_mdp_graph, policy_graph, acting_agent
         return_sparse=return_sparse
     )
 
-def any_graphs_to_full_transition_tensor(*transition_graphs, acting_agent_is_A=True):
+def any_graphs_to_full_transition_tensor(*transition_graphs, acting_agent_is_A=True, return_sparse=False):
     if len(transition_graphs) == 1: # Single agent case
-        return graph_to_full_transition_tensor(transition_graphs[0])
+        return graph_to_full_transition_tensor(transition_graphs[0], return_sparse=return_sparse)
 
     else: # Multiagent case
         return graphs_to_full_transition_tensor(
-            *transition_graphs, acting_agent_is_A=acting_agent_is_A
+            *transition_graphs, acting_agent_is_A=acting_agent_is_A, return_sparse=return_sparse
         )
 
 # Calculation details here:
