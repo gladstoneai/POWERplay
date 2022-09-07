@@ -47,28 +47,28 @@ def create_joint_multiagent_graph(single_agent_graph):
             state_list, state_list
         )
     ]:
-        state_H, state_B = graph.multiagent_state_to_single_agent_states(joint_state)
+        state_H, state_A = graph.multiagent_state_to_single_agent_states(joint_state)
         available_actions_H = graph.get_available_actions_from_graph_state(single_agent_graph, state_H)
-        available_actions_B = graph.get_available_actions_from_graph_state(single_agent_graph, state_B)
+        available_actions_A = graph.get_available_actions_from_graph_state(single_agent_graph, state_A)
 
         action_dict_ = {}
 
         for joint_action in [
             graph.single_agent_actions_to_multiagent_action(*action_pair) for action_pair in it.product(
-                available_actions_H, available_actions_B
+                available_actions_H, available_actions_A
             )
         ]:
 
-            action_H, action_B = graph.multiagent_action_to_single_agent_actions(joint_action)
+            action_H, action_A = graph.multiagent_action_to_single_agent_actions(joint_action)
 
             next_states_H = list(
                 graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(
                     single_agent_graph, state_H, action_H
                 ).items()
             )
-            next_states_B = list(
+            next_states_A = list(
                 graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(
-                    single_agent_graph, state_B, action_B
+                    single_agent_graph, state_A, action_A
                 ).items()
             )
 
@@ -76,7 +76,7 @@ def create_joint_multiagent_graph(single_agent_graph):
                 graph.single_agent_states_to_multiagent_state(
                     next_joint_state[0][0], next_joint_state[1][0]
                 ): next_joint_state[0][1] * next_joint_state[1][1] for next_joint_state in it.product(
-                    next_states_H, next_states_B
+                    next_states_H, next_states_A
                 )
             }
         

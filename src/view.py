@@ -94,7 +94,7 @@ def plot_rollout_powers(run_properties, initial_state, number_of_rollouts=10, nu
             initial_state,
             policy_data['policy_graph_H'],
             policy_data['mdp_graph'],
-            policy_graph_B=policy_data['policy_graph_B'],
+            policy_graph_A=policy_data['policy_graph_A'],
             number_of_steps=number_of_steps
         )
 
@@ -123,16 +123,16 @@ def plot_alignment_curves(
         sweep_id, include_baseline_power=include_baseline_power, folder=data_folder
     )
 
-    reward_correlations, all_avg_powers_H, all_avg_powers_B, baseline_avg_power_H = (
+    reward_correlations, all_avg_powers_H, all_avg_powers_A, baseline_avg_power_H = (
         power_correlation_data['reward_correlations'],
         [powers_H.mean() for powers_H in power_correlation_data['all_powers_H']],
-        [powers_B.mean() for powers_B in power_correlation_data['all_powers_B']],
+        [powers_A.mean() for powers_A in power_correlation_data['all_powers_A']],
         power_correlation_data.get('baseline_powers_H', torch.tensor(0.)).mean()
     )
 
     fig, ax = plt.subplots()
 
-    ax.plot(reward_correlations, all_avg_powers_B, 'rs', label='Agent B POWER, avg over states')
+    ax.plot(reward_correlations, all_avg_powers_A, 'rs', label='Agent A POWER, avg over states')
     ax.plot(reward_correlations, all_avg_powers_H, 'bo', label='Agent H POWER, avg over states')
     
     if include_baseline_power:
@@ -162,11 +162,11 @@ def plot_alignment_curves(
     if show:
         plt.show()
 
-# all_powers_H and all_powers_B are lists of tensors.
+# all_powers_H and all_powers_A are lists of tensors.
 def plot_power_correlation_relationship(
     x_axis_values,
     all_powers_H,
-    all_powers_B,
+    all_powers_A,
     show=True,
     fig_name='temp',
     x_axis_label='Reward correlation value',
@@ -175,9 +175,9 @@ def plot_power_correlation_relationship(
     fig, ax = plt.subplots()
 
     power_correlations = [
-        torch.corrcoef(torch.stack([powers_H, powers_B]))[0][1] for (
-            powers_H, powers_B
-        ) in zip(all_powers_H, all_powers_B)
+        torch.corrcoef(torch.stack([powers_H, powers_A]))[0][1] for (
+            powers_H, powers_A
+        ) in zip(all_powers_H, all_powers_A)
     ]
 
     ax.plot(x_axis_values, power_correlations, 'mh')
@@ -209,22 +209,22 @@ def plot_specific_power_alignments(
         sweep_id, include_baseline_power=True, folder=data_folder
     )
 
-    reward_correlations, all_powers_H, all_powers_B, baseline_powers_H = (
+    reward_correlations, all_powers_H, all_powers_A, baseline_powers_H = (
         power_correlation_data['reward_correlations'],
         power_correlation_data['all_powers_H'],
-        power_correlation_data['all_powers_B'],
+        power_correlation_data['all_powers_A'],
         power_correlation_data['baseline_powers_H']
     )
 
     min_H_power = min([powers_H.min() for powers_H in all_powers_H]) * (1 - graph_padding)
     max_H_power = max([powers_H.max() for powers_H in all_powers_H]) * (1 + graph_padding)
-    min_B_power = min([powers_B.min() for powers_B in all_powers_B]) * (1 - graph_padding)
-    max_B_power = max([powers_B.max() for powers_B in all_powers_B]) * (1 + graph_padding)
+    min_A_power = min([powers_A.min() for powers_A in all_powers_A]) * (1 - graph_padding)
+    max_A_power = max([powers_A.max() for powers_A in all_powers_A]) * (1 + graph_padding)
 
     power_correlations_ = []
     all_fig_names_ = []
 
-    for correlation, powers_H, powers_B in zip(reward_correlations, all_powers_H, all_powers_B):
+    for correlation, powers_H, powers_A in zip(reward_correlations, all_powers_H, all_powers_A):
         fig, ax = plt.subplots()
         current_fig_name = '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(
             fig_name, sweep_id, str(correlation)
@@ -232,19 +232,19 @@ def plot_specific_power_alignments(
 
         if include_baseline_powers:
             for baseline_power in baseline_powers_H:
-                ax.plot([baseline_power.item()] * 2, [min_B_power, max_B_power], 'b-', alpha=0.25)
+                ax.plot([baseline_power.item()] * 2, [min_A_power, max_A_power], 'b-', alpha=0.25)
 
-        ax.plot(powers_H, powers_B, 'mh')
+        ax.plot(powers_H, powers_A, 'mh')
 
         ax.set_xlabel('State POWER values, Agent H')
-        ax.set_ylabel('State POWER values, Agent B')
+        ax.set_ylabel('State POWER values, Agent A')
         ax.set_title('Reward correlation value {}'.format(correlation))
         ax.set_xlim([min_H_power, max_H_power])
-        ax.set_ylim([min_B_power, max_B_power])
+        ax.set_ylim([min_A_power, max_A_power])
 
         data.save_figure(fig, current_fig_name, folder=save_folder)
 
-        power_correlations_ += [torch.corrcoef(torch.stack([powers_H, powers_B]))[0][1]]
+        power_correlations_ += [torch.corrcoef(torch.stack([powers_H, powers_A]))[0][1]]
         all_fig_names_ += [current_fig_name]
 
     anim.animate_from_filenames(
@@ -258,7 +258,7 @@ def plot_specific_power_alignments(
     plot_power_correlation_relationship(
         reward_correlations,
         all_powers_H,
-        all_powers_B,
+        all_powers_A,
         x_axis_label='Reward correlation value',
         show=show,
         fig_name='{0}-sweep_id_{1}-reward_correlation-'.format(fig_name, sweep_id),
@@ -286,15 +286,15 @@ def plot_correlated_reward_samples(
         ['TEMP'], { 'default_dist': distribution_config }, distribution_dict=distribution_dict
     )
     agent_H_samples = agent_H_dist(num_samples)
-    agent_B_samples = dist.generate_correlated_reward_samples(
+    agent_A_samples = dist.generate_correlated_reward_samples(
         agent_H_dist, agent_H_samples, correlation=correlation, symmetric_interval=symmetric_interval
     )
 
     fig, ax = plt.subplots()
 
-    ax.plot(np.array(agent_H_samples.T[0]), np.array(agent_B_samples.T[0]), 'mh')
+    ax.plot(np.array(agent_H_samples.T[0]), np.array(agent_A_samples.T[0]), 'mh')
     ax.set_xlabel('Agent H reward samples')
-    ax.set_ylabel('Agent B reward samples')
+    ax.set_ylabel('Agent A reward samples')
     ax.set_title('Correlation = {:.2f}'.format(correlation))
 
     if fig_name is not None:

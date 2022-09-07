@@ -24,10 +24,10 @@ from src import base
 
 # TODO Experiment nice to haves:
 # - Plot 10th and 90th percentile POWER scores in alignment curves
-# - Build arbitrary back-and-forth counter-optimizations between Agent H and Agent B
+# - Build arbitrary back-and-forth counter-optimizations between Agent H and Agent A
 
 # TODO Write up:
-# - Think about: how do we tell the story of Agent B == humans; Agent H == AI, but consistent with joint states / random initial Agent H policy?
+# - Think about: how do we tell the story of Agent H == humans; Agent A == AI, but consistent with joint states / random initial Agent H policy?
 # -- Start articulating concisely: what are the insights from these graphs & charts?
 # -- Instead of 2 pages for the multiagent POWER definition, create one that's 0.5-1 page in length
 # --- Add an intro:
@@ -47,9 +47,8 @@ from src import base
 
 # TODO NEXT:
 # - Rename agents
-# -- Rename Agent *B* to Agent *A*
-# -- Replace images: multiagent_mdp_example_*A, multiagent_mdp_example_H, policy_graph_example_*A
-# - Refactor to make discount_rate_H and discount_rate_B a 2-list so we can sweep across them in combination
+# -- Replace images: multiagent_mdp_example_A, multiagent_mdp_example_H, policy_graph_example_A
+# - Refactor to make discount_rate_H and discount_rate_A a 2-list so we can sweep across them in combination
 # - Run alignment curves for fixed correlation 0 with gamma, etc., to see what causes the most misalignment at correlation 0
 # - Update README to handle joint multiagent graphs
 # - Run sweeps with gamma_H other than 0.5

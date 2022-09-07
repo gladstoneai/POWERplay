@@ -90,7 +90,7 @@ def generate_standard_fig_data(state_indices, sharey=False):
 
 # TODO: Refactor render_gridworld_rollout_snapshot and render_gridworld_aggregations to remove duplicate code bewteen the two
 # Can do this by having a function that takes as inputs:
-# - Which B states are we plotting
+# - Which A states are we plotting
 # - Where are we plotting them on the grid
 # - Where is Agent H on the grid (None is an option we pick if we don't want Agent H's cyan box rendered)
 def render_gridworld_rollout_snapshot(
@@ -99,25 +99,25 @@ def render_gridworld_rollout_snapshot(
     reward_function=None,
     agent_whose_rewards_are_displayed='A'
 ):
-    agent_B_default_state = '(0, 0)'
+    agent_A_default_state = '(0, 0)'
     agent_H_color = 'blue'
-    agent_B_color = 'red'
+    agent_A_color = 'red'
 
     if graph.are_gridworld_states_multiagent(state_list):
         both_agent_states = np.array(graph.multiagent_states_to_single_agent_states(state_list)).T
-        # When we want to visualize the Agent B rewards, we swap the state labels of the 2 agents (but we DON'T swap the
+        # When we want to visualize the Agent A rewards, we swap the state labels of the 2 agents (but we DON'T swap the
         # COLORS of the agents as they move around on the gridworld)
-        agent_H_states, agent_B_states = both_agent_states if (
+        agent_H_states, agent_A_states = both_agent_states if (
             agent_whose_rewards_are_displayed == 'A'
         ) else both_agent_states[::-1]
 
-        agent_H_display_state, agent_B_display_state = graph.multiagent_state_to_single_agent_states(current_state)
-        agent_B_current_state = agent_B_display_state if agent_whose_rewards_are_displayed == 'A' else agent_H_display_state
+        agent_H_display_state, agent_A_display_state = graph.multiagent_state_to_single_agent_states(current_state)
+        agent_A_current_state = agent_A_display_state if agent_whose_rewards_are_displayed == 'A' else agent_H_display_state
         
     else:
-        agent_H_states, agent_B_states = np.array(state_list), np.full(len(state_list), agent_B_default_state)
-        agent_H_display_state, agent_B_display_state = current_state, np.array([agent_B_default_state])
-        agent_B_current_state = agent_B_display_state
+        agent_H_states, agent_A_states = np.array(state_list), np.full(len(state_list), agent_A_default_state)
+        agent_H_display_state, agent_A_display_state = current_state, np.array([agent_A_default_state])
+        agent_A_current_state = agent_A_display_state
 
     agent_H_unique_states = sorted(list(set(agent_H_states)))
     agent_H_rows, agent_H_cols = np.array(graph.gridworld_states_to_coords(agent_H_states)).T
@@ -137,7 +137,7 @@ def render_gridworld_rollout_snapshot(
     )
 
     vmin, vmax = rewards_to_display.min(), rewards_to_display.max()
-    state_indices = np.where(agent_B_current_state == agent_B_states)[0]
+    state_indices = np.where(agent_A_current_state == agent_A_states)[0]
 
     # Fill excluded coords with nan values to maximize contrast for non-nan entries
     heat_map, _, _ = np.histogram2d(
@@ -151,16 +151,16 @@ def render_gridworld_rollout_snapshot(
     axs_plot_[0][0].set_xticks(range(num_cols))
     axs_plot_[0][0].set_yticks(range(num_rows))
     axs_plot_[0][0].set_title('Rewards for agent {0} ({1})'.format(
-        agent_whose_rewards_are_displayed, agent_H_color if agent_whose_rewards_are_displayed == 'A' else agent_B_color)
+        agent_whose_rewards_are_displayed, agent_H_color if agent_whose_rewards_are_displayed == 'A' else agent_A_color)
     )
 
     if graph.are_gridworld_states_multiagent([current_state]):
-        agent_H_coords, agent_B_coords = graph.gridworld_states_to_coords([agent_H_display_state, agent_B_display_state])
+        agent_H_coords, agent_A_coords = graph.gridworld_states_to_coords([agent_H_display_state, agent_A_display_state])
         axs_plot_[0][0].add_patch(
             pat.Rectangle((agent_H_coords[1] - 0.5, agent_H_coords[0] - 0.5), 1, 1, fill=False, edgecolor=agent_H_color, lw=12)
         )
         axs_plot_[0][0].add_patch(
-            pat.Rectangle((agent_B_coords[1] - 0.5, agent_B_coords[0] - 0.5), 1, 1, fill=False, edgecolor=agent_B_color, lw=6)
+            pat.Rectangle((agent_A_coords[1] - 0.5, agent_A_coords[0] - 0.5), 1, 1, fill=False, edgecolor=agent_A_color, lw=6)
         )
     
     for sample_index in state_indices:
@@ -182,18 +182,18 @@ def render_gridworld_aggregations(
     sample_quantity='POWER',
     sample_units='reward units'
 ):
-    agent_H_states, agent_B_states = np.array(
+    agent_H_states, agent_A_states = np.array(
         graph.multiagent_states_to_single_agent_states(state_list)
     ).T if graph.are_gridworld_states_multiagent(state_list) else (
         np.array(state_list), np.array(['(0, 0)'] * len(state_list))
     )
-    agent_H_unique_states, agent_B_unique_states = (
-        sorted(list(set(agent_H_states))), sorted(list(set(agent_B_states)))
+    agent_H_unique_states, agent_A_unique_states = (
+        sorted(list(set(agent_H_states))), sorted(list(set(agent_A_states)))
     )
     agent_H_rows, agent_H_cols = np.array(graph.gridworld_states_to_coords(agent_H_states)).T
 
     _, fig_, axs_plot_, axis_coords_list = generate_gridworld_fig_data(
-        states_per_subplot=agent_H_unique_states, states_to_subplot=agent_B_unique_states, sharey=True
+        states_per_subplot=agent_H_unique_states, states_to_subplot=agent_A_unique_states, sharey=True
     )
 
     num_rows, num_cols = max(agent_H_rows) + 1, max(agent_H_cols) + 1
@@ -208,9 +208,9 @@ def render_gridworld_aggregations(
     sample_aggregations = calculate_sample_aggregations(all_samples, aggregation=aggregation)
     vmin, vmax = sample_aggregations.min(), sample_aggregations.max()
 
-    for axis_coords, agent_B_state, state_indices in zip(
-        axis_coords_list, agent_B_unique_states, [
-            np.where(agent_B_states == agent_B_unique_state)[0] for agent_B_unique_state in agent_B_unique_states
+    for axis_coords, agent_A_state, state_indices in zip(
+        axis_coords_list, agent_A_unique_states, [
+            np.where(agent_A_states == agent_A_unique_state)[0] for agent_A_unique_state in agent_A_unique_states
         ]
     ):
         # Fill excluded coords with nan values to maximize contrast for non-nan entries
@@ -226,7 +226,7 @@ def render_gridworld_aggregations(
         axs_plot_[axis_coords[0]][axis_coords[1]].set_yticks(range(num_rows))
 
         if graph.are_gridworld_states_multiagent(state_list):
-            axs_plot_[axis_coords[0]][axis_coords[1]].title.set_text('Agent B at {}'.format(agent_B_state))
+            axs_plot_[axis_coords[0]][axis_coords[1]].title.set_text('Agent A at {}'.format(agent_A_state))
             axs_plot_[axis_coords[0]][axis_coords[1]].add_patch(
                 pat.Rectangle((axis_coords[1] - 0.5, axis_coords[0] - 0.5), 1, 1, fill=False, edgecolor='red', lw=3)
             )
@@ -287,17 +287,17 @@ def render_distributions(
 ):
     transposed_samples = torch.transpose(all_samples, 0, 1)
 
-    agent_H_states, agent_B_states = np.array(
+    agent_H_states, agent_A_states = np.array(
         graph.multiagent_states_to_single_agent_states(plotted_states)
     ).T if (plot_as_gridworld and graph.are_gridworld_states_multiagent(plotted_states)) else (
         np.array(plotted_states), np.array(['(0, 0)'] * len(plotted_states))
     )
-    agent_B_unique_states = sorted(list(set(agent_B_states)))
+    agent_A_unique_states = sorted(list(set(agent_A_states)))
 
     all_figs_ = []
 
-    for agent_B_state in agent_B_unique_states:
-        figure_indices = np.where(agent_B_states == agent_B_state)[0]
+    for agent_A_state in agent_A_unique_states:
+        figure_indices = np.where(agent_A_states == agent_A_state)[0]
 
         if plot_as_gridworld:
             fig_rows, fig_, axs_plot_, axis_coords_list = generate_gridworld_fig_data(
@@ -305,13 +305,13 @@ def render_distributions(
             )
 
             if graph.are_gridworld_states_multiagent(plotted_states):
-                agent_B_coords = graph.gridworld_state_to_coords(agent_B_state)
+                agent_A_coords = graph.gridworld_state_to_coords(agent_A_state)
 
-                fig_.suptitle('Agent B at {}'.format(agent_B_state))
-                fig_.agent_B_state = agent_B_state
+                fig_.suptitle('Agent A at {}'.format(agent_A_state))
+                fig_.agent_A_state = agent_A_state
 
-                axs_plot_[agent_B_coords[0]][agent_B_coords[1]].patch.set_edgecolor('red')
-                axs_plot_[agent_B_coords[0]][agent_B_coords[1]].patch.set_linewidth(3)
+                axs_plot_[agent_A_coords[0]][agent_A_coords[1]].patch.set_edgecolor('red')
+                axs_plot_[agent_A_coords[0]][agent_A_coords[1]].patch.set_linewidth(3)
         
         else:
             fig_rows, fig_, axs_plot_, axis_coords_list = generate_standard_fig_data(state_indices, sharey=True)
@@ -349,17 +349,17 @@ def render_correlations(
     sample_quantity='POWER',
     sample_units='reward_units'
 ):
-    agent_H_states, agent_B_states = np.array(
+    agent_H_states, agent_A_states = np.array(
         graph.multiagent_states_to_single_agent_states(state_y_list)
     ).T if (plot_as_gridworld and graph.are_gridworld_states_multiagent(state_y_list)) else (
         np.array(state_y_list), np.array(['(0, 0)'] * len(state_y_list))
     )
-    agent_B_unique_states = sorted(list(set(agent_B_states)))
+    agent_A_unique_states = sorted(list(set(agent_A_states)))
 
     all_figs_ = []
 
-    for agent_B_state in agent_B_unique_states:
-        figure_indices = np.where(agent_B_states == agent_B_state)[0]
+    for agent_A_state in agent_A_unique_states:
+        figure_indices = np.where(agent_A_states == agent_A_state)[0]
 
         if plot_as_gridworld:
             fig_rows, fig_, axs_plot_, axis_coords_list = generate_gridworld_fig_data(
@@ -367,13 +367,13 @@ def render_correlations(
             )
 
             if graph.are_gridworld_states_multiagent(state_y_list):
-                agent_B_coords = graph.gridworld_state_to_coords(agent_B_state)
+                agent_A_coords = graph.gridworld_state_to_coords(agent_A_state)
 
-                fig_.suptitle('Agent B at {}'.format(agent_B_state))
-                fig_.agent_B_state = agent_B_state
+                fig_.suptitle('Agent A at {}'.format(agent_A_state))
+                fig_.agent_A_state = agent_A_state
 
-                axs_plot_[agent_B_coords[0]][agent_B_coords[1]].patch.set_edgecolor('red')
-                axs_plot_[agent_B_coords[0]][agent_B_coords[1]].patch.set_linewidth(8)
+                axs_plot_[agent_A_coords[0]][agent_A_coords[1]].patch.set_edgecolor('red')
+                axs_plot_[agent_A_coords[0]][agent_A_coords[1]].patch.set_linewidth(8)
         
         else:
             fig_rows, fig_, axs_plot_, axis_coords_list = generate_standard_fig_data(state_y_indices, sharey=False)

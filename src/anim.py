@@ -90,11 +90,11 @@ def generate_sweep_animations(
         
         elif sweep_type == 'multiagent_with_reward':
             figure_prefix_list_ = [
-                'POWER_means-agent_H', 'POWER_means-agent_B', 'POWER_samples-agent_H', 'POWER_samples-agent_B'
+                'POWER_means-agent_H', 'POWER_means-agent_A', 'POWER_samples-agent_H', 'POWER_samples-agent_A'
             ] + [
                 'POWER_correlations_{}-agent_H'.format(state) for state in state_list
             ] + [
-                'POWER_correlations_{}-agent_B'.format(state) for state in state_list
+                'POWER_correlations_{}-agent_A'.format(state) for state in state_list
             ]
 
     else:

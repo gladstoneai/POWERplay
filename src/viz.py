@@ -79,8 +79,8 @@ def plot_sample_distributions(
         for fig in all_figs:
             save_figure(fig, '{0}_samples{1}-{2}'.format(
                 sample_quantity,
-                '_agent_B_state_{}'.format(fig.agent_B_state) if (
-                    hasattr(fig, 'agent_B_state')
+                '_agent_A_state_{}'.format(fig.agent_A_state) if (
+                    hasattr(fig, 'agent_A_state')
                 ) else '',
                 save_handle
             ), folder=save_folder)
@@ -126,8 +126,8 @@ def plot_sample_correlations(
                 fig, '{0}_correlations_{1}{2}-{3}'.format(
                     sample_quantity,
                     state_x,
-                    '_agent_B_state{}'.format(fig.agent_B_state) if (
-                        hasattr(fig, 'agent_B_state')
+                    '_agent_A_state{}'.format(fig.agent_A_state) if (
+                        hasattr(fig, 'agent_A_state')
                     ) else '',
                     save_handle
                 ), folder=save_folder
@@ -223,7 +223,7 @@ def plot_all_outputs(
         ),
         **({
             'Reward samples over states{}'.format(
-                ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
+                ', Agent A at {}'.format(fig.agent_A_state) if hasattr(fig, 'agent_A_state') else ''
             ): fig for fig in plot_sample_distributions(
                 rs_inputs,
                 state_list,
@@ -235,7 +235,7 @@ def plot_all_outputs(
         } if plot_distributions else {}),
         **({
             'POWER samples over states{}'.format(
-                ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
+                ', Agent A at {}'.format(fig.agent_A_state) if hasattr(fig, 'agent_A_state') else ''
             ): fig for fig in plot_sample_distributions(
                 ps_inputs,
                 state_list,
@@ -248,7 +248,7 @@ def plot_all_outputs(
         **(
             dict(col.ChainMap(*[{
                 'POWER correlations, state {0}{1}'.format(
-                    state, ', agent B at {}'.format(fig.agent_B_state) if hasattr(fig, 'agent_B_state') else ''
+                    state, ', Agent A at {}'.format(fig.agent_A_state) if hasattr(fig, 'agent_A_state') else ''
                 ): fig for fig in plot_sample_correlations(
                     ps_inputs, state_list, state, sample_quantity='POWER', sample_units='reward units', **kwargs
                 )

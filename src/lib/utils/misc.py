@@ -117,18 +117,18 @@ def determine_sweep_type(run_params):
     elif (
         'joint_mdp_graph' in run_params
     ) and (
-        'policy_graph_agent_B' in run_params
+        'policy_graph_agent_A' in run_params
     ):
         return 'multiagent_fixed_policy'
     
     elif (
         'joint_mdp_graph' in run_params
     ) and (
-        'seed_policy_graph_agent_B' in run_params
+        'seed_policy_graph_agent_A' in run_params
     ) and (
         'reward_correlation' in run_params
     ) and (
-        'discount_rate_agent_B' in run_params
+        'discount_rate_agent_A' in run_params
     ):
 
         if 'state_dists' in run_params['reward_distribution']:

@@ -80,25 +80,25 @@ def get_transition_graphs(
     
     elif sweep_type == 'multiagent_fixed_policy':
         joint_mdp_graph = data.load_graph_from_dot_file(run_params['joint_mdp_graph'], folder=mdps_folder)
-        policy_graph_B = data.load_graph_from_dot_file(run_params['policy_graph_agent_B'], folder=policies_folder)
+        policy_graph_A = data.load_graph_from_dot_file(run_params['policy_graph_agent_A'], folder=policies_folder)
 
         if check_graph_compatibilities:
             check.check_joint_mdp_and_policy_compatibility(
-                joint_mdp_graph, policy_graph_B, policy_is_for_agent_H=False
+                joint_mdp_graph, policy_graph_A, policy_is_for_agent_H=False
             )
 
-        return [joint_mdp_graph, policy_graph_B]
+        return [joint_mdp_graph, policy_graph_A]
     
     elif sweep_type == 'multiagent_with_reward':
         joint_mdp_graph = data.load_graph_from_dot_file(run_params['joint_mdp_graph'], folder=mdps_folder)
-        seed_policy_graph_B = data.load_graph_from_dot_file(run_params['seed_policy_graph_agent_B'], folder=policies_folder)
+        seed_policy_graph_A = data.load_graph_from_dot_file(run_params['seed_policy_graph_agent_A'], folder=policies_folder)
 
         if check_graph_compatibilities:
             check.check_joint_mdp_and_policy_compatibility(
-                joint_mdp_graph, seed_policy_graph_B, policy_is_for_agent_H=False
+                joint_mdp_graph, seed_policy_graph_A, policy_is_for_agent_H=False
             )
 
-        return [joint_mdp_graph, seed_policy_graph_B]
+        return [joint_mdp_graph, seed_policy_graph_A]
 
 def get_properties_from_run(
     sweep_id,
@@ -112,10 +112,10 @@ def get_properties_from_run(
     sweep_type = misc.determine_sweep_type(inputs)
 
     extra_props = {
-        'reward_samples_agent_B': outputs['reward_samples_agent_B'],
-        'power_samples_agent_B': outputs['power_samples_agent_B'],
+        'reward_samples_agent_A': outputs['reward_samples_agent_A'],
+        'power_samples_agent_A': outputs['power_samples_agent_A'],
         'reward_correlation': inputs['reward_correlation'],
-        'discount_rate_agent_B': inputs['discount_rate_agent_B']
+        'discount_rate_agent_A': inputs['discount_rate_agent_A']
     } if sweep_type == 'multiagent_with_reward' else {}
 
     return {
@@ -149,7 +149,7 @@ def get_reward_correlations_and_powers_from_sweep(sweep_id, include_baseline_pow
     return {
         'reward_correlations': [run_props['reward_correlation'] for run_props in all_run_props_],
         'all_powers_H': [run_props['power_samples'].mean(dim=0) for run_props in all_run_props_],
-        'all_powers_B': [run_props['power_samples_agent_B'].mean(dim=0) for run_props in all_run_props_],
+        'all_powers_A': [run_props['power_samples_agent_A'].mean(dim=0) for run_props in all_run_props_],
         **(
             {
                 'baseline_powers_H': all_run_props_[0]['power_samples_H_against_seed'].mean(dim=0)

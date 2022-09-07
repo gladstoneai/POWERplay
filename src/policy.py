@@ -79,7 +79,7 @@ def create_joint_multiagent_random_policy(mdp_graph, acting_agent_is_H=True):
     return policy_graph_
 
 # acting_agent_is_H=True => This policy is for Agent H.
-# acting_agent_is_H=False => This policy is for Agent B.
+# acting_agent_is_H=False => This policy is for Agent A.
 def quick_mdp_to_policy(mdp_graph, acting_agent_is_H=True):
     if graph.is_graph_multiagent(mdp_graph):
         return create_joint_multiagent_random_policy(mdp_graph, acting_agent_is_H=acting_agent_is_H)
@@ -123,14 +123,14 @@ def single_agent_policy_tensor_to_graph(policy_tensor, associated_mdp_graph):
 def multiagent_policy_tensor_to_graph(policy_tensor, associated_mdp_graph, acting_agent_is_H=True):
     policy_graph_ = quick_mdp_to_policy(associated_mdp_graph, acting_agent_is_H=acting_agent_is_H)
     state_list = graph.get_states_from_graph(associated_mdp_graph)
-    action_list_H, action_list_B = graph.get_single_agent_actions_from_joint_mdp_graph(associated_mdp_graph)
-    action_list = action_list_H if acting_agent_is_H else action_list_B
+    action_list_H, action_list_A = graph.get_single_agent_actions_from_joint_mdp_graph(associated_mdp_graph)
+    action_list = action_list_H if acting_agent_is_H else action_list_A
 
     for state in state_list:
-        available_actions_H, available_actions_B = graph.get_unique_single_agent_actions_from_joint_actions(
+        available_actions_H, available_actions_A = graph.get_unique_single_agent_actions_from_joint_actions(
             graph.get_available_actions_from_graph_state(associated_mdp_graph, state)
         )
-        available_actions = available_actions_H if acting_agent_is_H else available_actions_B
+        available_actions = available_actions_H if acting_agent_is_H else available_actions_A
 
         policy_graph_ = update_state_actions(policy_graph_, state, {
             action: float(
@@ -189,24 +189,24 @@ def sample_optimal_policy_data_from_run(run_properties, reward_sample_index=0):
             'mdp_graph': transition_graphs[0],
             'policy_graph_H': policy_graph_H,
             'reward_function_H': reward_function_H,
-            'policy_graph_B': transition_graphs[1]
+            'policy_graph_A': transition_graphs[1]
         }
 
     elif sweep_type == 'multiagent_with_reward':
-        reward_function_B, discount_rate_B = (
-            run_properties['reward_samples_agent_B'][reward_sample_index],
-            run_properties['discount_rate_agent_B']
+        reward_function_A, discount_rate_A = (
+            run_properties['reward_samples_agent_A'][reward_sample_index],
+            run_properties['discount_rate_agent_A']
         )
 
         return {
             'mdp_graph': transition_graphs[0],
-            'seed_policy_graph_B': transition_graphs[1],
+            'seed_policy_graph_A': transition_graphs[1],
             'policy_graph_H': policy_graph_H,
             'reward_function_H': reward_function_H,
-            'policy_graph_B': policy_tensor_to_graph(
+            'policy_graph_A': policy_tensor_to_graph(
                 runex.find_optimal_policy(
-                    reward_function_B,
-                    discount_rate_B,
+                    reward_function_A,
+                    discount_rate_A,
                     graph.graphs_to_full_transition_tensor(
                         *transition_graphs, acting_agent_is_H=False, return_sparse=False
                     )
@@ -214,19 +214,19 @@ def sample_optimal_policy_data_from_run(run_properties, reward_sample_index=0):
                 transition_graphs[0],
                 acting_agent_is_H=False
             ),
-            'reward_function_B': reward_function_B
+            'reward_function_A': reward_function_A
         }
 
-def next_state_rollout(current_state, mdp_graph, policy_graph_H, policy_graph_B=None):
+def next_state_rollout(current_state, mdp_graph, policy_graph_H, policy_graph_A=None):
     state_list = graph.get_states_from_graph(mdp_graph)
 
     state_vector = graph.state_to_vector(current_state, state_list)
     policy_tensor_H = graph.graph_to_policy_tensor(policy_graph_H, return_sparse=False)
 
     full_transition_tensor = graph.graph_to_full_transition_tensor(mdp_graph, return_sparse=False) if (
-        policy_graph_B is None
+        policy_graph_A is None
     ) else graph.graphs_to_full_transition_tensor(
-        mdp_graph, policy_graph_B, acting_agent_is_H=True, return_sparse=False
+        mdp_graph, policy_graph_A, acting_agent_is_H=True, return_sparse=False
     )
 
     return dist.sample_from_state_list(
@@ -241,22 +241,22 @@ def simulate_policy_rollout(
     initial_state,
     policy_graph_H,
     mdp_graph,
-    policy_graph_B=None,
+    policy_graph_A=None,
     number_of_steps=20,
     random_seed=0
 ):
     check.check_state_in_graph_states(mdp_graph, initial_state)
     check.check_policy_graph(policy_graph_H)
 
-    if policy_graph_B is None:
+    if policy_graph_A is None:
         check.check_mdp_graph(mdp_graph)
         check.check_full_graph_compatibility(mdp_graph, policy_graph_H)
     
     else:
         check.check_joint_mdp_graph(mdp_graph)
-        check.check_policy_graph(policy_graph_B)
+        check.check_policy_graph(policy_graph_A)
         check.check_joint_mdp_and_policy_compatibility(mdp_graph, policy_graph_H, policy_is_for_agent_H=True)
-        check.check_joint_mdp_and_policy_compatibility(mdp_graph, policy_graph_B, policy_is_for_agent_H=False)
+        check.check_joint_mdp_and_policy_compatibility(mdp_graph, policy_graph_A, policy_is_for_agent_H=False)
     
     misc.set_global_random_seed(random_seed)
 
@@ -264,7 +264,7 @@ def simulate_policy_rollout(
 
     for _ in range(number_of_steps):
         state_rollout_ += [
-            next_state_rollout(state_rollout_[-1], mdp_graph, policy_graph_H, policy_graph_B=policy_graph_B)
+            next_state_rollout(state_rollout_[-1], mdp_graph, policy_graph_H, policy_graph_A=policy_graph_A)
         ]
 
     return state_rollout_

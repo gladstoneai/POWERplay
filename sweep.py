@@ -40,7 +40,7 @@ def cli_experiment_sweep(
         num_reward_samples = run_params.get('num_reward_samples')
         num_workers = run_params.get('num_workers')
         discount_rate_agent_H = run_params.get('discount_rate')
-        discount_rate_agent_B = run_params.get('discount_rate_agent_B')
+        discount_rate_agent_A = run_params.get('discount_rate_agent_A')
         convergence_threshold = run_params.get('convergence_threshold')
         random_seed = run_params.get('random_seed')
         reward_correlation = run_params.get('reward_correlation')
@@ -71,16 +71,16 @@ def cli_experiment_sweep(
 
         (
             reward_samples_agent_H,
-            reward_samples_agent_B,
+            reward_samples_agent_A,
             power_samples_agent_H,
-            power_samples_agent_B,
+            power_samples_agent_A,
             diagnostic_dict
         ) = runex.run_one_experiment(
             transition_graphs,
             discount_rate_agent_H,
             reward_sampler,
             sweep_type=sweep_type,
-            discount_rate_agent_B=discount_rate_agent_B,
+            discount_rate_agent_A=discount_rate_agent_A,
             num_reward_samples=num_reward_samples,
             num_workers=num_workers,
             convergence_threshold=convergence_threshold,
@@ -95,9 +95,9 @@ def cli_experiment_sweep(
             'inputs': { 'num_reward_samples_actual': len(reward_samples_agent_H), **run_params },
             'outputs': {
                 'reward_samples': reward_samples_agent_H,
-                'reward_samples_agent_B': reward_samples_agent_B,
+                'reward_samples_agent_A': reward_samples_agent_A,
                 'power_samples': power_samples_agent_H,
-                'power_samples_agent_B': power_samples_agent_B
+                'power_samples_agent_A': power_samples_agent_A
             },
             'diagnostics': diagnostic_dict
         }, folder=save_folder)
@@ -126,11 +126,11 @@ def cli_experiment_sweep(
         if sweep_type == 'multiagent_with_reward':
             run.log({
                 fig_name: wb.Image(fig) for fig_name, fig in viz.plot_all_outputs(
-                    reward_samples_agent_B,
-                    power_samples_agent_B,
+                    reward_samples_agent_A,
+                    power_samples_agent_A,
                     state_list,
                     graphs_to_plot=[],
-                    save_handle='agent_B-{}'.format(run.name),
+                    save_handle='agent_A-{}'.format(run.name),
                     **viz_kwargs
                 ).items()
             })
@@ -149,11 +149,11 @@ def cli_experiment_sweep(
 
                 run.log({
                     fig_name: wb.Image(fig) for fig_name, fig in viz.plot_all_outputs(
-                        reward_samples_agent_B,
-                        diagnostic_dict['power_samples_B_seed_policy'],
+                        reward_samples_agent_A,
+                        diagnostic_dict['power_samples_A_seed_policy'],
                         state_list,
                         graphs_to_plot=[],
-                        save_handle='agent_B_SEED_POLICY-{}'.format(run.name),
+                        save_handle='agent_A_SEED_POLICY-{}'.format(run.name),
                         **viz_kwargs
                     ).items()
                 })

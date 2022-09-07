@@ -1,13 +1,13 @@
 name: test_run_multi_actual
-description: "A single run with (discount rate 0.1) on the 1x3 multiagent gridworld, with an Agent B policy that always moves to the left."
+description: "A single run with (discount rate 0.1) on the 1x3 multiagent gridworld, with an Agent A policy that always moves to the left."
 program: sweep.py
 parameters:
   joint_mdp_graph:
     value:
-      "joint_1x3_gridworld_with_agent_H_forbidden_from_staying_when_agent_B_is_at_far_right"
-  policy_graph_agent_B:
+      "joint_1x3_gridworld_with_agent_H_forbidden_from_staying_when_agent_A_is_at_far_right"
+  policy_graph_agent_A:
     value:
-      "joint_1x3_gridworld_agent_B_move_left"
+      "joint_1x3_gridworld_agent_A_move_left"
   discount_rate:
     value:
       0.1

@@ -26,7 +26,7 @@ def update_mdp_graph_with_interface(input_mdp):
 
     print(
         'For each state, input the new allowed actions you want from that state, one at a time. '\
-        'Actions should be in multiagent format if this is a multiagent graph, e.g., \'left_H^stay_B\'. '\
+        'Actions should be in multiagent format if this is a multiagent graph, e.g., \'left_H^stay_A\'. '\
         'Press Enter to skip and keep the allowed actions as they are.'
     )
     print(
@@ -117,42 +117,42 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
             num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
         )
     )
-    policy_B_ = policy.quick_mdp_to_policy(stochastic_graph)
+    policy_A_ = policy.quick_mdp_to_policy(stochastic_graph)
 
-    print('Now updating policy for Agent B.')
+    print('Now updating policy for Agent A.')
     print('State update example: { \'stay\': 0, \'up\': 1, \'down\': 0, \'left\': 0, \'right\': 0 }')
     print('The action you type (stay/up/down/left/right) gets set to 1, all others to 0.')
     print()
 
-    for state in graph.get_states_from_graph(policy_B_):
+    for state in graph.get_states_from_graph(policy_A_):
         action_to_take = input('Enter action for individual state \'{}\': '.format(state)).replace('\'', '"')
 
         if action_to_take:
-            policy_B_ = policy.update_state_actions(
-                policy_B_,
+            policy_A_ = policy.update_state_actions(
+                policy_A_,
                 state,
                 {
                     action: (
                         1 if action == action_to_take else 0
-                    ) for action in graph.get_available_actions_from_graph_state(policy_B_, state)
+                    ) for action in graph.get_available_actions_from_graph_state(policy_A_, state)
                 }
             )
     
-    policy_B_multi_ = policy.single_agent_to_multiagent_policy_graph(policy_B_, acting_agent_is_H=False)
+    policy_A_multi_ = policy.single_agent_to_multiagent_policy_graph(policy_A_, acting_agent_is_H=False)
 
     print()
 
-    for multi_state in graph.get_states_from_graph(policy_B_multi_):
+    for multi_state in graph.get_states_from_graph(policy_A_multi_):
         action_to_take = input('Enter action for multiagent state \'{}\': '.format(multi_state)).replace('\'', '"')
 
         if action_to_take:
-            policy_B_multi_ = policy.update_state_actions(
-                policy_B_multi_,
+            policy_A_multi_ = policy.update_state_actions(
+                policy_A_multi_,
                 multi_state,
                 {
                     action: (
                         1 if action == action_to_take else 0
-                    ) for action in graph.get_available_actions_from_graph_state(policy_B_multi_, multi_state)
+                    ) for action in graph.get_available_actions_from_graph_state(policy_A_multi_, multi_state)
                 }
             )
 
@@ -167,13 +167,13 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
     
     if policy_save_name is not None:
         data.save_graph_to_dot_file(
-            policy_B_multi_,
-            '{0}_agent_B_{1}'.format(mdp_save_name, policy_save_name),
+            policy_A_multi_,
+            '{0}_agent_A_{1}'.format(mdp_save_name, policy_save_name),
             folder=data.POLICIES_FOLDER
         )
 
     return {
-        'policy_B': policy_B_multi_,
+        'policy_A': policy_A_multi_,
         'mdp': multiagent_graph
     }
 
@@ -257,7 +257,7 @@ def visualize_specific_power_alignments(
 def visualize_full_gridworld_rollout(
     sweep_id,
     run_suffix='',
-    initial_state='(0, 0)_H^(0, 0)_B',
+    initial_state='(0, 0)_H^(0, 0)_A',
     reward_sample_index=0,
     number_of_steps=20,
     agent_whose_rewards_are_displayed='A',
@@ -277,7 +277,7 @@ def visualize_full_gridworld_rollout(
             initial_state,
             policy_data['policy_graph_H'],
             policy_data['mdp_graph'],
-            policy_graph_B=policy_data['policy_graph_B'],
+            policy_graph_A=policy_data['policy_graph_A'],
             number_of_steps=number_of_steps,
             random_seed=0
         ),
@@ -363,16 +363,16 @@ def visualize_power_relationship_over_multiple_sweeps(
     ]
 
     all_powers_H_ = []
-    all_powers_B_ = []
+    all_powers_A_ = []
 
     for correlation_item in power_correlation_data:
         all_powers_H_ += correlation_item['all_powers_H']
-        all_powers_B_ += correlation_item['all_powers_B']
+        all_powers_A_ += correlation_item['all_powers_A']
     
     view.plot_power_correlation_relationship(
         x_axis_values,
         all_powers_H_,
-        all_powers_B_,
+        all_powers_A_,
         x_axis_label=x_axis_label,
         show=show,
         fig_name=fig_name,
