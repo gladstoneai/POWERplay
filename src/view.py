@@ -302,3 +302,12 @@ def plot_correlated_reward_samples(
 
     if show:
         plt.show()
+
+def view_gridworld(gridworld_mdp):
+    viz.plot_sample_aggregations(
+        torch.zeros((1, len(list(gridworld_mdp)))),
+        [str(state) for state in gridworld_mdp],
+        plot_as_gridworld=True,
+        sample_quantity='',
+        sample_units='dummy data'
+    )

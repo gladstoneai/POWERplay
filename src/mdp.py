@@ -85,6 +85,27 @@ def remove_state_action(mdp_graph, state_to_remove, check_closure=False):
     
     return mdp_graph_
 
+def remove_state_completely(mdp_graph, state_to_remove, check_closure=False):
+    mdp_graph_ = cp.deepcopy(mdp_graph)
+
+    mdp_graph_.remove_nodes_from([
+        node for node in mdp_graph_ if (
+            state_to_remove in graph.decompose_stochastic_graph_node(node)
+        )
+    ])
+
+    # Delete any "orphan" action nodes
+    mdp_graph_.remove_nodes_from([
+        node for node in mdp_graph_ if (
+            len(graph.decompose_stochastic_graph_node(node)) == 2 and len(mdp_graph_.edges(node)) == 0
+        )
+    ])
+
+    if check_closure:
+        check.check_stochastic_mdp_closure(mdp_graph_)
+    
+    return mdp_graph_
+
 def update_state_action(mdp_graph, state_to_update, new_action_dict, check_closure=False):
     mdp_graph_ = cp.deepcopy(mdp_graph)
     mdp_graph_ = remove_state_action(mdp_graph_, state_to_update, check_closure=False)
@@ -188,12 +209,3 @@ def generate_noised_gridworlds(gridworld_mdp, noise_level_list=[], noise_bias_li
             gridworld_mdp, stochastic_noise_level=noise_level, noise_bias=noise_bias
         ) for noise_level, noise_bias in zip(noise_level_list, noise_bias_list)
     ]
-
-def view_gridworld(gridworld_mdp):
-    viz.plot_sample_aggregations(
-        torch.zeros((1, len(list(gridworld_mdp)))),
-        [str(state) for state in gridworld_mdp],
-        plot_as_gridworld=True,
-        sample_quantity='',
-        sample_units='dummy data'
-    )
