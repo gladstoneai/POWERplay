@@ -46,8 +46,6 @@ from src import base
 # --- Content-wise, this is really strong already.
 
 # TODO NEXT:
-# - Rename agents
-# -- Replace images: multiagent_mdp_example_A, multiagent_mdp_example_H, policy_graph_example_A
 # - Refactor to make discount_rate_H and discount_rate_A a 2-list so we can sweep across them in combination
 # - Run alignment curves for fixed correlation 0 with gamma, etc., to see what causes the most misalignment at correlation 0
 # - Update README to handle joint multiagent graphs

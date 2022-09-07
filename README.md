@@ -532,11 +532,7 @@ For full documentation on the NetworkX `DiGraph()` API, see [here](https://netwo
 
 - `multiagent_graph [networkx.DiGraph]`: A NetworkX graph representing the multiagent MDP from the perspective of the agent you selected in `acting_agent_is_H`. This MDP is in stochastic format, and its states are the outer product of Agent H and Agent A positional states. Here is an example of a multiagent MDP from the perspective of Agent H:
 
-  ![multiagent-mdp-A](img/multiagent_mdp_example_H.png)
-
-  And here is an example of a multiagent MDP from the perspective of Agent A:
-
-  ![multiagent-mdp-B](img/multiagent_mdp_example_A.png)
+  ![multiagent-mdp-H](img/joint_multiagent_mdp_example.png)
 
   These MDPs represent two agents on the same underlying state set: a 2x2 gridworld. Notice that the joint states of H and A are labelled as, e.g., `(0, 0)_H^(0, 0)_A`. This is the standard notation that's used under the hood to label joint states in a multiagent system.
 
@@ -562,7 +558,7 @@ Notice that `acting_agent_is_H` is set to `False`, which is what defines this po
 
 - `policy_graph [networkx.DiGraph]`: A NetworkX graph representing the policy of the agent whose perspective the input MDP graph was from. The policy graph format is pretty similar to the MDP graph format. Here's an example, for an Agent A policy:
 
-  ![policy-graph-B](img/policy_graph_example_A.png)
+  ![policy-graph-A](img/policy_graph_example_A.png)
 
   As you'd expect, the rectangles represent joint states, the circles represent actions, and the arrows represent transitions. The numbers on each arrow represent the probability of taking a given action from a given state, under that policy. (Note that the output of `base.build_quick_random_policy()` will be a _random_ policy, with equal probabilities of each action from a given state, while the example shown above is deterministic.)
 
