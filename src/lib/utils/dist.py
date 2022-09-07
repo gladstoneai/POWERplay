@@ -123,28 +123,28 @@ def sample_from_state_list(state_list, distribution_vector):
 # for correlations from -1 to 0, but negative correlations *only* make sense for pdfs that are symmetric over their
 # support.
 # single_agent_reward_dist: Output of reward_distribution_constructor(state_list)
-# agent_A_samples: Output of reward_distribution_constructor(state_list)(num_samples), a tensor of size
+# agent_H_samples: Output of reward_distribution_constructor(state_list)(num_samples), a tensor of size
 # num_samples x len(state_list)
 def generate_correlated_reward_samples(
     single_agent_reward_dist,
-    agent_A_samples,
+    agent_H_samples,
     correlation=1,
     symmetric_interval=None
 ):
     
     if correlation >= 0 and correlation <= 1:
-        prob_mask = td.Categorical(torch.tensor([1 - correlation, correlation])).sample(agent_A_samples.shape)
-        return prob_mask * agent_A_samples + (1 - prob_mask) * single_agent_reward_dist(agent_A_samples.shape[0]) # single_agent_reward_dist already knows how many states our MDP has
+        prob_mask = td.Categorical(torch.tensor([1 - correlation, correlation])).sample(agent_H_samples.shape)
+        return prob_mask * agent_H_samples + (1 - prob_mask) * single_agent_reward_dist(agent_H_samples.shape[0]) # single_agent_reward_dist already knows how many states our MDP has
     
     elif correlation < 0 and correlation >= -1:
         if symmetric_interval is None:
             raise Exception('Negative correlations only work correctly with symmetric reward distributions.')
 
-        prob_mask = td.Categorical(torch.tensor([1 + correlation, -correlation])).sample(agent_A_samples.shape)
+        prob_mask = td.Categorical(torch.tensor([1 + correlation, -correlation])).sample(agent_H_samples.shape)
         return (
-            prob_mask * (sum(symmetric_interval) - agent_A_samples) # We remap the Agent A samples and reverse them through the distribution's axis of symmetry
+            prob_mask * (sum(symmetric_interval) - agent_H_samples) # We remap the Agent H samples and reverse them through the distribution's axis of symmetry
         ) + (
-            (1 - prob_mask) * single_agent_reward_dist(agent_A_samples.shape[0])
+            (1 - prob_mask) * single_agent_reward_dist(agent_H_samples.shape[0])
         )
 
     else:

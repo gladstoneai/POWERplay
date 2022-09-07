@@ -18,11 +18,11 @@ def gridworld_coords_to_state(gridworld_row_coord, gridworld_col_coord):
 def gridworld_coords_to_states(gridworld_coords_list):
     return [gridworld_coords_to_state(*coords) for coords in gridworld_coords_list]
 
-def single_agent_states_to_multiagent_state(agent_A_state, agent_B_state):
-    return '{0}_A^{1}_B'.format(agent_A_state, agent_B_state)
+def single_agent_states_to_multiagent_state(agent_H_state, agent_B_state):
+    return '{0}_H^{1}_B'.format(agent_H_state, agent_B_state)
 
-def single_agent_actions_to_multiagent_action(agent_A_action, agent_B_action):
-    return single_agent_states_to_multiagent_state(agent_A_action, agent_B_action)
+def single_agent_actions_to_multiagent_action(agent_H_action, agent_B_action):
+    return single_agent_states_to_multiagent_state(agent_H_action, agent_B_action)
 
 def multiagent_state_to_single_agent_states(multiagent_state):
     return [state.split('_')[0] for state in multiagent_state.split('^')]
@@ -73,7 +73,7 @@ def get_unique_single_agent_actions_from_joint_actions(joint_actions):
     ]
 
     return [
-        sorted(set([action_pair[0] for action_pair in action_pairs])), # Agent A actions
+        sorted(set([action_pair[0] for action_pair in action_pairs])), # Agent H actions
         sorted(set([action_pair[1] for action_pair in action_pairs])) # Agent B actions
     ]
 
@@ -106,12 +106,12 @@ def extract_subgraph_containing_states(input_graph, states_to_extract):
 
 def are_gridworld_states_multiagent(state_list):
     return all([
-        bool(re.fullmatch(r'\(\d+, \d+\)_A\^\(\d+, \d+\)_B', state)) for state in state_list
+        bool(re.fullmatch(r'\(\d+, \d+\)_H\^\(\d+, \d+\)_B', state)) for state in state_list
     ])
 
 def are_general_graph_states_multiagent(state_list):
     return all([
-        bool(re.fullmatch(r'.*_A\^.*_B', state)) for state in state_list
+        bool(re.fullmatch(r'.*_H\^.*_B', state)) for state in state_list
     ])
 
 def is_graph_multiagent(input_graph):
@@ -169,24 +169,24 @@ def transform_graph_for_plots(mdp_or_policy_graph, reward_to_plot=None, discount
 def graph_to_joint_transition_tensor(mdp_graph, return_sparse=False):
     if is_graph_stochastic(mdp_graph):
         state_list = get_states_from_graph(mdp_graph)
-        action_list_A, action_list_B = get_single_agent_actions_from_joint_mdp_graph(mdp_graph)
-        transition_tensor_ = torch.zeros(len(state_list), len(action_list_A), len(action_list_B), len(state_list))
+        action_list_H, action_list_B = get_single_agent_actions_from_joint_mdp_graph(mdp_graph)
+        transition_tensor_ = torch.zeros(len(state_list), len(action_list_H), len(action_list_B), len(state_list))
 
         for i in range(len(state_list)):
-            for j in range(len(action_list_A)):
+            for j in range(len(action_list_H)):
                 for k in range(len(action_list_B)):
                     for l in range(len(state_list)):
 
                         try:
                             transition_tensor_[i][j][k][l] = mdp_graph[
                                 build_stochastic_graph_node(
-                                    single_agent_actions_to_multiagent_action(action_list_A[j], action_list_B[k]),
+                                    single_agent_actions_to_multiagent_action(action_list_H[j], action_list_B[k]),
                                     state_list[i]
                                 )
                             ][
                                 build_stochastic_graph_node(
                                     state_list[l],
-                                    single_agent_actions_to_multiagent_action(action_list_A[j], action_list_B[k]),
+                                    single_agent_actions_to_multiagent_action(action_list_H[j], action_list_B[k]),
                                     state_list[i]
                                 )
                             ]['weight']
@@ -198,7 +198,7 @@ def graph_to_joint_transition_tensor(mdp_graph, return_sparse=False):
     else:
         transition_tensor_ = torch.diag_embed(torch.tensor(nx.to_numpy_array(mdp_graph)))
     
-# First index is current state s; second index is Agent A action a_A; third index is Agent B action a_B; fourth index is next state s'.
+# First index is current state s; second index is Agent H action a_H; third index is Agent B action a_B; fourth index is next state s'.
     return misc.to_tensor_representation(transition_tensor_.to(torch.float), to_sparse=return_sparse)
 
 def graph_to_full_transition_tensor(mdp_graph, return_sparse=False):
@@ -251,18 +251,18 @@ def graph_to_policy_tensor(policy_graph, return_sparse=False):
 def compute_full_transition_tensor(
     joint_transition_tensor,
     policy_tensor,
-    acting_agent_is_A=True,
+    acting_agent_is_H=True,
     return_sparse=False
 ):
     joint_transition_tensor_sparse = misc.sparsify_tensor(joint_transition_tensor)
     policy_tensor_dense = misc.densify_tensor(policy_tensor)
 
-    # Canonical ordering of dimensions is (current state, agent A action, agent B action, next state).
+    # Canonical ordering of dimensions is (current state, Agent H action, agent B action, next state).
     # If policy_tensor corresponds to the policy for Agent B (and therefore the currently acting agent
-    # is A, i.e., acting_agent_is_A == True), transpose axis 1 (agent A action) and axis 2 (agent B action)
+    # is H, i.e., acting_agent_is_H == True), transpose axis 1 (Agent H action) and axis 2 (agent B action)
     # before proceeding.
     transition_tensor_sparse = torch.transpose(joint_transition_tensor_sparse, 1, 2) if (
-        acting_agent_is_A
+        acting_agent_is_H
     ) else joint_transition_tensor_sparse
 
     return misc.to_tensor_representation(
@@ -276,21 +276,21 @@ def compute_full_transition_tensor(
         ), to_sparse=return_sparse
     )
 
-def graphs_to_full_transition_tensor(joint_mdp_graph, policy_graph, acting_agent_is_A=True, return_sparse=False):
+def graphs_to_full_transition_tensor(joint_mdp_graph, policy_graph, acting_agent_is_H=True, return_sparse=False):
     return compute_full_transition_tensor(
         graph_to_joint_transition_tensor(joint_mdp_graph, return_sparse=True),
         graph_to_policy_tensor(policy_graph, return_sparse=False),
-        acting_agent_is_A=acting_agent_is_A,
+        acting_agent_is_H=acting_agent_is_H,
         return_sparse=return_sparse
     )
 
-def any_graphs_to_full_transition_tensor(*transition_graphs, acting_agent_is_A=True, return_sparse=False):
+def any_graphs_to_full_transition_tensor(*transition_graphs, acting_agent_is_H=True, return_sparse=False):
     if len(transition_graphs) == 1: # Single agent case
         return graph_to_full_transition_tensor(transition_graphs[0], return_sparse=return_sparse)
 
     else: # Multiagent case
         return graphs_to_full_transition_tensor(
-            *transition_graphs, acting_agent_is_A=acting_agent_is_A, return_sparse=return_sparse
+            *transition_graphs, acting_agent_is_H=acting_agent_is_H, return_sparse=return_sparse
         )
 
 # Calculation details here:

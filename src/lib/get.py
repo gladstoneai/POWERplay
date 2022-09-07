@@ -84,7 +84,7 @@ def get_transition_graphs(
 
         if check_graph_compatibilities:
             check.check_joint_mdp_and_policy_compatibility(
-                joint_mdp_graph, policy_graph_B, policy_is_for_agent_A=False
+                joint_mdp_graph, policy_graph_B, policy_is_for_agent_H=False
             )
 
         return [joint_mdp_graph, policy_graph_B]
@@ -95,7 +95,7 @@ def get_transition_graphs(
 
         if check_graph_compatibilities:
             check.check_joint_mdp_and_policy_compatibility(
-                joint_mdp_graph, seed_policy_graph_B, policy_is_for_agent_A=False
+                joint_mdp_graph, seed_policy_graph_B, policy_is_for_agent_H=False
             )
 
         return [joint_mdp_graph, seed_policy_graph_B]
@@ -148,11 +148,11 @@ def get_reward_correlations_and_powers_from_sweep(sweep_id, include_baseline_pow
 
     return {
         'reward_correlations': [run_props['reward_correlation'] for run_props in all_run_props_],
-        'all_powers_A': [run_props['power_samples'].mean(dim=0) for run_props in all_run_props_],
+        'all_powers_H': [run_props['power_samples'].mean(dim=0) for run_props in all_run_props_],
         'all_powers_B': [run_props['power_samples_agent_B'].mean(dim=0) for run_props in all_run_props_],
         **(
             {
-                'baseline_powers_A': all_run_props_[0]['power_samples_A_against_seed'].mean(dim=0)
+                'baseline_powers_H': all_run_props_[0]['power_samples_H_against_seed'].mean(dim=0)
             } if include_baseline_power else {}
         )
     }

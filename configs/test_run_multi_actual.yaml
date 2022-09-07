@@ -4,7 +4,7 @@ program: sweep.py
 parameters:
   joint_mdp_graph:
     value:
-      "joint_1x3_gridworld_with_agent_A_forbidden_from_staying_when_agent_B_is_at_far_right"
+      "joint_1x3_gridworld_with_agent_H_forbidden_from_staying_when_agent_B_is_at_far_right"
   policy_graph_agent_B:
     value:
       "joint_1x3_gridworld_agent_B_move_left"

@@ -111,6 +111,7 @@ def test_vanilla():
         'test_sweep.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         plot_distributions=True,
+        plot_correlations=True,
         project='uncategorized'
     )
 
@@ -120,6 +121,7 @@ def test_gridworld():
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         project='uncategorized',
         plot_distributions=True,
+        plot_correlations=True,
         plot_as_gridworld=True
     )
 
@@ -128,6 +130,7 @@ def test_stochastic():
         'test_sweep_stochastic.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         plot_distributions=True,
+        plot_correlations=True,
         project='uncategorized'
     )
 

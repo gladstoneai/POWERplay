@@ -74,26 +74,26 @@ def check_full_graph_compatibility(graph_1, graph_2):
                 'The action set for graph_1 and graph_2 must be identical at state {}.'.format(state)
             )
 
-def check_joint_mdp_and_policy_compatibility(joint_mdp_graph, policy_graph, policy_is_for_agent_A=True):
+def check_joint_mdp_and_policy_compatibility(joint_mdp_graph, policy_graph, policy_is_for_agent_H=True):
     check_graph_state_compatibility(policy_graph, joint_mdp_graph)
 
-    if policy_is_for_agent_A:
+    if policy_is_for_agent_H:
         if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_joint_mdp_graph(joint_mdp_graph)[0]:
-            raise Exception('The Agent A policy graph must have the same action set as Agent A does in the joint MDP graph.')
+            raise Exception('The Agent H policy graph must have the same action set as Agent H does in the joint MDP graph.')
     
     else:
         if graph.get_actions_from_graph(policy_graph) != graph.get_single_agent_actions_from_joint_mdp_graph(joint_mdp_graph)[1]:
             raise Exception('The Agent B policy graph must have the same action set as Agent B does in the joint MDP graph.')
     
     for state in graph.get_states_from_graph(joint_mdp_graph):
-        agent_A_actions, agent_B_actions = graph.get_unique_single_agent_actions_from_joint_actions(
+        agent_H_actions, agent_B_actions = graph.get_unique_single_agent_actions_from_joint_actions(
             graph.get_available_actions_from_graph_state(joint_mdp_graph, state)
         )
 
-        if policy_is_for_agent_A:
-            if graph.get_available_actions_from_graph_state(policy_graph, state) != agent_A_actions:
+        if policy_is_for_agent_H:
+            if graph.get_available_actions_from_graph_state(policy_graph, state) != agent_H_actions:
                 raise Exception(
-                    'The policy graph and MDP graph have different available actions for Agent A at state \'{}\'.'.format(state)
+                    'The policy graph and MDP graph have different available actions for Agent H at state \'{}\'.'.format(state)
                 )
             
         else:
@@ -192,18 +192,18 @@ def check_joint_mdp_graph(joint_mdp_graph, tolerance=PROBABILITY_TOLERANCE):
         raise Exception('This MDP graph should be a joint MDP graph.')
 
     state_list = graph.get_states_from_graph(joint_mdp_graph)
-    action_list_A, action_list_B = graph.get_single_agent_actions_from_joint_mdp_graph(joint_mdp_graph)
+    action_list_H, action_list_B = graph.get_single_agent_actions_from_joint_mdp_graph(joint_mdp_graph)
 
     if list(joint_transition_tensor.shape) != [
-        len(state_list), len(action_list_A), len(action_list_B), len(state_list)
+        len(state_list), len(action_list_H), len(action_list_B), len(state_list)
     ]:
         raise Exception('The joint transition tensor for this MDP must have shape [{0}, {1}, {2}, {0}].'.format(
-            len(state_list), len(action_list_A), len(action_list_B)
+            len(state_list), len(action_list_H), len(action_list_B)
         ))
     
     for state_tensor in joint_transition_tensor:
-        for action_tensor_A in state_tensor:
-            for action_tensor_B in action_tensor_A:
+        for action_tensor_H in state_tensor:
+            for action_tensor_B in action_tensor_H:
                 if (not (action_tensor_B == 0).all()) and (action_tensor_B.sum() - 1).abs() > tolerance:
                     raise Exception(
                         'Every inner row of the joint transition tensor must either be all zeros '\

@@ -86,7 +86,7 @@ def policy_evaluation(
 # NOTE: whenever two action-values are equal, we intentionally randomize the policy to avoid systematically
 # biasing our policies according to the canonical ordering of the states. This matters especially when we use a
 # reward function that's sparse (i.e., most states do not yield substantial reward but a few states yield big reward).
-# A "tiebreaker" policy between two equally unrewarding states that's very deterministic for e.g. Agent A, is also
+# A "tiebreaker" policy between two equally unrewarding states that's very deterministic for e.g. Agent H, is also
 # very exploitable for Agent B.
 def compute_optimal_policy_tensor(optimal_values, transition_tensor):
     transition_tensor_sparse = misc.sparsify_tensor(transition_tensor)

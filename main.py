@@ -24,32 +24,35 @@ from src import base
 
 # TODO Experiment nice to haves:
 # - Plot 10th and 90th percentile POWER scores in alignment curves
-# - Build arbitrary back-and-forth counter-optimizations between Agent A and Agent B
+# - Build arbitrary back-and-forth counter-optimizations between Agent H and Agent B
 
 # TODO Write up:
-# - Think about: how do we tell the story of Agent B == humans; Agent A == AI, but consistent with joint states / random initial Agent A policy?
+# - Think about: how do we tell the story of Agent B == humans; Agent H == AI, but consistent with joint states / random initial Agent H policy?
 # -- Start articulating concisely: what are the insights from these graphs & charts?
 # -- Instead of 2 pages for the multiagent POWER definition, create one that's 0.5-1 page in length
 # --- Add an intro:
 # --- AI alignment, powerful vs not powerful agent, one agent has goal X, another has goal Y, hey this is starting to look like RL
 # --- Draw the analogy we laid out earlier into the formula
 # --- Can invert this: describe the main outcome first. Here is the multiagent POWER definition, gloss over
-#       the details of what these things are. Gloss over the symbol, just here is the policy for A. Only later
-#       describe how we compute the policy for A.
+#       the details of what these things are. Gloss over the symbol, just here is the policy for H. Only later
+#       describe how we compute the policy for H.
 # --- Motivate with a human-like example. Introduce notation: 2 agents, one is stronger than the other. Introduce
 #       the definition without going into specific details. A formalism that corresponds to the high level intuition
 #       in words.
-# --- Then talk more concretely about the details. Assumptions about the initial Agent A policy, here's how we do
+# --- Then talk more concretely about the details. Assumptions about the initial Agent H policy, here's how we do
 #       the optimization, here are the figures that we see; introduce the details later. One might be more compelling
 #       than the other.
 # --- Create a doc with a high level structure.
 # --- Content-wise, this is really strong already.
 
 # TODO NEXT:
-# - Refactor to make discount_rate_A and discount_rate_B a 2-list so we can sweep across them in combination
+# - Rename agents
+# -- Rename Agent *B* to Agent *A*
+# -- Replace images: multiagent_mdp_example_*A, multiagent_mdp_example_H, policy_graph_example_*A
+# - Refactor to make discount_rate_H and discount_rate_B a 2-list so we can sweep across them in combination
 # - Run alignment curves for fixed correlation 0 with gamma, etc., to see what causes the most misalignment at correlation 0
 # - Update README to handle joint multiagent graphs
-# - Run sweeps with gamma_A other than 0.5
+# - Run sweeps with gamma_H other than 0.5
 # - Test how gamma values affect alignment curves
 # - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
 # - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability
