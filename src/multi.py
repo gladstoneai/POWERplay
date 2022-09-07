@@ -1,8 +1,23 @@
 import networkx as nx
 import itertools as it
+import copy as cp
 
 from .lib.utils import graph
 from . import mdp
+
+def remove_states_with_overlapping_agents(joint_mdp_graph):
+    output_graph_ = cp.deepcopy(joint_mdp_graph)
+
+    states_to_remove = [
+        joint_state for joint_state in graph.get_states_from_graph(output_graph_) if (
+            len(set(graph.multiagent_state_to_single_agent_states(joint_state))) == 1
+        )
+    ]
+
+    for state_to_remove in states_to_remove:
+        output_graph_ = mdp.remove_state_completely(output_graph_, state_to_remove)
+    
+    return output_graph_
 
 def single_agent_to_multiagent_graph_node(
     current_agent_graph_node,

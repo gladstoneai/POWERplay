@@ -78,6 +78,8 @@ def create_joint_multiagent_random_policy(mdp_graph, acting_agent_is_A=True):
     
     return policy_graph_
 
+# acting_agent_is_A=True => This policy is for Agent A.
+# acting_agent_is_A=False => This policy is for Agent B.
 def quick_mdp_to_policy(mdp_graph, acting_agent_is_A=True):
     if graph.is_graph_multiagent(mdp_graph):
         return create_joint_multiagent_random_policy(mdp_graph, acting_agent_is_A=acting_agent_is_A)

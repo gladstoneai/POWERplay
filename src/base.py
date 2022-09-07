@@ -14,18 +14,28 @@ from . import anim
 def update_mdp_graph_with_interface(input_mdp):
     output_mdp_ = cp.deepcopy(input_mdp)
 
+    if graph.is_graph_multiagent(input_mdp):
+        delete_overlapping = input(
+            'Do you want to delete overlapping states in this MDP? (y/n) '\
+            'In a gridworld, this is equivalent to forbidding the agents from occupying the same cell. '
+        )
+        print()
+
+        if delete_overlapping == 'y':
+            output_mdp_ = multi.remove_states_with_overlapping_agents(output_mdp_)
+
     print(
-        'For each state, input the new allowed actions you want from that state, one at a time. ' \
+        'For each state, input the new allowed actions you want from that state, one at a time. '\
         'Actions should be in multiagent format if this is a multiagent graph, e.g., \'left_A^stay_B\'. '\
         'Press Enter to skip and keep the allowed actions as they are.'
     )
     print(
-        'For each action of each state, input the state that action will take you to. ' \
+        'For each action of each state, input the state that action will take you to. '\
         'The state you type will get assigned probability 1, the rest 0.'
     )
     print()
 
-    for state in graph.get_states_from_graph(input_mdp):
+    for state in graph.get_states_from_graph(output_mdp_):
         first_check = True
         new_actions_ = []
         print()
@@ -38,7 +48,7 @@ def update_mdp_graph_with_interface(input_mdp):
                     state,
                     ', '.join([
                         '\'{}\''.format(action) for action in graph.get_available_actions_from_graph_state(
-                            input_mdp, state
+                            output_mdp_, state
                         )
                     ])
                 )
@@ -51,7 +61,7 @@ def update_mdp_graph_with_interface(input_mdp):
         print()
 
         for new_action in new_actions_:
-            if new_action in graph.get_available_actions_from_graph_state(input_mdp, state):
+            if new_action in graph.get_available_actions_from_graph_state(output_mdp_, state):
                 print(
                     'Action \'{0}\' from state \'{1}\' currently has the following next-state probabilities:'.format(
                         new_action, state
@@ -59,7 +69,7 @@ def update_mdp_graph_with_interface(input_mdp):
                 )
                 print(
                     graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(
-                        input_mdp, state, new_action
+                        output_mdp_, state, new_action
                     )
                 )
             
@@ -67,7 +77,7 @@ def update_mdp_graph_with_interface(input_mdp):
                 'Input new next state for action \'{0}\' from state \'{1}\'{2}: '.format(
                     new_action,
                     state,
-                    ' (Enter to skip)' if new_action in graph.get_available_actions_from_graph_state(input_mdp, state) else ''
+                    ' (Enter to skip)' if new_action in graph.get_available_actions_from_graph_state(output_mdp_, state) else ''
                 )
             )
 
@@ -75,7 +85,7 @@ def update_mdp_graph_with_interface(input_mdp):
                 { new_next_state_: 1 } if (
                     new_next_state_
                 ) else graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action(
-                    input_mdp, state, new_action
+                    output_mdp_, state, new_action
                 )
             ]
 

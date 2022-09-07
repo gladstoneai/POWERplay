@@ -85,7 +85,7 @@ def remove_state_action(mdp_graph, state_to_remove, check_closure=False):
     
     return mdp_graph_
 
-def remove_state_completely(mdp_graph, state_to_remove, check_closure=False):
+def remove_state_completely(mdp_graph, state_to_remove):
     mdp_graph_ = cp.deepcopy(mdp_graph)
 
     mdp_graph_.remove_nodes_from([
@@ -101,9 +101,6 @@ def remove_state_completely(mdp_graph, state_to_remove, check_closure=False):
         )
     ])
 
-    if check_closure:
-        check.check_stochastic_mdp_closure(mdp_graph_)
-    
     return mdp_graph_
 
 def update_state_action(mdp_graph, state_to_update, new_action_dict, check_closure=False):
