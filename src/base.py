@@ -99,10 +99,10 @@ def update_mdp_graph_with_interface(input_mdp):
     
     return output_mdp_
 
-def construct_single_agent_gridworld_mdp(num_rows, num_cols, mdp_save_name=None):
+def construct_single_agent_gridworld_mdp(num_rows, num_cols, mdp_save_name=None, squares_to_delete=[]):
     stochastic_graph = mdp.gridworld_to_stochastic_graph(
             mdp.construct_gridworld(
-                num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
+                num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols), squares_to_delete=squares_to_delete
             )
         )
     

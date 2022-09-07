@@ -162,7 +162,7 @@ def plot_alignment_curves(
     if show:
         plt.show()
 
-# reward_correlations, all_powers_A, and all_powers_B are lists of tensors.
+# all_powers_A and all_powers_B are lists of tensors.
 def plot_power_correlation_relationship(
     x_axis_values,
     all_powers_A,
