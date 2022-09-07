@@ -180,7 +180,7 @@ def plot_power_correlation_relationship(
         ) in zip(all_powers_H, all_powers_A)
     ]
 
-    ax.plot(x_axis_values, power_correlations, 'mh')
+    ax.plot(x_axis_values, power_correlations, 'gh', alpha=0.25)
     ax.set_xlabel(x_axis_label)
     ax.set_ylabel('State-by-state POWER correlation value')
     ax.set_title('Correlation coefficients plot')
@@ -234,11 +234,11 @@ def plot_specific_power_alignments(
             for baseline_power in baseline_powers_H:
                 ax.plot([baseline_power.item()] * 2, [min_A_power, max_A_power], 'b-', alpha=0.25)
 
-        ax.plot(powers_H, powers_A, 'mh')
+        ax.plot(powers_H, powers_A, 'gh', alpha=0.25)
 
         ax.set_xlabel('State POWER values, Agent H')
         ax.set_ylabel('State POWER values, Agent A')
-        ax.set_title('Reward correlation value {}'.format(correlation))
+        ax.set_title('State POWER values for Agents H and A, reward correlation = {:.2f}'.format(correlation))
         ax.set_xlim([min_H_power, max_H_power])
         ax.set_ylim([min_A_power, max_A_power])
 
@@ -292,10 +292,10 @@ def plot_correlated_reward_samples(
 
     fig, ax = plt.subplots()
 
-    ax.plot(np.array(agent_H_samples.T[0]), np.array(agent_A_samples.T[0]), 'mh')
+    ax.plot(np.array(agent_H_samples.T[0]), np.array(agent_A_samples.T[0]), 'gh', alpha=0.25)
     ax.set_xlabel('Agent H reward samples')
     ax.set_ylabel('Agent A reward samples')
-    ax.set_title('Correlation = {:.2f}'.format(correlation))
+    ax.set_title('Agent H and A reward values, correlation = {:.2f}'.format(correlation))
 
     if fig_name is not None:
         data.save_figure(fig, fig_name, folder=save_folder)
