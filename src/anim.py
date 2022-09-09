@@ -8,6 +8,8 @@ def animate_from_filenames(
     list_of_filenames,
     output_gif_filename,
     ms_per_frame=100,
+    frames_at_start=1,
+    frames_at_end=1,
     input_folder_or_list=data.TEMP_FOLDER,
     output_folder=data.TEMP_FOLDER
 ):
@@ -15,11 +17,18 @@ def animate_from_filenames(
         isinstance(input_folder_or_list, list)
     ) else [input_folder_or_list] * len(list_of_filenames)
 
+    final_filenames_list = [list_of_filenames[0]] * (frames_at_start - 1) + (
+        list_of_filenames
+    ) + [list_of_filenames[-1]] * (frames_at_end - 1)
+    final_input_folders = [input_folder_list[0]] * (frames_at_start - 1) + (
+        input_folder_list
+    ) + [input_folder_list[-1]] * (frames_at_end - 1)
+
     data.save_gif_from_frames(
         [
             data.load_png_figure(
                 filename, input_folder
-            ) for filename, input_folder in zip(list_of_filenames, input_folder_list)
+            ) for filename, input_folder in zip(final_filenames_list, final_input_folders)
         ],
         output_gif_filename,
         output_folder,
@@ -31,6 +40,8 @@ def animate_rollout(
     number_of_steps,
     output_filename='rollout_animation',
     ms_per_frame=100,
+    frames_at_start=1,
+    frames_at_end=1,
     input_folder=data.TEMP_FOLDER,
     output_folder=data.TEMP_FOLDER
 ):
@@ -38,6 +49,8 @@ def animate_rollout(
         ['{0}-{1}'.format(rollout_handle, i) for i in range(number_of_steps)],
         output_filename,
         ms_per_frame=ms_per_frame,
+        frames_at_start=frames_at_start,
+        frames_at_end=frames_at_end,
         input_folder_or_list=input_folder,
         output_folder=output_folder
     )
@@ -47,6 +60,8 @@ def animate_full_sweep(
     run_suffixes,
     figure_prefix_list,
     ms_per_frame=100,
+    frames_at_start=1,
+    frames_at_end=1,
     experiment_folder=data.EXPERIMENT_FOLDER
 ):
     sweep_name = data.get_full_sweep_name_from_id(sweep_id)
@@ -59,6 +74,8 @@ def animate_full_sweep(
                 ['-'.join([figure_prefix, run_name]) for run_name in run_names],
                 '-'.join(['animation', figure_prefix, sweep_name]),
                 ms_per_frame=ms_per_frame,
+                frames_at_start=frames_at_start,
+                frames_at_end=frames_at_end,
                 input_folder_or_list=[path.Path()/experiment_folder/sweep_name/run_name for run_name in run_names],
                 output_folder=path.Path()/experiment_folder/sweep_name
             )
@@ -75,6 +92,8 @@ def generate_sweep_animations(
     animation_param,
     figure_prefix=None,
     ms_per_frame=100,
+    frames_at_start=1,
+    frames_at_end=1,
     experiment_folder=data.EXPERIMENT_FOLDER
 ):
     if figure_prefix is None:
@@ -105,6 +124,8 @@ def generate_sweep_animations(
         get.get_sweep_run_suffixes_for_param(sweep_id, animation_param, folder=experiment_folder),
         figure_prefix_list_,
         ms_per_frame=ms_per_frame,
+        frames_at_start=frames_at_start,
+        frames_at_end=frames_at_end,
         experiment_folder=experiment_folder
     )
 
