@@ -180,7 +180,7 @@ def plot_power_correlation_relationship(
         ) in zip(all_powers_H, all_powers_A)
     ]
 
-    ax.plot(x_axis_values, power_correlations, 'gh', alpha=0.25)
+    ax.plot(x_axis_values, power_correlations, 'mo', markeredgewidth=0, alpha=0.25)
     ax.set_xlabel(x_axis_label)
     ax.set_ylabel('State-by-state POWER correlation value')
     ax.set_title('Correlation coefficients plot')
@@ -199,21 +199,23 @@ def plot_specific_power_alignments(
     show=True,
     fig_name='temp',
     include_baseline_powers=True,
+    graph_padding=0.05,
     ms_per_frame=200,
+    frames_at_start=1,
+    frames_at_end=1,
     data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
 ):
-    graph_padding = 0.1
 
     power_correlation_data = get.get_reward_correlations_and_powers_from_sweep(
-        sweep_id, include_baseline_power=True, folder=data_folder
+        sweep_id, include_baseline_power=include_baseline_powers, folder=data_folder
     )
 
     reward_correlations, all_powers_H, all_powers_A, baseline_powers_H = (
         power_correlation_data['reward_correlations'],
         power_correlation_data['all_powers_H'],
         power_correlation_data['all_powers_A'],
-        power_correlation_data['baseline_powers_H']
+        power_correlation_data.get('baseline_powers_H')
     )
 
     min_H_power = min([powers_H.min() for powers_H in all_powers_H]) * (1 - graph_padding)
@@ -226,6 +228,8 @@ def plot_specific_power_alignments(
 
     for correlation, powers_H, powers_A in zip(reward_correlations, all_powers_H, all_powers_A):
         fig, ax = plt.subplots()
+        fig.set_size_inches(6, 6)
+
         current_fig_name = '{0}-sweep_id_{1}-specific_alignment_curve-correlation_{2}'.format(
             fig_name, sweep_id, str(correlation)
         )
@@ -234,7 +238,7 @@ def plot_specific_power_alignments(
             for baseline_power in baseline_powers_H:
                 ax.plot([baseline_power.item()] * 2, [min_A_power, max_A_power], 'b-', alpha=0.25)
 
-        ax.plot(powers_H, powers_A, 'gh', alpha=0.25)
+        ax.plot(powers_H, powers_A, 'mo', markeredgewidth=0, alpha=0.25)
 
         ax.set_xlabel('State POWER values, Agent H')
         ax.set_ylabel('State POWER values, Agent A')
@@ -251,6 +255,8 @@ def plot_specific_power_alignments(
         all_fig_names_,
         'specific_power_alignment_animation',
         ms_per_frame=ms_per_frame,
+        frames_at_start=frames_at_start,
+        frames_at_end=frames_at_end,
         input_folder_or_list=save_folder,
         output_folder=save_folder
     )
@@ -274,6 +280,8 @@ def plot_correlated_reward_samples(
     correlation=0,
     symmetric_interval=None,
     random_seed=0,
+    xlim=None,
+    ylim=None,
     show=True,
     fig_name=None,
     distribution_dict=dist.DISTRIBUTION_DICT,
@@ -291,11 +299,20 @@ def plot_correlated_reward_samples(
     )
 
     fig, ax = plt.subplots()
+    fig.set_size_inches(6, 6)
 
-    ax.plot(np.array(agent_H_samples.T[0]), np.array(agent_A_samples.T[0]), 'gh', alpha=0.25)
+    ax.plot(
+        np.array(agent_H_samples.T[0]), np.array(agent_A_samples.T[0]), 'go', markeredgewidth=0, alpha=0.25
+    )
     ax.set_xlabel('Agent H reward samples')
     ax.set_ylabel('Agent A reward samples')
     ax.set_title('Agent H and A reward values, correlation = {:.2f}'.format(correlation))
+
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    
+    if ylim is not None:
+        ax.set_ylim(ylim)
 
     if fig_name is not None:
         data.save_figure(fig, fig_name, folder=save_folder)

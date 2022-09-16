@@ -80,7 +80,8 @@ def create_joint_multiagent_random_policy(mdp_graph, acting_agent_is_H=True):
 
 # acting_agent_is_H=True => This policy is for Agent H.
 # acting_agent_is_H=False => This policy is for Agent A.
-def quick_mdp_to_policy(mdp_graph, acting_agent_is_H=True):
+# Typically we make seed policies for Agent A, so the default is False.
+def quick_mdp_to_policy(mdp_graph, acting_agent_is_H=False):
     if graph.is_graph_multiagent(mdp_graph):
         return create_joint_multiagent_random_policy(mdp_graph, acting_agent_is_H=acting_agent_is_H)
 

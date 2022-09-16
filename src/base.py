@@ -239,6 +239,9 @@ def visualize_specific_power_alignments(
     sweep_id,
     show=True,
     ms_per_frame=100,
+    graph_padding=0.05,
+    frames_at_start=1,
+    frames_at_end=1,
     fig_name=None,
     include_baseline_powers=True,
     data_folder=data.EXPERIMENT_FOLDER,
@@ -248,6 +251,9 @@ def visualize_specific_power_alignments(
         sweep_id,
         show=show,
         ms_per_frame=ms_per_frame,
+        graph_padding=graph_padding,
+        frames_at_start=frames_at_start,
+        frames_at_end=frames_at_end,
         fig_name=fig_name,
         include_baseline_powers=include_baseline_powers,
         data_folder=data_folder,
@@ -318,6 +324,10 @@ def visualize_all_correlated_reward_samples(
     symmetric_interval=None,
     random_seed=0,
     ms_per_frame=100,
+    frames_at_start=1,
+    frames_at_end=1,
+    xlim=None,
+    ylim=None,
     fig_name='correlated_reward_animation',
     save_folder=data.TEMP_FOLDER
 ):
@@ -333,6 +343,8 @@ def visualize_all_correlated_reward_samples(
             symmetric_interval=symmetric_interval,
             distribution_dict=dist.DISTRIBUTION_DICT,
             random_seed=random_seed,
+            xlim=xlim,
+            ylim=ylim,
             show=False,
             fig_name=fig_filename,
             save_folder=data.TEMP_FOLDER
@@ -344,6 +356,8 @@ def visualize_all_correlated_reward_samples(
         fig_filenames_,
         fig_name,
         ms_per_frame=ms_per_frame,
+        frames_at_start=frames_at_start,
+        frames_at_end=frames_at_end,
         input_folder_or_list=data.TEMP_FOLDER,
         output_folder=save_folder
     )
