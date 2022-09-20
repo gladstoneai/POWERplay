@@ -1,3 +1,5 @@
+from matplotlib import rcParams
+
 import numpy as np
 import itertools as it
 import matplotlib.pyplot as plt
@@ -8,6 +10,9 @@ import math
 from . import graph
 
 ################################################################################
+
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.sans-serif'] = ['Avenir', 'Arial']
 
 FIGURE_SIZE_SCALING_FACTOR = 4
 
@@ -180,7 +185,8 @@ def render_gridworld_aggregations(
     state_list,
     aggregation='mean',
     sample_quantity='POWER',
-    sample_units='reward units'
+    sample_units='reward units',
+    manual_title=None
 ):
     agent_H_states, agent_A_states = np.array(
         graph.multiagent_states_to_single_agent_states(state_list)
@@ -235,13 +241,18 @@ def render_gridworld_aggregations(
             axs_plot_[axis_coords[0]][axis_coords[1]].text(
                 agent_H_cols[sample_index],
                 agent_H_rows[sample_index],
-                round(float(sample_aggregations[sample_index]), 4),
+                '{:.3f}'.format(float(sample_aggregations[sample_index])),
                 ha='center',
                 va='center',
-                color='w'
+                color='w',
+                backgroundcolor='#00000025',
             )
 
-    fig_.suptitle('{0} {1}s for each gridworld state ({2})'.format(sample_quantity, aggregation, sample_units))
+    if manual_title is None:
+        fig_.suptitle('{0} {1}s for each gridworld state ({2})'.format(sample_quantity, aggregation, sample_units))
+    
+    else:
+        fig_.suptitle(manual_title)
         
     return fig_
 

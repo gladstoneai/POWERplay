@@ -16,6 +16,7 @@ def plot_sample_aggregations(
     aggregation='mean',
     sample_quantity='POWER',
     sample_units='reward units',
+    manual_title=None,
     save_figure=data.save_figure,
     save_folder=data.EXPERIMENT_FOLDER
 ):
@@ -25,7 +26,8 @@ def plot_sample_aggregations(
             state_list,
             aggregation=aggregation,
             sample_quantity=sample_quantity,
-            sample_units=sample_units
+            sample_units=sample_units,
+            manual_title=manual_title
         )
 
     else:

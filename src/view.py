@@ -170,9 +170,11 @@ def plot_power_correlation_relationship(
     show=True,
     fig_name='temp',
     x_axis_label='Reward correlation value',
+    include_zero_line=True,
     save_folder=data.TEMP_FOLDER
 ):
     fig, ax = plt.subplots()
+    fig.set_size_inches(6, 6)
 
     power_correlations = [
         torch.corrcoef(torch.stack([powers_H, powers_A]))[0][1] for (
@@ -180,7 +182,10 @@ def plot_power_correlation_relationship(
         ) in zip(all_powers_H, all_powers_A)
     ]
 
-    ax.plot(x_axis_values, power_correlations, 'mo', markeredgewidth=0, alpha=0.25)
+    if include_zero_line:
+        ax.plot(x_axis_values, [0] * len(x_axis_values), 'm-', alpha=1)
+
+    ax.plot(x_axis_values, power_correlations, 'mo', markeredgewidth=0, alpha=0.75)
     ax.set_xlabel(x_axis_label)
     ax.set_ylabel('State-by-state POWER correlation value')
     ax.set_title('Correlation coefficients plot')
@@ -199,14 +204,15 @@ def plot_specific_power_alignments(
     show=True,
     fig_name='temp',
     include_baseline_powers=True,
-    graph_padding=0.05,
+    graph_padding_x=0.05,
+    graph_padding_y=0.05,
     ms_per_frame=200,
     frames_at_start=1,
     frames_at_end=1,
+    include_zero_line=True,
     data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
 ):
-
     power_correlation_data = get.get_reward_correlations_and_powers_from_sweep(
         sweep_id, include_baseline_power=include_baseline_powers, folder=data_folder
     )
@@ -218,10 +224,10 @@ def plot_specific_power_alignments(
         power_correlation_data.get('baseline_powers_H')
     )
 
-    min_H_power = min([powers_H.min() for powers_H in all_powers_H]) * (1 - graph_padding)
-    max_H_power = max([powers_H.max() for powers_H in all_powers_H]) * (1 + graph_padding)
-    min_A_power = min([powers_A.min() for powers_A in all_powers_A]) * (1 - graph_padding)
-    max_A_power = max([powers_A.max() for powers_A in all_powers_A]) * (1 + graph_padding)
+    min_H_power = min([powers_H.min() for powers_H in all_powers_H]) * (1 - graph_padding_x)
+    max_H_power = max([powers_H.max() for powers_H in all_powers_H]) * (1 + graph_padding_x)
+    min_A_power = min([powers_A.min() for powers_A in all_powers_A]) * (1 - graph_padding_y)
+    max_A_power = max([powers_A.max() for powers_A in all_powers_A]) * (1 + graph_padding_y)
 
     power_correlations_ = []
     all_fig_names_ = []
@@ -266,6 +272,7 @@ def plot_specific_power_alignments(
         all_powers_H,
         all_powers_A,
         x_axis_label='Reward correlation value',
+        include_zero_line=include_zero_line,
         show=show,
         fig_name='{0}-sweep_id_{1}-reward_correlation-'.format(fig_name, sweep_id),
         save_folder=save_folder
