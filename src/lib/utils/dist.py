@@ -31,6 +31,35 @@ DISTRIBUTION_DICT = {
 
 ################################################################################
 
+def check_identical_reward_sets(reward_dist_config):
+    for identical_reward_set_1 in reward_dist_config.get('states_with_identical_rewards', []):
+        for identical_reward_set_2 in reward_dist_config.get('states_with_identical_rewards', []):
+            if (
+                identical_reward_set_1 != identical_reward_set_2
+            ) and not (
+                set(identical_reward_set_1).isdisjoint(identical_reward_set_2)
+            ):
+                raise Exception(
+                    'Identical reward sets {0} and {1} must be disjoint.'.format(
+                        identical_reward_set_1, identical_reward_set_2
+                    )
+                )
+    
+    for identical_reward_set in reward_dist_config.get('states_with_identical_rewards', []):
+        if reward_dist_config.get('state_dists') is not None:
+            identical_reward_dists = [
+                reward_dist_config['state_dists'].get(
+                    state, reward_dist_config['default_dist']
+                ) for state in identical_reward_set
+            ]
+
+            if not all([identical_reward_dists[0] == reward_dist for reward_dist in identical_reward_dists]):
+                raise Exception(
+                    'States with identical rewards must all have the same reward distribution: {}.'.format(
+                        identical_reward_set
+                    )
+                )
+
 # A 1d pdf config has the form
 # { 'dist_name': <key for distribution in DISTRIBUTION_DICT>, 'params': <params input to that distribution> }
 def config_to_pdf_constructor(distribution_config, distribution_dict=DISTRIBUTION_DICT):
@@ -58,20 +87,35 @@ def config_to_symmetric_interval(distribution_config, distribution_dict=DISTRIBU
 # are equal over all states. This is especially useful for e.g., the Bernoulli distribution (which is
 # a good distribution to use when investigating instrumental convergence), because you'll often have
 # reward distributions that are all zeros or all ones by chance.
+# states_with_identical_rewards is a list of lists. For example, if it's [['1', '2'], ['3', '4']],
+# then state '1' will have the same reward as state '2', and state '3' will have the same reward as
+# state '4'.
 def reward_distribution_constructor(
     state_list,
     default_reward_sampler=config_to_pdf_constructor({ 'dist_name': 'uniform', 'params': [0., 1.] }),
     state_reward_samplers={},
+    identical_reward_states=[],
     allow_all_equal_rewards=True
 ):
     def reward_distribution(number_of_samples):
-        state_sampler_list = [(state_reward_samplers[state_list[i]] if (
-            state_list[i] in state_reward_samplers.keys()
-        ) else default_reward_sampler) for i in range(len(state_list))]
+        state_sampler_list = [
+            (state_reward_samplers[state_list[i]] if (
+                state_list[i] in state_reward_samplers.keys()
+            ) else default_reward_sampler) for i in range(len(state_list))
+        ]
 
-        outputs_ = torch.cat([
-            sample(torch.tensor([number_of_samples])).unsqueeze(1) for sample in state_sampler_list
-        ], dim=1)
+        outputs_ = torch.cat(
+            [
+                sample(torch.tensor([number_of_samples])).unsqueeze(1) for sample in state_sampler_list
+            ], dim=1
+        )
+
+        # Overwrite outputs to force identical_reward_states to return identical rewards
+        for identical_reward_set in identical_reward_states:
+            identical_state_indices = [state_list.index(state) for state in identical_reward_set]
+
+            for identical_state_index in identical_state_indices[1:]:
+                outputs_[:, identical_state_index] = outputs_[:, identical_state_indices[0]]
 
         # If we forbid reward functions whose rewards are equal at all states, our sampler discards all reward samples
         # that fail the test, and it re-runs as many times as we need to get all passing samples.
@@ -96,12 +140,15 @@ def reward_distribution_constructor(
 #   <state label 1>: <1d pdf config applied to state 1 that overrides the default dist>
 #   <state label 2>: <1d pdf config applied to state 2 that overrides the default dist>
 #   ... etc.
-# } }
+# }, 'allow_all_equal_rewards': True,
+# 'states_with_identical_rewards': [[<state label 1, <state label 2], [<state label 3, <state label 4>]] }
 def config_to_reward_distribution(
     state_list,
     reward_dist_config,
     distribution_dict=DISTRIBUTION_DICT
 ):
+    check_identical_reward_sets(reward_dist_config)
+
     return reward_distribution_constructor(
         state_list,
         default_reward_sampler=config_to_pdf_constructor(
@@ -112,6 +159,7 @@ def config_to_reward_distribution(
                 reward_dist_config['state_dists'][state], distribution_dict=distribution_dict
             ) for state in reward_dist_config.get('state_dists', {}).keys()
         },
+        identical_reward_states=reward_dist_config.get('states_with_identical_rewards', []),
         allow_all_equal_rewards=reward_dist_config.get('allow_all_equal_rewards', True)
     )
 
