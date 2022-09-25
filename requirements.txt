@@ -7,3 +7,4 @@ networkx==2.6.3
 scipy==1.7.3
 graphviz==0.19
 pydot==1.4.2
+protobuf==3.20.0
