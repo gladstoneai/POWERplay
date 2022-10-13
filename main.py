@@ -1,19 +1,8 @@
-from src.lib.utils import misc
-from src.lib import data
-from src import test
-from src import launch
 from src import base
 
 # TODO final:
 # - Refactor base to add new functions
-# -- ADD: base.test_vanilla, base.test_gridworld, base.test_stochastic, base.test_multiagent, base.test_reward_correlation (runs those from test)
-# -- ADD: base.run_all_tests (runs full suite of tests)
 # -- ADD: base.reproduce_figure (runs code in test to reproduce figures from the AF post, with figure as an argument)
-# -- ADD: base.generate_sweep_animations (wrapper for anim.generate_sweep_animations)
-# -- ADD: base.launch_sweep (wrapper for launch.launch_sweep)
-# -- ADD: base.generate_noised_gridworlds (wrapper for mdp.generate_noised_gridworlds)
-# -- ADD: base.plot_policy_sample (wrapper for view.plot_policy_sample)
-# -- ADD: base.view_gridworld (wrapper for view.view_gridworld)
 # - Extract ui.py from base
 # - Add argparse.ArgumentParser().
 #   parser = argparse.ArgumentParser()
@@ -103,10 +92,6 @@ from src import base
 # - Document the stochastic graph format for MDPs and policies
 
 if __name__ == '__main__':
-    # test.test_vanilla()
-    # test.test_gridworld()
-    # test.test_stochastic()
-    # test.test_multiagent()
-    # test.test_reward_correlation()
+    # base.run_all_tests()
 
     pass

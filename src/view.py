@@ -57,7 +57,7 @@ def plot_policy_sample(
     number_of_states_per_figure=128,
     save_handle='temp',
     save_folder=data.TEMP_FOLDER,
-    temp_folder=data.TEMP_FOLDER,
+    temp_folder=data.TEMP_FOLDER
 ):
     return viz.plot_mdp_or_policy(
         policy_graph,
