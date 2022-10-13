@@ -26,7 +26,7 @@ def update_mdp_graph_with_interface(input_mdp):
 
     print(
         'For each state, input the new allowed actions you want from that state, one at a time. '\
-        'Actions should be in multiagent format if this is a multiagent graph, e.g., \'left_H^stay_A\'. '\
+        'Actions should be in multi-agent format if this is a multi-agent graph, e.g., \'left_H^stay_A\'. '\
         'Press Enter to skip and keep the allowed actions as they are.'
     )
     print(
@@ -99,11 +99,20 @@ def update_mdp_graph_with_interface(input_mdp):
     
     return output_mdp_
 
-def construct_single_agent_gridworld_mdp(num_rows, num_cols, mdp_save_name=None, squares_to_delete=[]):
+def construct_single_agent_gridworld_mdp(
+    num_rows,
+    num_cols,
+    stochastic_noise_level=0,
+    noise_bias={},
+    mdp_save_name=None,
+    squares_to_delete=[]
+):
     stochastic_graph = mdp.gridworld_to_stochastic_graph(
             mdp.construct_gridworld(
                 num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols), squares_to_delete=squares_to_delete
-            )
+            ),
+            stochastic_noise_level=stochastic_noise_level,
+            noise_bias=noise_bias
         )
     
     if mdp_save_name is not None:
@@ -143,7 +152,7 @@ def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_
     print()
 
     for multi_state in graph.get_states_from_graph(policy_A_multi_):
-        action_to_take = input('Enter action for multiagent state \'{}\': '.format(multi_state)).replace('\'', '"')
+        action_to_take = input('Enter action for multi-agent state \'{}\': '.format(multi_state)).replace('\'', '"')
 
         if action_to_take:
             policy_A_multi_ = policy.update_state_actions(
@@ -222,7 +231,7 @@ def visualize_all_alignment_curves(
     data_folder=data.EXPERIMENT_FOLDER,
     save_folder=data.TEMP_FOLDER
 ):
-    plot_titles_list =  ['Alignment curves'] * len(sweep_ids_list) if plot_titles is None else plot_titles
+    plot_titles_list = ['Alignment curves'] * len(sweep_ids_list) if plot_titles is None else plot_titles
     fig_names_list = [None] * len(sweep_ids_list) if fig_names is None else fig_names
 
     for sweep_id, plot_title, fig_name in zip(sweep_ids_list, plot_titles_list, fig_names_list):
@@ -230,7 +239,9 @@ def visualize_all_alignment_curves(
             sweep_id,
             show=show,
             plot_title=plot_title,
+            include_baseline_power=False,
             fig_name=fig_name,
+            y_axis_bounds=None,
             data_folder=data_folder,
             save_folder=save_folder
         )
@@ -337,7 +348,7 @@ def visualize_all_correlated_reward_samples(
 ):
     fig_filenames_ = []
 
-    for correlation in correlations_list + [correlations_list[-1]] * 4: # This freezes the last frame for a few seconds
+    for correlation in correlations_list:
         fig_filename = '{0}-correlation_{1}'.format(fig_name, correlation)
 
         view.plot_correlated_reward_samples(

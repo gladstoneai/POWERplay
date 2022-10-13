@@ -4,55 +4,103 @@ from src import test
 from src import launch
 from src import base
 
-# TODO Engineering nice to haves:
-# - Remove code to handle correlation plots for multiagent in render
-# - Split viz into viz for graphs and viz for plots
-# - Clean up render_gridworld_rollout_snapshot()
-# - Add sanity checks to policy / MDP inputs for the multiagent case. In particular, add checks that both
-# MDPs and the policy have the same state and action sets.
-# - Refactor codebase to keep all files under 200 lines each.
-# - Do profiling and see which parts are the slowest.
-# - Save with wandb instead of homespun data methods.
-# - Investigate writing type hints.
+# TODO final:
+# - Refactor base to add new functions
+# -- ADD: base.test_vanilla, base.test_gridworld, base.test_stochastic, base.test_multiagent, base.test_reward_correlation (runs those from test)
+# -- ADD: base.run_all_tests (runs full suite of tests)
+# -- ADD: base.reproduce_figure (runs code in test to reproduce figures from the AF post, with figure as an argument)
+# -- ADD: base.generate_sweep_animations (wrapper for anim.generate_sweep_animations)
+# -- ADD: base.launch_sweep (wrapper for launch.launch_sweep)
+# -- ADD: base.generate_noised_gridworlds (wrapper for mdp.generate_noised_gridworlds)
+# -- ADD: base.plot_policy_sample (wrapper for view.plot_policy_sample)
+# -- ADD: base.view_gridworld (wrapper for view.view_gridworld)
+# - Extract ui.py from base
 # - Add argparse.ArgumentParser().
-# parser = argparse.ArgumentParser()
-# parser.add_argument('-b', '--batch-size', type=int, default=8, metavar='N',
+#   parser = argparse.ArgumentParser()
+#   parser.add_argument('-b', '--batch-size', type=int, default=8, metavar='N',
 #                      help='input batch size for training (default: 8)')
-# args = parser.parse_args()
-# - Refactor experiment wrapper with https://hydra.cc/ when I understand what experiment configs
-# I commonly use.
-
-# TODO Experiment nice to haves:
-# - Plot 10th and 90th percentile POWER scores in alignment curves
-# - Build arbitrary back-and-forth counter-optimizations between Agent H and Agent A
-
-# TODO Write up:
-# - Think about: how do we tell the story of Agent H == humans; Agent A == AI, but consistent with joint states / random initial Agent H policy?
-# -- Start articulating concisely: what are the insights from these graphs & charts?
-# -- Instead of 2 pages for the multiagent POWER definition, create one that's 0.5-1 page in length
-# --- Add an intro:
-# --- AI alignment, powerful vs not powerful agent, one agent has goal X, another has goal Y, hey this is starting to look like RL
-# --- Draw the analogy we laid out earlier into the formula
-# --- Can invert this: describe the main outcome first. Here is the multiagent POWER definition, gloss over
-#       the details of what these things are. Gloss over the symbol, just here is the policy for H. Only later
-#       describe how we compute the policy for H.
-# --- Motivate with a human-like example. Introduce notation: 2 agents, one is stronger than the other. Introduce
-#       the definition without going into specific details. A formalism that corresponds to the high level intuition
-#       in words.
-# --- Then talk more concretely about the details. Assumptions about the initial Agent H policy, here's how we do
-#       the optimization, here are the figures that we see; introduce the details later. One might be more compelling
-#       than the other.
-# --- Create a doc with a high level structure.
-# --- Content-wise, this is really strong already.
-
-# TODO NEXT:
-# - Refactor to make discount_rate_H and discount_rate_A a 2-list so we can sweep across them in combination
-# - Run alignment curves for fixed correlation 0 with gamma, etc., to see what causes the most misalignment at correlation 0
-# - Update README to handle joint multiagent graphs
-# - Run sweeps with gamma_H other than 0.5
-# - Test how gamma values affect alignment curves
-# - What about a multiagent setting that has a teleporter cell? Do you get stronger IC from that?
-# - What about a bigger world? This allows us to have a more skewed Bernoulli distribution without numerical instability
+#   args = parser.parse_args()
+# - (Maybe) Add "prettify" option that updates the fonts to Avenir
+# - Document all base functions
+# -- base.update_mdp_graph_with_interface
+# -- base.construct_single_agent_gridworld_mdp
+# -- base.construct_multiagent_gridworld_policy_and_mdps
+# -- base.construct_multiagent_gridworld_mdps_with_interactions
+# -- base.visualize_alignment_curves
+# -- base.visualize_all_alignment_curves
+# -- base.visualize_specific_power_alignments
+# -- base.visualize_full_gridworld_rollout
+# -- base.visualize_correlated_reward_samples
+# -- base.visualize_power_relationship_over_multiple_sweeps
+# -- base.build_quick_random_policy
+# -- base.visualize_all_correlated_reward_samples
+# -- base.test_vanilla, base.test_gridworld, base.test_stochastic, base.test_multiagent, base.test_reward_correlation (runs those from test)
+# -- base.run_all_tests (runs full suite of tests)
+# -- base.reproduce_figure (runs code in test to reproduce figures from the AF post, with figure as an argument)
+# -- base.generate_sweep_animations (wrapper for anim.generate_sweep_animations)
+# -- base.launch_sweep (wrapper for launch.launch_sweep)
+# -- base.generate_noised_gridworlds (wrapper for mdp.generate_noised_gridworlds)
+# -- base.plot_policy_sample (wrapper for view.plot_policy_sample)
+# -- base.view_gridworld (wrapper for view.view_gridworld)
+# - Document all non-base functions
+# --- graph: queries MDP and policy graphs
+# ---- graph.is_graph_multiagent
+# ---- graph.get_states_from_graph
+# ---- graph.get_actions_from_graph
+# ---- graph.get_unique_single_agent_actions_from_joint_actions
+# ---- graph.get_single_agent_actions_from_joint_mdp_graph
+# ---- graph.get_available_actions_from_graph_state
+# ---- graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action
+# ---- graph.graph_to_joint_transition_tensor
+# ---- graph.graph_to_full_transition_tensor
+# ---- graph.graph_to_policy_tensor
+# ---- graph.any_graphs_to_full_transition_tensor
+# --- mdp: creates and updates basic MDP graphs
+# ---- mdp.add_state_action
+# ---- mdp.update_state_action
+# ---- mdp.remove_state_action
+# ---- mdp.remove_state_completely
+# --- multi: creates and updates multi-agent graphs
+# ---- multi.remove_states_with_overlapping_agents
+# ---- multi.create_joint_multiagent_graph
+# --- policy: creates and updates policy graphs, manages policy rollouts
+# ---- policy.update_state_actions
+# ---- policy.single_agent_to_multiagent_policy_graph
+# ---- policy.sample_optimal_policy_data_from_run
+# ---- policy.simulate_policy_rollout
+# ---- policy.policy_tensor_to_graph
+# --- data: low-level functions for saving and loading figures, MDP graphs, and experimental results
+# ---- data.save_graph_to_dot_file
+# ---- data.load_graph_from_dot_file
+# --- get: high-level functions for retrieving and preprocessing experimental results
+# ---- get.get_properties_from_run
+# ---- get.get_sweep_run_suffixes_for_param
+# ---- get.get_sweep_run_results
+# ---- get.get_sweep_type
+# ---- get.get_transition_graphs
+# ---- get.get_sweep_state_list
+# --- viz: visualizations that get run automatically during experiments
+# ---- viz.plot_sample_aggregations
+# ---- viz.plot_sample_distributions
+# ---- viz.plot_sample_correlations
+# --- anim: creates & organizes animations from existing image files
+# ---- anim.animate_from_filenames
+# --- learn: implementations of RL algorithms for value, policy, and POWER
+# ---- learn.value_iteration
+# ---- learn.policy_evaluation
+# ---- learn.find_optimal_policy
+# ---- learn.compute_power_values
+# --- runex: runs experiments
+# ---- runex.run_one_experiment
+# --- dist: low-level functions for building & managing reward distributions
+# ---- dist.DISTRIBUTION_DICT
+# ---- dist.config_to_pdf_constructor
+# ---- dist.config_to_reward_distribution
+# ---- dist.generate_correlated_reward_samples
+# --- misc: miscellaneous helper functions
+# ---- misc.generate_sweep_id
+# - Document format for multi-agent graphs, e.g. left_H^stay_A
+# - Document the stochastic graph format for MDPs and policies
 
 if __name__ == '__main__':
     # test.test_vanilla()

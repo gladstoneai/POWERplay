@@ -4,8 +4,8 @@ import networkx as nx
 from .lib.utils import graph
 from .lib.utils import dist
 from .lib.utils import misc
+from .lib.utils import learn
 from .lib import check
-from .lib import runex
 from . import multi
 from . import mdp
 
@@ -165,7 +165,7 @@ def sample_optimal_policy_data_from_run(run_properties, reward_sample_index=0):
     )
 
     policy_graph_H = policy_tensor_to_graph(
-        runex.find_optimal_policy(
+        learn.find_optimal_policy(
             reward_function_H,
             discount_rate_H,
             graph.any_graphs_to_full_transition_tensor(
@@ -205,7 +205,7 @@ def sample_optimal_policy_data_from_run(run_properties, reward_sample_index=0):
             'policy_graph_H': policy_graph_H,
             'reward_function_H': reward_function_H,
             'policy_graph_A': policy_tensor_to_graph(
-                runex.find_optimal_policy(
+                learn.find_optimal_policy(
                     reward_function_A,
                     discount_rate_A,
                     graph.graphs_to_full_transition_tensor(

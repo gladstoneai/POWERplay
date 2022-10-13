@@ -87,22 +87,6 @@ def get_variable_params(sweep_config):
         )
     ]
 
-def clone_run_inputs(runs_data_with_transition_tensor, ignore_terminal_state=False):
-    return {
-        run_data['name']: {
-            'args': [
-                run_data['outputs']['reward_samples'][:,:-1] if (
-                    ignore_terminal_state
-                ) else run_data['outputs']['reward_samples'],
-                run_data['inputs']['transition_tensor'],
-                run_data['inputs']['discount_rate']
-            ], 'kwargs': {
-                'num_workers': run_data['inputs']['num_workers'],
-                'convergence_threshold': run_data['inputs']['convergence_threshold']
-            }
-         } for run_data in runs_data_with_transition_tensor.values()
-    }
-
 def set_global_random_seed(random_seed):
     if random_seed is None:
         torch.seed()
@@ -173,7 +157,6 @@ def to_tensor_representation(input_tensor, to_sparse=True):
     return sparsify_tensor(input_tensor) if to_sparse else densify_tensor(input_tensor)
 
 def chunk_1d_tensor_into_list(input_tensor, number_of_chunks):
-    
     if input_tensor.is_sparse:
         coalesced_tensor = input_tensor.coalesce()
         total_indices_per_chunk = coalesced_tensor.indices().shape[1] // number_of_chunks

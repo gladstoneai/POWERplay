@@ -94,7 +94,7 @@ def reward_distribution_constructor(
     state_list,
     default_reward_sampler=config_to_pdf_constructor({ 'dist_name': 'uniform', 'params': [0., 1.] }),
     state_reward_samplers={},
-    identical_reward_states=[],
+    states_with_identical_rewards=[],
     allow_all_equal_rewards=True
 ):
     def reward_distribution(number_of_samples):
@@ -111,7 +111,7 @@ def reward_distribution_constructor(
         )
 
         # Overwrite outputs to force identical_reward_states to return identical rewards
-        for identical_reward_set in identical_reward_states:
+        for identical_reward_set in states_with_identical_rewards:
             identical_state_indices = [state_list.index(state) for state in identical_reward_set]
 
             for identical_state_index in identical_state_indices[1:]:
@@ -159,7 +159,7 @@ def config_to_reward_distribution(
                 reward_dist_config['state_dists'][state], distribution_dict=distribution_dict
             ) for state in reward_dist_config.get('state_dists', {}).keys()
         },
-        identical_reward_states=reward_dist_config.get('states_with_identical_rewards', []),
+        states_with_identical_rewards=reward_dist_config.get('states_with_identical_rewards', []),
         allow_all_equal_rewards=reward_dist_config.get('allow_all_equal_rewards', True)
     )
 
@@ -167,7 +167,7 @@ def sample_from_state_list(state_list, distribution_vector):
     return state_list[td.Categorical(distribution_vector).sample().item()]
 
 # See https://drive.google.com/file/d/1aCMAainYY_24ihCmjvz-Z_LYr7FLtQ1N/view for calculations that apply
-# for correlation coefficients from 0 to 1. Note that similar logic can be used to calculate the correlated rewards
+# to correlation coefficients from 0 to 1. Note that similar logic can be used to calculate the correlated rewards
 # for correlations from -1 to 0, but negative correlations *only* make sense for pdfs that are symmetric over their
 # support.
 # single_agent_reward_dist: Output of reward_distribution_constructor(state_list)

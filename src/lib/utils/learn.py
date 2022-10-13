@@ -102,3 +102,28 @@ def compute_optimal_policy_tensor(optimal_values, transition_tensor):
             action_values.max(dim=1)[0].unsqueeze(1).tile(1, transition_tensor_sparse.shape[1])
         ).to(torch.float32) * torch.sparse.sum(transition_tensor_sparse, dim=2).to_dense(), p=1, dim=1
     )
+
+def find_optimal_policy(
+    reward_function,
+    discount_rate,
+    transition_tensor,
+    value_initialization=None,
+    convergence_threshold=1e-4
+):
+    return compute_optimal_policy_tensor(
+        value_iteration(
+            reward_function,
+            discount_rate,
+            transition_tensor,
+            value_initialization=value_initialization,
+            convergence_threshold=convergence_threshold
+        ),
+        transition_tensor
+    )
+    
+def compute_power_values(reward_sample, optimal_values, discount_rate):
+    return ((1 - discount_rate) / discount_rate) * torch.tensor(
+        [(
+            optimal_values[state_index] - reward_sample[state_index]
+        ) for state_index in range(len(optimal_values))]
+    )

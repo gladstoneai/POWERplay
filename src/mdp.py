@@ -1,12 +1,10 @@
 import networkx as nx
 import copy as cp
 import itertools as it
-import torch
 import numpy as np
 
 from .lib.utils import graph
 from .lib import check
-from . import viz
 
 # Converts an undirected graph into a digraph and adds self-loops to all "absorbing" states.
 # Basically, a quick and dirty way to convert default NetworkX graphs into graphs compatible with our MDP
@@ -22,13 +20,13 @@ def quick_graph_to_mdp(mdp_graph, name=''):
 def mdp_add_self_loops(mdp_graph):
     return nx.DiGraph(list(nx.DiGraph(mdp_graph).edges) + [(node, node) for node in mdp_graph.nodes()], name=mdp_graph.name)
 
-# Deletes all states of a gridworld in the square defined by corner1_state and corner2_state.
-# e.g., corner1_state='(0, 0)', corner1_state='(2, 2)' deletes all states in the square:
+# Deletes all states of a gridworld in the square defined by corner_1_state and corner_2_state.
+# e.g., corner_1_state='(0, 0)', corner_1_state='(2, 2)' deletes all states in the square:
 # '(0, 0)', '(0, 1)', '(0, 2)', '(1, 0)', '(1, 1)', '(1, 2)', '(2, 0)', '(2, 1)', '(2, 2)'
-def delete_gridworld_square(gridworld_mdp_graph, corner1_state, corner2_state):
+def delete_gridworld_square(gridworld_mdp_graph, corner_1_state, corner_2_state):
     gridworld_mdp_graph_ = cp.deepcopy(gridworld_mdp_graph)
 
-    row_coord_lims, col_coord_lims = np.array(graph.gridworld_states_to_coords([corner1_state, corner2_state])).T
+    row_coord_lims, col_coord_lims = np.array(graph.gridworld_states_to_coords([corner_1_state, corner_2_state])).T
     rows_to_delete = list(range(min(row_coord_lims), max(row_coord_lims) + 1))
     cols_to_delete = list(range(min(col_coord_lims), max(col_coord_lims) + 1))
 

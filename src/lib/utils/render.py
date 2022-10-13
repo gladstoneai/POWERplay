@@ -93,11 +93,6 @@ def generate_standard_fig_data(state_indices, sharey=False):
         [(i // fig_cols, i % fig_cols) for i in range(len(state_indices))]
     ]
 
-# TODO: Refactor render_gridworld_rollout_snapshot and render_gridworld_aggregations to remove duplicate code bewteen the two
-# Can do this by having a function that takes as inputs:
-# - Which A states are we plotting
-# - Where are we plotting them on the grid
-# - Where is Agent H on the grid (None is an option we pick if we don't want Agent H's cyan box rendered)
 def render_gridworld_rollout_snapshot(
     state_list,
     current_state,

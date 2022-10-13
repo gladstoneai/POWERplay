@@ -35,26 +35,6 @@ def animate_from_filenames(
         ms_per_frame=ms_per_frame
     )
 
-def animate_rollout(
-    rollout_handle,
-    number_of_steps,
-    output_filename='rollout_animation',
-    ms_per_frame=100,
-    frames_at_start=1,
-    frames_at_end=1,
-    input_folder=data.TEMP_FOLDER,
-    output_folder=data.TEMP_FOLDER
-):
-    animate_from_filenames(
-        ['{0}-{1}'.format(rollout_handle, i) for i in range(number_of_steps)],
-        output_filename,
-        ms_per_frame=ms_per_frame,
-        frames_at_start=frames_at_start,
-        frames_at_end=frames_at_end,
-        input_folder_or_list=input_folder,
-        output_folder=output_folder
-    )
-
 def animate_full_sweep(
     sweep_id,
     run_suffixes,

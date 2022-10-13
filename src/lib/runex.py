@@ -6,31 +6,6 @@ from .utils import dist
 from .utils import learn
 from . import proc
 
-def find_optimal_policy(
-    reward_function,
-    discount_rate,
-    transition_tensor,
-    value_initialization=None,
-    convergence_threshold=1e-4
-):
-    return learn.compute_optimal_policy_tensor(
-        learn.value_iteration(
-            reward_function,
-            discount_rate,
-            transition_tensor,
-            value_initialization=value_initialization,
-            convergence_threshold=convergence_threshold
-        ),
-        transition_tensor
-    )
-
-def compute_power_values(reward_sample, optimal_values, discount_rate):
-    return ((1 - discount_rate) / discount_rate) * torch.tensor(
-        [(
-            optimal_values[state_index] - reward_sample[state_index]
-        ) for state_index in range(len(optimal_values))]
-    )
-
 def run_single_agent_experiment(
     reward_samples,
     mdp_graph,
@@ -53,7 +28,7 @@ def run_single_agent_experiment(
     )
 
     power_samples = torch.stack([
-        compute_power_values(
+        learn.compute_power_values(
             reward_sample, optimal_values, discount_rate
         ) for reward_sample, optimal_values in zip(reward_samples, all_optimal_values)
     ])
@@ -90,7 +65,7 @@ def run_multiagent_fixed_policy_experiment(
     )
 
     power_samples = torch.stack([
-        compute_power_values(
+        learn.compute_power_values(
             reward_sample, optimal_values, discount_rate
         ) for reward_sample, optimal_values in zip(reward_samples, all_optimal_values)
     ])
@@ -153,7 +128,7 @@ def run_multiagent_with_reward_experiment(
         print()
 
         power_samples_H_against_seed = torch.stack([
-            compute_power_values(
+            learn.compute_power_values(
                 reward_sample_H, optimal_values_H, discount_rate_agent_H
             ) for reward_sample_H, optimal_values_H in zip(reward_samples_H, all_optimal_values_H)
         ])
@@ -170,7 +145,7 @@ def run_multiagent_with_reward_experiment(
         )
 
         power_samples_A_seed = torch.stack([
-            compute_power_values(
+            learn.compute_power_values(
                 reward_sample_A, values_A, discount_rate_agent_A
             ) for reward_sample_A, values_A in zip(reward_samples_A, all_values_A)
         ])
@@ -190,7 +165,7 @@ def run_multiagent_with_reward_experiment(
     )
 
     power_samples_A = torch.stack([
-        compute_power_values(
+        learn.compute_power_values(
             reward_sample_A, optimal_values_A, discount_rate_agent_A
         ) for reward_sample_A, optimal_values_A in zip(reward_samples_A, all_optimal_values_A)
     ])
@@ -225,7 +200,7 @@ def run_multiagent_with_reward_experiment(
     )
 
     power_samples_H = torch.stack([
-        compute_power_values(
+        learn.compute_power_values(
             reward_sample_H, values_H, discount_rate_agent_H
         ) for reward_sample_H, values_H in zip(reward_samples_H, all_values_H)
     ])

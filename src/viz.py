@@ -168,12 +168,12 @@ def plot_mdp_or_policy(
             reward_to_plot=reward_to_plot,
             discount_rate_to_plot=discount_rate_to_plot
         )
-
+        
     # We save to temp solely for the purpose of plotting, since Graphviz prefers to consume files
     # rather than literal dot strings. We save it in temp so as not to overwrite "permanent" MDP graphs
     # and so git doesn't track the contents of the temp folder.
         data.save_graph_to_dot_file(graph_to_plot, save_handle, folder=temp_folder)
-        
+
         fig_ = data.create_and_save_mdp_figure(
             save_handle,
             subgraphs_per_row=subgraphs_per_row,
@@ -188,13 +188,11 @@ def plot_mdp_or_policy(
 
     return all_figs_
 
-# Here sample_filter is, e.g., reward_samples[:, 3] < reward_samples[:, 4]
 def plot_all_outputs(
     reward_samples,
     power_samples,
     state_list,
     graphs_to_plot=[],
-    sample_filter=None,
     plot_distributions=True,
     plot_correlations=True,
     plot_in_log_scale=False,
@@ -205,8 +203,6 @@ def plot_all_outputs(
     for graph_to_plot in graphs_to_plot:
         check.check_state_list_identity(state_list, graph.get_states_from_graph(graph_to_plot['graph_data']))
 
-    rs_inputs = reward_samples if sample_filter is None else reward_samples[sample_filter]
-    ps_inputs = power_samples if sample_filter is None else power_samples[sample_filter]
     mdp_kwargs = {
         key: kwargs[key] for key in list(
             set(kwargs.keys()) & set(['show', 'save_handle', 'save_folder', 'temp_folder'])
@@ -218,16 +214,16 @@ def plot_all_outputs(
 
     return {
         'POWER means': plot_sample_aggregations(
-            ps_inputs, state_list, aggregation='mean', sample_quantity='POWER', sample_units='reward units', **kwargs
+            power_samples, state_list, aggregation='mean', sample_quantity='POWER', sample_units='reward units', **kwargs
         ),
         'POWER variances': plot_sample_aggregations(
-            ps_inputs, state_list, aggregation='var', sample_quantity='POWER', sample_units='reward units', **kwargs
+            power_samples, state_list, aggregation='var', sample_quantity='POWER', sample_units='reward units', **kwargs
         ),
         **({
             'Reward samples over states{}'.format(
                 ', Agent A at {}'.format(fig.agent_A_state) if hasattr(fig, 'agent_A_state') else ''
             ): fig for fig in plot_sample_distributions(
-                rs_inputs,
+                reward_samples,
                 state_list,
                 sample_quantity='Reward',
                 sample_units='reward units',
@@ -239,7 +235,7 @@ def plot_all_outputs(
             'POWER samples over states{}'.format(
                 ', Agent A at {}'.format(fig.agent_A_state) if hasattr(fig, 'agent_A_state') else ''
             ): fig for fig in plot_sample_distributions(
-                ps_inputs,
+                reward_samples,
                 state_list,
                 sample_quantity='POWER',
                 sample_units='reward units',
@@ -252,7 +248,7 @@ def plot_all_outputs(
                 'POWER correlations, state {0}{1}'.format(
                     state, ', Agent A at {}'.format(fig.agent_A_state) if hasattr(fig, 'agent_A_state') else ''
                 ): fig for fig in plot_sample_correlations(
-                    ps_inputs, state_list, state, sample_quantity='POWER', sample_units='reward units', **kwargs
+                    power_samples, state_list, state, sample_quantity='POWER', sample_units='reward units', **kwargs
                 )
             } for state in state_list])) if plot_correlations else {}
         ),
