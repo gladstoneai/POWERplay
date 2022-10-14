@@ -1,0 +1,35 @@
+name: PART_1-FIGURES_5_6
+description: "Sweeping over discount factors on the 20x20 'robot face' gridworld. 10,000 reward samples."
+program: sweep.py
+parameters:
+  mdp_graph:
+    value:
+      "20x20_gridworld_robot_face"
+  discount_rate:
+    values:
+      - 0.1
+      - 0.99
+    names:
+      - "0p1"
+      - "0p99"
+  reward_distribution:
+    value:
+      default_dist:
+        dist_name:
+          "uniform"
+        params:
+          [0, 1]
+      allow_all_equal_rewards:
+        False
+  num_reward_samples:
+    value:
+      10000
+  convergence_threshold:
+    value:
+      0.0001
+  num_workers:
+    value:
+      10
+  random_seed:
+    value:
+      0

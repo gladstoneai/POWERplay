@@ -8,12 +8,8 @@ settings.json
 
 configs/*
 
-!configs/test_sweep.yaml
-!configs/test_sweep_gridworld.yaml
-!configs/test_sweep_stochastic.yaml
-!configs/test_run_multi_simulated.yaml
-!configs/test_run_multi_actual.yaml
-!configs/test_sweep_correlated_rewards.yaml
+!configs/replication
+!configs/test
 
 mdps/*
 
@@ -24,7 +20,16 @@ mdps/*
 !mdps/joint_1x3_gridworld_with_agent_H_forbidden_from_staying_when_agent_A_is_at_far_right.gv
 !mdps/joint_3x3_gridworld.gv
 
+!mdps/3x3_gridworld.gv
+!mdps/7x7_gridworld_maze.gv
+!mdps/20x20_gridworld_robot_face.gv
+!mdps/joint_7x7_gridworld_maze.gv
+!mdps/joint_7x7_gridworld_maze_no_overlaps.gv
+
 policies/*
 
 !policies/joint_1x3_gridworld_agent_A_move_left.gv
 !policies/joint_3x3_gridworld_agent_A_uniform_random.gv
+
+!policies/joint_7x7_gridworld_maze_agent_A_uniform_random.gv
+!policies/joint_7x7_gridworld_maze_no_overlaps_agent_A_uniform_random.gv

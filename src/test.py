@@ -1,3 +1,5 @@
+import pathlib as path
+
 from .lib.utils import misc
 from .lib import data
 from . import launch
@@ -8,7 +10,8 @@ def test_vanilla():
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         plot_distributions=True,
         plot_correlations=True,
-        project='uncategorized'
+        project='uncategorized',
+        sweep_config_folder=path.Path()/data.SWEEP_CONFIGS_FOLDER/'test'
     )
 
 def test_gridworld():
@@ -18,7 +21,8 @@ def test_gridworld():
         project='uncategorized',
         plot_distributions=True,
         plot_correlations=True,
-        plot_as_gridworld=True
+        plot_as_gridworld=True,
+        sweep_config_folder=path.Path()/data.SWEEP_CONFIGS_FOLDER/'test'
     )
 
 def test_stochastic():
@@ -27,7 +31,8 @@ def test_stochastic():
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         plot_distributions=True,
         plot_correlations=True,
-        project='uncategorized'
+        project='uncategorized',
+        sweep_config_folder=path.Path()/data.SWEEP_CONFIGS_FOLDER/'test'
     )
 
 def test_multiagent():
@@ -37,7 +42,8 @@ def test_multiagent():
         sweep_local_id=misc.generate_sweep_id(),
         plot_distributions=True,
         plot_correlations=True,
-        project='uncategorized'
+        project='uncategorized',
+        sweep_config_folder=path.Path()/data.SWEEP_CONFIGS_FOLDER/'test'
     )
 
     launch.launch_sweep(
@@ -46,7 +52,8 @@ def test_multiagent():
         sweep_local_id=misc.generate_sweep_id(),
         project='uncategorized',
         plot_distributions=True,
-        plot_correlations=True
+        plot_correlations=True,
+        sweep_config_folder=path.Path()/data.SWEEP_CONFIGS_FOLDER/'test'
     )
 
 def test_reward_correlation():
@@ -57,5 +64,6 @@ def test_reward_correlation():
         plot_as_gridworld=True,
         plot_distributions=True,
         plot_correlations=False,
-        diagnostic_mode=True
+        diagnostic_mode=True,
+        sweep_config_folder=path.Path()/data.SWEEP_CONFIGS_FOLDER/'test'
     )

@@ -1,0 +1,82 @@
+name: PART_2-FIGURES_2_3_4_6_7_8_9_10
+description: "Sweeping over reward correlation coefficients for Agent H and Agent A on the joint 3x3 gridworld, gamma = 0.6. 20,000 reward samples."
+program: sweep.py
+parameters:
+  joint_mdp_graph:
+    value:
+      "joint_3x3_gridworld"
+  seed_policy_graph_agent_A:
+    value:
+      "joint_3x3_gridworld_agent_A_uniform_random"
+  discount_rate:
+    value:
+      0.6
+  discount_rate_agent_A:
+    value:
+      0.6
+  reward_distribution:
+    value:
+      default_dist:
+        dist_name:
+          "uniform"
+        params:
+          [0, 1]
+      allow_all_equal_rewards:
+        False
+  reward_correlation:
+    values:
+      - 0
+      - 0.05
+      - 0.1
+      - 0.15
+      - 0.2
+      - 0.25
+      - 0.3
+      - 0.35
+      - 0.4
+      - 0.45
+      - 0.5
+      - 0.55
+      - 0.6
+      - 0.65
+      - 0.7
+      - 0.75
+      - 0.8
+      - 0.85
+      - 0.9
+      - 0.95
+      - 1
+    names:
+      - "0"
+      - "0p05"
+      - "0p10"
+      - "0p15"
+      - "0p20"
+      - "0p25"
+      - "0p30"
+      - "0p35"
+      - "0p40"
+      - "0p45"
+      - "0p50"
+      - "0p55"
+      - "0p60"
+      - "0p65"
+      - "0p70"
+      - "0p75"
+      - "0p80"
+      - "0p85"
+      - "0p90"
+      - "0p95"
+      - "1"
+  num_reward_samples:
+    value:
+      20000
+  convergence_threshold:
+    value:
+      0.0001
+  num_workers:
+    value:
+      10
+  random_seed:
+    value:
+      0
