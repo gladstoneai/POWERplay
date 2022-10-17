@@ -224,7 +224,7 @@ def plot_specific_power_alignments(
 
     anim.animate_from_filenames(
         all_fig_names_,
-        'specific_power_alignment_animation',
+        '{}-animation'.format(fig_name),
         ms_per_frame=ms_per_frame,
         frames_at_start=frames_at_start,
         frames_at_end=frames_at_end,
