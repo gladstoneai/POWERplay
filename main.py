@@ -1,7 +1,6 @@
 from src import base
 
 # TODO final:
-# - Extract ui.py from base
 # - Add argparse.ArgumentParser().
 #   parser = argparse.ArgumentParser()
 #   parser.add_argument('-b', '--batch-size', type=int, default=8, metavar='N',
