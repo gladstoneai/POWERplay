@@ -1,7 +1,6 @@
 from src import base
 
 # TODO final:
-# - Refactor base to add new functions
 # - Extract ui.py from base
 # - Add argparse.ArgumentParser().
 #   parser = argparse.ArgumentParser()
