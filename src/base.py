@@ -39,35 +39,39 @@ def run_all_tests():
     test_reward_correlation()
 
 def reproduce_figure(part_number, fig_number):
+
     if part_number == 1 and fig_number == 1:
         rep.part_1_fig_1()
     
-    if part_number == 1 and fig_number in [2, 3, 4]:
+    elif part_number == 1 and fig_number in [2, 3, 4]:
         rep.part_1_fig_2_3_4()
     
-    if part_number == 1 and fig_number in [5, 6]:
+    elif part_number == 1 and fig_number in [5, 6]:
         rep.part_1_fig_5_6()
     
-    if part_number == 2 and fig_number == 1:
+    elif part_number == 2 and fig_number == 1:
         rep.part_2_fig_1()
     
-    if part_number == 2 and fig_number == 5:
+    elif part_number == 2 and fig_number == 5:
         rep.part_2_fig_5()
     
-    if part_number == 2 and fig_number in [2, 3, 4, 6, 7, 8, 9, 10]:
+    elif part_number == 2 and fig_number in [2, 3, 4, 6, 7, 8, 9, 10]:
         rep.part_2_fig_2_3_4_6_7_8_9_10()
     
-    if part_number == 3 and fig_number in [2, 3, 4]:
+    elif part_number == 3 and fig_number in [2, 3, 4]:
         rep.part_3_fig_2_3_4()
     
-    if part_number == 3 and fig_number in [5, 6, 7]:
+    elif part_number == 3 and fig_number in [5, 6, 7]:
         rep.part_3_fig_5_6_7()
     
-    if part_number == 3 and fig_number in [8, 9]:
+    elif part_number == 3 and fig_number in [8, 9]:
         rep.part_3_fig_8_9()
     
-    if part_number == 3 and fig_number in [10, 11]:
+    elif part_number == 3 and fig_number in [10, 11]:
         rep.part_3_fig_10_11()
+    
+    else:
+        print('Invalid part_number and fig_number combination.')
 
 # 2) CREATING GRAPHS
 
@@ -160,7 +164,8 @@ def launch_sweep(
     plot_correlations=False,
     announce_when_done=False,
     diagnostic_mode=False,
-    plot_in_log_scale=False
+    plot_in_log_scale=False,
+    force_basic_font=False
 ):
     launch.launch_sweep(
         sweep_config_filename,
@@ -174,7 +179,8 @@ def launch_sweep(
         plot_correlations=plot_correlations,
         announce_when_done=announce_when_done,
         diagnostic_mode=diagnostic_mode,
-        plot_in_log_scale=plot_in_log_scale
+        plot_in_log_scale=plot_in_log_scale,
+        force_basic_font=force_basic_font
     )
 
 # 4) VISUALIZING RESULTS

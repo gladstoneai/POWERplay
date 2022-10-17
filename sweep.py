@@ -20,11 +20,14 @@ def cli_experiment_sweep(
     plot_correlations=(os.environ.get('PLOT_CORRELATIONS') == 'True'),
     diagnostic_mode=(os.environ.get('DIAGNOSTIC_MODE') == 'True'),
     plot_in_log_scale=(os.environ.get('PLOT_IN_LOG_SCALE') == 'True'),
+    force_basic_font=(os.environ.get('FORCE_BASIC_FONT') == 'True'),
     experiment_folder=data.EXPERIMENT_FOLDER,
     mdps_folder=data.MDPS_FOLDER,
     policies_folder=data.POLICIES_FOLDER,
     graph_descriptions=save.ALL_GRAPH_DESCRIPTIONS
 ):
+    if force_basic_font:
+        viz.render.rcParams['font.sans-serif'] = viz.render.rcParams['font.sans-serif'][1:] # Delete Avenir font from list if special characters are needed
 
     with wb.init() as run:
         run_params = {

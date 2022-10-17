@@ -1,12 +1,6 @@
 from src import base
 
 # TODO final:
-# - Add argparse.ArgumentParser().
-#   parser = argparse.ArgumentParser()
-#   parser.add_argument('-b', '--batch-size', type=int, default=8, metavar='N',
-#                      help='input batch size for training (default: 8)')
-#   args = parser.parse_args()
-# - (Maybe) Add "prettify" option that updates the fonts to Avenir
 # - Document all base functions
 # -- We're using an M1 Mac with 10 cores; may need to change this
 # -- base.update_mdp_graph_with_interface
@@ -90,6 +84,5 @@ from src import base
 # - Document the stochastic graph format for MDPs and policies
 
 if __name__ == '__main__':
-    # base.run_all_tests()
 
     pass

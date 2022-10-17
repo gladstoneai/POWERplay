@@ -11,7 +11,8 @@ def test_vanilla():
         plot_distributions=True,
         plot_correlations=True,
         project='uncategorized',
-        sweep_config_folder=path.Path()/data.SWEEP_CONFIGS_FOLDER/'test'
+        sweep_config_folder=path.Path()/data.SWEEP_CONFIGS_FOLDER/'test',
+        force_basic_font=True
     )
 
 def test_gridworld():

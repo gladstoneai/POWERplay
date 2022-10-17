@@ -21,6 +21,7 @@ def launch_sweep(
     announce_when_done=False,
     diagnostic_mode=False,
     plot_in_log_scale=False,
+    force_basic_font=False,
     environ=os.environ
 ):
     input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=sweep_config_folder)
@@ -57,7 +58,8 @@ def launch_sweep(
         'PLOT_DISTRIBUTIONS': str(plot_distributions),
         'PLOT_CORRELATIONS': str(plot_correlations),
         'DIAGNOSTIC_MODE': str(diagnostic_mode),
-        'PLOT_IN_LOG_SCALE': str(plot_in_log_scale)
+        'PLOT_IN_LOG_SCALE': str(plot_in_log_scale),
+        'FORCE_BASIC_FONT': str(force_basic_font)
     })
 
     if announce_when_done:

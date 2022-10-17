@@ -12,7 +12,7 @@ from . import graph
 ################################################################################
 
 rcParams['font.family'] = 'sans-serif'
-rcParams['font.sans-serif'] = ['Avenir', 'Arial']
+rcParams['font.sans-serif'] = ['Avenir'] + rcParams['font.sans-serif']
 
 FIGURE_SIZE_SCALING_FACTOR = 4
 
