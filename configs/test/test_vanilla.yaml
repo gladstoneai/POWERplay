@@ -1,5 +1,5 @@
-name: test_sweep
-description: "This is a test sweep."
+name: test_vanilla
+description: "Sweeping over discount rates on the MDP from Figure 1 in Optimal Policies Tend to Seek Power, https://arxiv.org/abs/1912.01683"
 program: sweep.py
 parameters:
   mdp_graph:
@@ -40,9 +40,6 @@ parameters:
   convergence_threshold:
     value:
       0.0001
-  num_workers:
-    value:
-      10
   random_seed:
     value:
       0

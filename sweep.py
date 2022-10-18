@@ -15,6 +15,7 @@ def cli_experiment_sweep(
     distribution_dict=dist.DISTRIBUTION_DICT,
     local_sweep_name=os.environ.get('LOCAL_SWEEP_NAME'),
     sweep_variable_params=json.loads(os.environ.get('SWEEP_VARIABLE_PARAMS')),
+    num_workers=int(os.environ.get('NUM_WORKERS')),
     plot_as_gridworld=(os.environ.get('PLOT_AS_GRIDWORLD') == 'True'),
     plot_distributions=(os.environ.get('PLOT_DISTRIBUTIONS') == 'True'),
     plot_correlations=(os.environ.get('PLOT_CORRELATIONS') == 'True'),
@@ -41,7 +42,6 @@ def cli_experiment_sweep(
         data.create_folder(save_folder)
 
         num_reward_samples = run_params.get('num_reward_samples')
-        num_workers = run_params.get('num_workers')
         discount_rate_agent_H = run_params.get('discount_rate')
         discount_rate_agent_A = run_params.get('discount_rate_agent_A')
         convergence_threshold = run_params.get('convergence_threshold')

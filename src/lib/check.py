@@ -323,7 +323,6 @@ def check_sweep_params(sweep_params):
         'num_reward_samples': noop,
         'convergence_threshold': noop,
         'value_initializations': noop,
-        'num_workers': check_num_workers,
         'random_seed': noop
     }
 

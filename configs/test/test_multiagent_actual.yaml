@@ -1,5 +1,5 @@
-name: test_run_multi_actual
-description: "A single run with (discount rate 0.1) on the 1x3 multiagent gridworld, with an Agent A policy that always moves to the left."
+name: test_multiagent_actual
+description: "A single run with discount rate 0.1 on the 1x3 multiagent gridworld, with an Agent A policy that always moves to the left."
 program: sweep.py
 parameters:
   joint_mdp_graph:
@@ -26,9 +26,6 @@ parameters:
   convergence_threshold:
     value:
       0.0001
-  num_workers:
-    value:
-      10
   random_seed:
     value:
       0

@@ -3,6 +3,7 @@ import subprocess as sp
 import re
 import os
 import json
+import multiprocessing as mps
 
 from .lib.utils import misc
 from .lib import data
@@ -15,17 +16,19 @@ def launch_sweep(
     project='uncategorized',
     sweep_config_folder=data.SWEEP_CONFIGS_FOLDER,
     output_folder_local=data.EXPERIMENT_FOLDER,
+    number_of_workers=mps.cpu_count(),
     plot_as_gridworld=False,
     plot_distributions=False,
     plot_correlations=False,
-    announce_when_done=False,
     diagnostic_mode=False,
     plot_in_log_scale=False,
     force_basic_font=False,
     environ=os.environ
 ):
     input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=sweep_config_folder)
+
     check.check_sweep_params(input_sweep_config['parameters'])
+    check.check_num_workers(number_of_workers)
 
     sweep_name = '{0}-{1}'.format(sweep_local_id, input_sweep_config['name'])
 
@@ -54,7 +57,8 @@ def launch_sweep(
         **environ,
         'LOCAL_SWEEP_NAME': sweep_name,
         'SWEEP_VARIABLE_PARAMS': json.dumps(misc.get_variable_params(input_sweep_config)),
-        'PLOT_AS_GRIDWORLD': str(plot_as_gridworld), # Only str allowed in os.environ
+        'NUM_WORKERS': str(number_of_workers), # Only str allowed in os.environ
+        'PLOT_AS_GRIDWORLD': str(plot_as_gridworld),
         'PLOT_DISTRIBUTIONS': str(plot_distributions),
         'PLOT_CORRELATIONS': str(plot_correlations),
         'DIAGNOSTIC_MODE': str(diagnostic_mode),
@@ -62,5 +66,3 @@ def launch_sweep(
         'FORCE_BASIC_FONT': str(force_basic_font)
     })
 
-    if announce_when_done:
-        sp.run(['say', '"Run complete"'])

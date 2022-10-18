@@ -1,4 +1,5 @@
 import pathlib as path
+import multiprocessing as mps
 
 from .lib.utils import misc
 from .lib import data
@@ -16,6 +17,7 @@ def part_1_fig_1():
         '{}.yaml'.format(fig_name),
         sweep_local_id=sweep_id,
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        number_of_workers=mps.cpu_count(),
         plot_distributions=False,
         plot_correlations=False,
         plot_as_gridworld=True,
@@ -42,6 +44,7 @@ def part_1_fig_2_3_4():
         '{}.yaml'.format(fig_name),
         sweep_local_id=sweep_id,
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        number_of_workers=mps.cpu_count(),
         plot_distributions=False,
         plot_correlations=False,
         plot_as_gridworld=True,
@@ -113,6 +116,7 @@ def part_1_fig_5_6():
         '{}.yaml'.format(fig_name),
         sweep_local_id=sweep_id,
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        number_of_workers=mps.cpu_count(),
         plot_distributions=False,
         plot_correlations=False,
         plot_as_gridworld=True,
@@ -185,6 +189,7 @@ def part_2_fig_2_3_4_6_7_8_9_10():
         '{}.yaml'.format(fig_name),
         sweep_local_id=sweep_id,
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        number_of_workers=mps.cpu_count(),
         plot_distributions=False,
         plot_correlations=False,
         plot_as_gridworld=True,
@@ -312,6 +317,7 @@ def part_3_fig_2_3_4():
         '{}.yaml'.format(fig_name),
         sweep_local_id=sweep_id,
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        number_of_workers=mps.cpu_count(),
         plot_distributions=False,
         plot_correlations=False,
         plot_as_gridworld=True,
@@ -376,6 +382,7 @@ def part_3_fig_5_6_7():
         '{}.yaml'.format(fig_name),
         sweep_local_id=sweep_id,
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        number_of_workers=mps.cpu_count(),
         plot_distributions=False,
         plot_correlations=False,
         plot_as_gridworld=True,
@@ -440,6 +447,7 @@ def part_3_fig_8_9():
         '{}.yaml'.format(fig_name),
         sweep_local_id=sweep_id,
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        number_of_workers=mps.cpu_count(),
         plot_distributions=False,
         plot_correlations=False,
         plot_as_gridworld=True,
@@ -504,6 +512,7 @@ def part_3_fig_10_11():
         '{}.yaml'.format(fig_name),
         sweep_local_id=sweep_id,
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
+        number_of_workers=mps.cpu_count(),
         plot_distributions=False,
         plot_correlations=False,
         plot_as_gridworld=True,

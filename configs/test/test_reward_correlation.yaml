@@ -1,4 +1,4 @@
-name: test_sweep_correlated_rewards
+name: test_reward_correlation
 description: "Sweeping over Agent H and Agent A reward correlation values on the 3x3 multiagent gridworld, with gamma = 0.2."
 program: sweep.py
 parameters:
@@ -38,9 +38,6 @@ parameters:
   convergence_threshold:
     value:
       0.0001
-  num_workers:
-    value:
-      10
   random_seed:
     value:
       0

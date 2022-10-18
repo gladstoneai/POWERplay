@@ -65,9 +65,6 @@ parameters:
   convergence_threshold:
     value:
       0.0001
-  num_workers:
-    value:
-      10
   random_seed:
     value:
       0

@@ -1,4 +1,4 @@
-name: test_sweep_gridworld
+name: test_gridworld
 description: "Sweeping over discount rates on the 3x3 gridworld with self-loops at each cell."
 program: sweep.py
 parameters:
@@ -29,9 +29,6 @@ parameters:
   convergence_threshold:
     value:
       0.0001
-  num_workers:
-    value:
-      10
   random_seed:
     value:
       0

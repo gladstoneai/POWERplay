@@ -1,4 +1,4 @@
-name: test_sweep_stochastic
+name: test_stochastic
 description: "Sweeping over a 4-cell environment with stochastic transitions."
 program: sweep.py
 parameters:
@@ -27,9 +27,6 @@ parameters:
   convergence_threshold:
     value:
       0.0001
-  num_workers:
-    value:
-      10
   random_seed:
     value:
       0

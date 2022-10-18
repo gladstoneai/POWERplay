@@ -1,8 +1,8 @@
-# **POWERplay:** An RL toolchain to study power-seeking in AI
+# **POWERplay:** A toolchain to study AI power-seeking
 
 ![POWERplay banner image](img/powerplay-banner-image.png)
 
-**POWERplay**  is an open-source toolchain that makes it easy to study power-seeking and [instrumental convergence](https://en.wikipedia.org/wiki/Instrumental_convergence) in reinforcement learning agents. POWERplay was developed by [Gladstone AI](https://www.gladstone.ai/), an AI safety company. It's primarily intended as a research tool.
+**POWERplay**  is an open-source toolchain that makes it easy to study power-seeking behavior in reinforcement learning agents. POWERplay was developed by [Gladstone AI](https://www.gladstone.ai/), an AI safety company. It's primarily intended as a research tool.
 
 ## FAQs:
 
@@ -42,7 +42,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
 
 ## Installation, setup, and testing
 
-👉 _These installation instructions have been tested with Python 3.8.9 on MacOS. If you have a different system, you may need to change some steps._
+👉 _These installation instructions have been tested with Python 3.8.9 on MacOS. If you have a different system, you may need to change some of these steps._
 
 1. Ensure Homebrew and Graphviz are installed to enable MDP visualization. Run:
   
@@ -68,7 +68,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     % pip install -r requirements.txt
     ```
 
-4. Create a W&B account if you don't have one already. Then create a file in the main directory called `settings.json` with the following format:
+4. Create an account on [Weights & Biases](https://wandb.ai/site) if you don't have one already. Then create a file in the main directory of this repo called `settings.json` with the following format:
 
     ```
     {
@@ -81,7 +81,11 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     }
     ```
 
-5. Run the `test_vanilla()` function that will calculate the POWER for each state in the MDP whose `dot` format graph is stored in `mdps/mdp_from_paper.gv`, plot the results, and post them to W&B. Run:
+5. Run the `test_vanilla()` function that will calculate the POWER for each state in the [MDP](https://en.wikipedia.org/wiki/Markov_decision_process) below, plot the results, and post them to your Weights & Biases account.
+
+    ![Example MDP from Optimal Policies Tend to Seek POWER, https://arxiv.org/abs/1912.01683](img/opttsp-mdp-example.png)
+
+    To run `test_vanilla()`, do the following:
 
     ```
     % python -i main.py
@@ -90,61 +94,80 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     Then:
 
     ```
-    >>> experiment = test.test_vanilla()
+    >>> base.test_vanilla()
     ```
 
 6. Confirm that the output you get is consistent. You should see something like:
 
     ```
-      wandb: Currently logged in as bob-bobson (use `wandb login --relogin` to force relogin)
-      wandb: Starting wandb agent 🕵️
-      2021-11-23 11:15:03,014 - wandb.wandb_agent - INFO - Running runs: []
-      2021-11-23 11:15:03,340 - wandb.wandb_agent - INFO - Agent received command: run
-      2021-11-23 11:15:03,341 - wandb.wandb_agent - INFO - Agent starting run with config:
-              mdp_graph: mdp_from_paper
-              convergence_threshold: 0.0001
-              discount_rate: [0.1, '0p1']
-              num_reward_samples: 10000
-              num_workers: 10
-              random_seed: None
-              reward_distribution: {'default_dist': {'dist_name': 'uniform', 'params': [0, 1]}, 'state_dists': {'ℓ_◁': {'dist_name': 'uniform', 'params': [-2, 0]}, '∅': {'dist_name': 'uniform', 'params': [-1, 1]}}}
-      2021-11-23 11:15:03,345 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --mdp_graph=mdp_from_paper --convergence_threshold=0.0001 "--discount_rate=[0.1, '0p1']" --num_reward_samples=10000 --num_workers=10 --random_seed=None "--reward_distribution={'default_dist': {'dist_name': 'uniform', 'params': [0, 1]}, 'state_dists': {'ℓ_◁': {'dist_name': 'uniform', 'params': [-2, 0]}, '∅': {'dist_name': 'uniform', 'params': [-1, 1]}}}"
-      wandb: Currently logged in as bob-bobson (use `wandb login --relogin` to force relogin)
-      wandb: Tracking run with wandb version 0.12.7
-      wandb: Syncing run ethereal-sweep-1
-      wandb:  View project at https://wandb.ai/bob-bobson/uncategorized
-      wandb:  View sweep at https://wandb.ai/bob-bobson/uncategorized/sweeps/1plu2i6a
-      wandb:  View run at https://wandb.ai/bob-bobson/uncategorized/runs/93g2c7ow
-      wandb: Run data is saved locally in /Users/bobbobson/filepath/power-paper-mdp/wandb/run-20211123_111504-93g2c7ow
-      wandb: Run `wandb offline` to turn off syncing.
+    wandb: Currently logged in as: bob-bobson (use `wandb login --relogin` to force relogin)
+    wandb: Starting wandb agent 🕵️
+    2022-10-18 10:24:26,174 - wandb.wandb_agent - INFO - Running runs: []
+    2022-10-18 10:24:26,688 - wandb.wandb_agent - INFO - Agent received command: run
+    2022-10-18 10:24:26,688 - wandb.wandb_agent - INFO - Agent starting run with config:
+        convergence_threshold: 0.0001
+        discount_rate: [0.1, '0p1']
+        mdp_graph: mdp_from_paper
+        num_reward_samples: 10000
+        num_workers: 10
+        random_seed: 0
+        reward_distribution: {'allow_all_equal_rewards': True, 'default_dist': {'dist_name': 'uniform', 'params': [0, 1]}, 'state_dists': {'ℓ_◁': {'dist_name': 'uniform', 'params': [-2, 0]}, '∅': {'dist_name': 'uniform', 'params': [-1, 1]}}}
+    2022-10-18 10:24:26,690 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --convergence_threshold=0.0001 "--discount_rate=[0.1, '0p1']" --mdp_graph=mdp_from_paper --num_reward_samples=10000 --num_workers=10 --random_seed=0 "--reward_distribution={'allow_all_equal_rewards': True, 'default_dist': {'dist_name': 'uniform', 'params': [0, 1]}, 'state_dists': {'ℓ_◁': {'dist_name': 'uniform', 'params': [-2, 0]}, '∅': {'dist_name': 'uniform', 'params': [-1, 1]}}}"
+    wandb: Currently logged in as: bob-bobson (use `wandb login --relogin` to force relogin)
+    wandb: wandb version 0.13.4 is available!  To upgrade, please run:
+    wandb:  $ pip install wandb --upgrade
+    wandb: Tracking run with wandb version 0.12.7
+    wandb: Syncing run splendid-sweep-1
+    wandb:  View project at https://wandb.ai/bob-bobson/uncategorized
+    wandb:  View sweep at https://wandb.ai/bob-bobson/uncategorized/sweeps/7w9xi059
+    wandb:  View run at https://wandb.ai/bob-bobson/uncategorized/runs/mey3t37m
+    wandb: Run data is saved locally in /Users/bobbobson/your-folder/POWERplay/wandb/run-20221018_102428-mey3t37m
+    wandb: Run `wandb offline` to turn off syncing.
 
-      Running samples 10000 / 10000
 
-      Run complete.
+    Computing POWER samples:
 
-      Rendering plots...
+    2022-10-18 10:24:31,697 - wandb.wandb_agent - INFO - Running runs: ['mey3t37m']
+    Running samples 10000 / 10000
 
-      [...etc...]
+    Run complete.
 
-      wandb: Waiting for W&B process to finish, PID 26234... (success).
-      wandb:                                                                                
-      wandb: Synced 5 W&B file(s), 11 media file(s), 0 artifact file(s) and 0 other file(s)
-      wandb: Synced cerulean-sweep-3: https://wandb.ai/bob-bobson/uncategorized/runs/7hww51de
-      wandb: Find logs at: ./wandb/run-20211123_111547-7hww51de/logs/debug.log
-      wandb: 
-      2021-11-23 11:16:07,319 - wandb.wandb_agent - INFO - Cleaning up finished run: 7hww51de
-      2021-11-23 11:16:08,012 - wandb.wandb_agent - INFO - Agent received command: exit
-      2021-11-23 11:16:08,013 - wandb.wandb_agent - INFO - Received exit command. Killing runs and quitting.
-      wandb: Terminating and syncing runs. Press ctrl-c to kill.
+    Rendering plots...
+
+    [...etc...]
+
+    wandb: Waiting for W&B process to finish, PID 47164... (success).
+    wandb:                                                                                
+    wandb: Synced 5 W&B file(s), 13 media file(s), 0 artifact file(s) and 0 other file(s)
+    wandb: Synced denim-sweep-3: https://wandb.ai/bob-bobson/uncategorized/runs/s1zj29jd
+    wandb: Find logs at: ./wandb/run-20221018_102523-s1zj29jd/logs/debug.log
+    wandb: 
+    2022-10-18 10:25:48,684 - wandb.wandb_agent - INFO - Cleaning up finished run: s1zj29jd
+    2022-10-18 10:25:49,567 - wandb.wandb_agent - INFO - Agent received command: exit
+    2022-10-18 10:25:49,567 - wandb.wandb_agent - INFO - Received exit command. Killing runs and quitting.
+    wandb: Terminating and syncing runs. Press ctrl-c to kill.
     ```
 
     Navigating to your Sweeps view (using the link above under "View sweep at") should show the following:
 
     ![power-example-sweep-wandb](img/power_example_sweep_wandb.png)
 
-    This sweep iterates over three discount rate values: 0.1, 0.3, and 0.5. The config YAML file for the test sweep is located at `configs/test_sweep.yaml`.
+    This sweep iterates over three discount rate values: 0.1, 0.3, and 0.5. The config YAML file for the test sweep is located at `configs/test/test_vanilla.yaml`.
 
-7. Repeat steps 5 and 6 for the three other available test functions: `test_gridworld()` (which tests the ability to run and visualize gridworlds), `test_stochastic()` (which tests the simulation loop with stochastic MDPs), and `test_multiagent()` (which tests the simulation loop in multiagent settings).
+7. Repeat steps 5 and 6 for the four other available test functions:
+
+    - `test_gridworld()`, which tests the ability to run and visualize gridworlds
+    - `test_stochastic()`, which tests the simulation loop with stochastic MDPs
+    - `test_multiagent()`, which tests the simulation loop in multi-agent settings
+    - `test_reward_correlation()`, which tests the ability to simulate multi-agent settings with agents [whose reward functions are partially correlated](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#3_1_Multi_agent_reward_function_distributions)
+
+    You can also run all these test functions in succession with the following command:
+
+    ```
+    >>> base.run_all_tests()
+    ```
+
+## Quickstart
 
 ## Basic usage
 
@@ -155,7 +178,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
 For example:
 
   ```
-  >>> launch.launch_sweep('test_sweep.yaml')
+  >>> launch.launch_sweep('test_vanilla.yaml')
   ```
 
 The YAML file is the canonical description of the sweep for your experiment, and YAML files corresponding to individual runs of your sweep are saved in the `expts` and `wandb` directories.
@@ -166,7 +189,7 @@ The YAML file is the canonical description of the sweep for your experiment, and
 
 - `sweep_config_filename [str, required]`: The name of the YAML file that contains the configuration for your sweep. This file should be located in the `configs` directory, but you don't need to include the `configs/` prefix in the filename.
 
-  Typical value: `'test_sweep.yaml'`
+  Typical value: `'test_vanilla.yaml'`
 
 - `sweep_local_id [str] (time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())))`: A unique identifier for your sweep. This is used to name the directory in which the sweep and its runs are saved. This id will also show up in the names of your runs in the W&B UI.
 
@@ -204,7 +227,7 @@ The YAML file is the canonical description of the sweep for your experiment, and
 
   Typical value: `environ({ 'USER': 'bob_bobson', ... })`
 
-You can find examples of sweep configuration files in the `configs` folder. The file `test_sweep.yaml` defines a sweep for the single-agent case, with a single Agent H MDP graph given by the parameter `mdp_graph` (see below). The file `test_run_multi_actual.yaml` defines a single run for the multi-agent case, with an Agent H MDP graph given by `mdp_graph_agent_H`, and Agent A MDP graph given by `mdp_graph_agent_A`, and an Agent A fixed policy graph given by `policy_graph_agent_A`.
+You can find examples of sweep configuration files in the `configs` folder. The file `test_vanilla.yaml` defines a sweep for the single-agent case, with a single Agent H MDP graph given by the parameter `mdp_graph` (see below). The file `test_run_multi_actual.yaml` defines a single run for the multi-agent case, with an Agent H MDP graph given by `mdp_graph_agent_H`, and Agent A MDP graph given by `mdp_graph_agent_A`, and an Agent A fixed policy graph given by `policy_graph_agent_A`.
 
 Here are the entries of the sweep YAML file:
 
