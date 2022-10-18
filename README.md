@@ -1,16 +1,48 @@
-# POWER experiments
+# **POWERplay:** An RL toolchain to study power-seeking in AI
 
-(Work in progress.)
+![POWERplay banner image](img/powerplay-banner-image.png)
 
-Reference paper: _[Optimal policies tend to seek power](https://arxiv.org/pdf/1912.01683v7.pdf)_.
+**POWERplay**  is an open-source toolchain that makes it easy to study power-seeking and [instrumental convergence](https://en.wikipedia.org/wiki/Instrumental_convergence) in reinforcement learning agents. POWERplay was developed by [Gladstone AI](https://www.gladstone.ai/), an AI safety company. It's primarily intended as a research tool.
 
-Investigation of the following MDP (Figure 1 from the paper):
+## FAQs:
 
-![power-example-mdp](img/power_example_mdp.png)
+### Why did you build this?
+
+[There's been a](https://www.amazon.com/Superintelligence-Dangers-Strategies-Nick-Bostrom/dp/1501227742) [long-standing](https://www.vanityfair.com/news/2017/03/elon-musk-billion-dollar-crusade-to-stop-ai-space-x) [debate](https://blogs.scientificamerican.com/observations/dont-fear-the-terminator/) [in AI](https://www.alignmentforum.org/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell) over whether highly capable AI systems will, or won't, be dangerous to human beings by default. As frontier AI capabilities [continue to accelerate](https://www.aitracker.org/), the question becomes an increasingly important one.
+
+This debate has largely centered on the concern that future AI systems may try to accumulate power for themselves, even when we don't want them to. Some people believe that if an AI system is capable enough, it will try to accumulate power almost regardless of what its end-goal is. This belief is sometimes called the [_instrumental convergence thesis_](https://nickbostrom.com/superintelligentwill.pdf). Here's a [well-written example](https://waitbutwhy.com/2015/01/artificial-intelligence-revolution-2.html) of it.
+
+So far, evidence for the instrumental convergence thesis [has been](https://www.aaai.org/ocs/index.php/WS/AAAIW16/paper/view/12634/12347) [mainly](https://arxiv.org/pdf/1912.01683.pdf) [theoretical](https://arxiv.org/pdf/2206.11831.pdf). To the best of our knowledge, POWERplay is among the first attempts to directly investigate the thesis experimentally.
+
+### What can I do with it?
+
+The main thing you do with POWERplay is calculate how much **instrumental value** a state holds for an RL agent. "Instrumental value" is just a fancy term for "power" or "potential to achieve a wide variety of goals." For example, if you have a billion dollars, you're in a state that has high instrumental value. You can achieve a lot of different goals with a billion dollars. But if you're dead, you're in a state that has low instrumental value. Dead people, unfortunately, can't accomplish much.
+
+Below is an example of POWERplay in action. An agent moves through a maze, and POWERplay calculates how much instrumental value the agent would have at each position in the maze:
+
+![7x7 maze example](img/7x7-maze-example.png)
+
+You can see that the agent has high instrumental value at junctions, because it can quickly reach many goals from a junction. But it has low instrumental value at dead ends, because it can't quickly reach as many goals from a dead end.
+
+You can also use POWERplay to study complicated interactions between multiple RL agents. In fact, this is probably its most interesting use case. For example, you can use POWERplay to investigate what situations drive agents to compete or collaborate with each other and why.
+
+### What have you done with it?
+
+We've used POWERplay to investigate a few topics already:
+
+- [How instrumental convergence works in single-agent settings](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems)
+- [How agents often compete for power even if their goals are unrelated](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems)
+- [How physical interactions between agents affect power-seeking](https://www.alignmentforum.org/posts/nisaAr7wMDiMLc2so/instrumental-convergence-scale-and-physical-interactions)
+
+In case you're wondering, the results we've seen so far seem to tentatively support the instrumental convergence thesis. But more research is needed before we can say anything conclusive. In fact, accelerating that research is the main reason we decided to open-source POWERplay.
+
+### Where can I learn more?
+
+If you'd like to better understand the theory behind POWERplay, you can check out the definitions POWERplay uses to calculate instrumental value. [Here's the definition it uses](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#2__Single_agent_POWER) in single-agent settings, and [here's the one it uses](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2__Multi_agent_POWER__human_AI_scenario) in multi-agent setings. And if you really like math, [here's an appendix](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#Appendix_A__Detailed_definitions_of_multi_agent_POWER) with all the juicy details.
 
 ## Installation, setup, and testing
 
-👉 _This repo has only been tested with Python 3.8.9._
+👉 _These installation instructions have been tested with Python 3.8.9 on MacOS. If you have a different system, you may need to change some steps._
 
 1. Ensure Homebrew and Graphviz are installed to enable MDP visualization. Run:
   
