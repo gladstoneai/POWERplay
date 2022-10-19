@@ -13,6 +13,7 @@ def launch_sweep(
     sweep_config_filename,
     sweep_local_id=misc.generate_sweep_id(),
     entity=data.get_settings_value(data.WANDB_ENTITY_PATH, settings_filename=data.SETTINGS_FILENAME),
+    wandb_api_key=data.get_settings_value(data.WANDB_KEY_PATH, settings_filename=data.SETTINGS_FILENAME),
     project='uncategorized',
     sweep_config_folder=data.SWEEP_CONFIGS_FOLDER,
     output_folder_local=data.EXPERIMENT_FOLDER,
@@ -45,7 +46,7 @@ def launch_sweep(
 # NOTE: The wandb Python API uses multithreading, which makes it incompatible with matplotlib.pyplot rendering.
 # The wandb CLI does not use multithreading, and is compatible with pyplot, so we run the CLI via Python subprocess.
 # (This behavior by wandb is undocumented.)
-    sp.run(['wandb', 'login'])
+    sp.run(['wandb', 'login', wandb_api_key])
     sp.run([
         'wandb',
         'agent',
