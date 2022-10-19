@@ -44,7 +44,16 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
 
 👉 _These installation instructions have been tested with Python 3.8.9 on MacOS. If you have a different system, you may need to change some of these steps._
 
-1. Ensure Homebrew and Graphviz are installed to enable MDP visualization. Run:
+1. Clone this repo and `cd` into the repo directory:
+    ```
+    % git clone https://github.com/gladstoneai/POWERplay.git
+    ```
+
+    ```
+    % cd POWERplay
+    ```
+
+2. Ensure Homebrew and Graphviz are installed to enable MDP visualization. Run:
   
     ```
     % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -54,21 +63,21 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     % brew install graphviz
     ```
 
-2. Activate `virtualenv`. Run:
+3. Activate `virtualenv`. Run:
 
     ```
     % python3 -m venv venv
     % source venv/bin/activate
     ```
 
-3. Ensure pip is up to date and download required packages. Run:
+4. Ensure pip is up to date and download required packages. Run:
 
     ```
     % pip install --upgrade pip
     % pip install -r requirements.txt
     ```
 
-4. Create an account on [Weights & Biases](https://wandb.ai/site) if you don't have one already. Then create a file in the main directory of this repo called `settings.json` with the following format:
+5. Create an account on [Weights & Biases](https://wandb.ai/site) if you don't have one already. Then create a file in the main directory of this repo called `settings.json` with the following format:
 
     ```
     {
@@ -81,7 +90,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     }
     ```
 
-5. Run the `test_vanilla()` function that will calculate the POWER for each state in the [MDP](https://en.wikipedia.org/wiki/Markov_decision_process) below, plot the results, and post them to your Weights & Biases account.
+6. Run the `test_vanilla()` function that will calculate the POWER for each state in the [MDP](https://en.wikipedia.org/wiki/Markov_decision_process) below, plot the results, and post them to your Weights & Biases account.
 
     ![Example MDP from Optimal Policies Tend to Seek POWER, https://arxiv.org/abs/1912.01683](img/opttsp-mdp-example.png)
 
@@ -97,7 +106,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     >>> base.test_vanilla()
     ```
 
-6. Confirm that the output you get is consistent. You should see something like:
+7. Confirm that the output you get is consistent. You should see something like:
 
     ```
     wandb: Currently logged in as: bob-bobson (use `wandb login --relogin` to force relogin)
@@ -154,7 +163,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
 
     This sweep iterates over three discount rate values: 0.1, 0.3, and 0.5. The config YAML file for the test sweep is located at `configs/test/test_vanilla.yaml`.
 
-7. Repeat steps 5 and 6 for the four other available test functions:
+8. Repeat steps 5 and 6 for the four other available test functions:
 
     - `test_gridworld()`, which tests the ability to run and visualize gridworlds
     - `test_stochastic()`, which tests the simulation loop with stochastic MDPs
