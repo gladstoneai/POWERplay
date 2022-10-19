@@ -144,7 +144,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
 7. Confirm that the output you get is consistent. You should see something like:
 
     ```
-    wandb: Currently logged in as: bob-bobson (use `wandb login --relogin` to force relogin)
+    wandb: Appending key for api.wandb.ai to your netrc file: /Users/bobbobson/.netrc
     wandb: Starting wandb agent 🕵️
     2022-10-18 10:24:26,174 - wandb.wandb_agent - INFO - Running runs: []
     2022-10-18 10:24:26,688 - wandb.wandb_agent - INFO - Agent received command: run
@@ -210,6 +210,8 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     ```
     >>> base.run_all_tests()
     ```
+
+    The results from all these runs, including plots, will appear in the `/expts` folder of this repo's root directory.
 
 ## Quickstart
 
