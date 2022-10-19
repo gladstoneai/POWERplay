@@ -17,7 +17,7 @@ def launch_sweep(
     project='uncategorized',
     sweep_config_folder=data.SWEEP_CONFIGS_FOLDER,
     output_folder_local=data.EXPERIMENT_FOLDER,
-    number_of_workers=mps.cpu_count(),
+    number_of_workers=None,
     plot_as_gridworld=False,
     plot_distributions=False,
     plot_correlations=False,
@@ -26,10 +26,12 @@ def launch_sweep(
     force_basic_font=False,
     environ=os.environ
 ):
+    num_workers = mps.cpu_count() if number_of_workers is None else number_of_workers
+
     input_sweep_config = data.load_sweep_config(sweep_config_filename, folder=sweep_config_folder)
 
     check.check_sweep_params(input_sweep_config['parameters'])
-    check.check_num_workers(number_of_workers)
+    check.check_num_workers(num_workers)
 
     sweep_name = '{0}-{1}'.format(sweep_local_id, input_sweep_config['name'])
 
@@ -58,7 +60,7 @@ def launch_sweep(
         **environ,
         'LOCAL_SWEEP_NAME': sweep_name,
         'SWEEP_VARIABLE_PARAMS': json.dumps(misc.get_variable_params(input_sweep_config)),
-        'NUM_WORKERS': str(number_of_workers), # Only str allowed in os.environ
+        'NUM_WORKERS': str(num_workers), # Only str allowed in os.environ
         'PLOT_AS_GRIDWORLD': str(plot_as_gridworld),
         'PLOT_DISTRIBUTIONS': str(plot_distributions),
         'PLOT_CORRELATIONS': str(plot_correlations),

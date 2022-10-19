@@ -9,7 +9,6 @@ def test_vanilla():
     launch.launch_sweep(
         'test_vanilla.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
-        number_of_workers=mps.cpu_count(),
         plot_distributions=True,
         plot_correlations=True,
         project='uncategorized',
@@ -21,7 +20,6 @@ def test_gridworld():
     launch.launch_sweep(
         'test_gridworld.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
-        number_of_workers=mps.cpu_count(),
         project='uncategorized',
         plot_distributions=True,
         plot_correlations=True,
@@ -33,7 +31,6 @@ def test_stochastic():
     launch.launch_sweep(
         'test_stochastic.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
-        number_of_workers=mps.cpu_count(),
         plot_distributions=True,
         plot_correlations=True,
         project='uncategorized',
@@ -44,7 +41,6 @@ def test_multiagent():
     launch.launch_sweep(
         'test_multiagent_simulated.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
-        number_of_workers=mps.cpu_count(),
         sweep_local_id=misc.generate_sweep_id(),
         plot_distributions=True,
         plot_correlations=True,
@@ -55,7 +51,6 @@ def test_multiagent():
     launch.launch_sweep(
         'test_multiagent_actual.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
-        number_of_workers=mps.cpu_count(),
         sweep_local_id=misc.generate_sweep_id(),
         project='uncategorized',
         plot_distributions=True,
@@ -67,7 +62,6 @@ def test_reward_correlation():
     launch.launch_sweep(
         'test_reward_correlation.yaml',
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
-        number_of_workers=mps.cpu_count(),
         project='uncategorized',
         plot_as_gridworld=True,
         plot_distributions=True,

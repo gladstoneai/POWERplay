@@ -34,17 +34,19 @@ We've used POWERplay to investigate a few topics already:
 - [How agents often compete for power even if their goals are unrelated](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems)
 - [How physical interactions between agents affect power-seeking](https://www.alignmentforum.org/posts/nisaAr7wMDiMLc2so/instrumental-convergence-scale-and-physical-interactions)
 
-In case you're wondering, the results we've seen so far seem to tentatively support the instrumental convergence thesis. But more research is needed before we can say anything conclusive. In fact, accelerating that research is the main reason we decided to open-source POWERplay.
+POWERplay can scale to handle MDPs with thousands of states. This scalability has enabled us to [discover emergent competitive interactions](https://www.alignmentforum.org/posts/nisaAr7wMDiMLc2so/instrumental-convergence-scale-and-physical-interactions#3_3_2_The_no_overlap_rule_increases_misalignment_between_far_sighted_agents) between RL agents that only seem to arise in fairly complicated settings.
+
+In case you're wondering, the results we've seen so far seem to tentatively support the instrumental convergence thesis overall. But more research is needed before we can say anything conclusive. Accelerating this research is actually the main reason we've decided to open-source POWERplay.
 
 ### Where can I learn more?
 
-If you'd like to better understand the theory behind POWERplay, you can check out the definitions POWERplay uses to calculate instrumental value. [Here's the definition it uses](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#2__Single_agent_POWER) in single-agent settings, and [here's the one it uses](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2__Multi_agent_POWER__human_AI_scenario) in multi-agent setings. And if you really like math, [here's an appendix](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#Appendix_A__Detailed_definitions_of_multi_agent_POWER) with all the juicy details.
+If you'd like to better understand the theory behind POWERplay, you can check out the definitions POWERplay uses to calculate instrumental value. [Here's the definition it uses](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#2__Single_agent_POWER) in the single-agent case, and [here's the one it uses](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2__Multi_agent_POWER__human_AI_scenario) in the multi-agent case. And if you really like math, [here's an appendix](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#Appendix_A__Detailed_definitions_of_multi_agent_POWER) with all the juicy details.
 
 ## Installation, setup, and testing
 
 👉 _These installation instructions have been tested with Python 3.8.9 on MacOS. If you have a different system, you may need to change some of these steps._
 
-1. Clone this repo and `cd` into the repo directory:
+1. Clone this repo and `cd` into the POWERplay directory:
     ```
     % git clone https://github.com/gladstoneai/POWERplay.git
     ```
@@ -214,6 +216,26 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     The results from all these runs, including plots, will appear in the `/expts` folder of this repo's root directory.
 
 ## Quickstart
+
+To run your first sweep in POWERplay, first run the `main.py` file:
+
+```
+% python3 -i main.py
+```
+
+If you open the `configs/` folder in the POWERplay repo, you'll see a file there called `my_first_sweep.yaml`. This is the sweep we're going to run. In `main.py`, run the following command:
+
+```
+>>> base.launch_sweep('my_first_sweep.yaml', plot_as_gridworld=True)
+```
+
+This sweep will probably take a few minutes to run.
+
+Once the sweep has finished, you'll be able to see the results, including pre-rendered figures and plots, in the `expts/` folder. The figures will appear inside a new folder called `<sweep_id>-my_first_sweep`.
+
+Look for files with the prefix `POWER_means`. These are plots of the POWERs (i.e., instrumental values) of each state for an agent on a simple maze gridworld. You'll notice these look different depending on the discount factor of the agent. To see an explanation of this difference, [check out this write-up](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#3__Results).
+
+## Testing and replication
 
 ## Basic usage
 

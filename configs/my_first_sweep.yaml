@@ -1,0 +1,34 @@
+name: my_first_sweep
+description: "Sweeping over three discount factors on the 7x7 maze gridworld for single agents. 20,000 reward samples."
+program: sweep.py
+parameters:
+  mdp_graph:
+    value:
+      "7x7_gridworld_maze"
+  discount_rate:
+    values:
+      - 0.1
+      - 0.9
+      - 0.99
+    names:
+      - "0p1"
+      - "0p9"
+      - "0p99"
+  reward_distribution:
+    value:
+      default_dist:
+        dist_name:
+          "uniform"
+        params:
+          [0, 1]
+      allow_all_equal_rewards:
+        False
+  num_reward_samples:
+    value:
+      20000
+  convergence_threshold:
+    value:
+      0.0001
+  random_seed:
+    value:
+      0

@@ -13,6 +13,7 @@ temp/*
 configs/*
 !configs/replication
 !configs/test
+!configs/my_first_sweep.yaml
 
 mdps/*
 
