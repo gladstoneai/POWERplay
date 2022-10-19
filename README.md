@@ -82,7 +82,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     ```
     {
         "public": {
-          "WANDB_DEFAULT_ENTITY": $YOUR_WANDB_USERNAME,
+          "WANDB_DEFAULT_ENTITY": $YOUR_WANDB_USERNAME
         },
         "private": {
             "WANDB_API_KEY": $YOUR_WANDB_KEY
@@ -93,6 +93,19 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     You can find `$YOUR_WANDB_USERNAME` in your Weights & Biases Settings. Log into Weights & Biases and [go to your settings page](https://wandb.ai/settings). Your username will be listed under "USERNAME" in the "Profile" section of your settings.
 
     You can also find `$YOUR_WANDB_KEY` in your Weights & Biases [Settings page](https://wandb.ai/settings). Scroll down to "Danger Zone" in the Settings page. Under "API keys", either copy your existing key if you have one, or click "New key" and copy it.
+
+    When you paste your username and API key into the `settings.json` file above, **make sure to put them in double quotes**. For example, if your username is `bob-bobson`, and your API key is `abc123`, your finished `settings.json` file would look like:
+
+    ```
+    {
+        "public": {
+          "WANDB_DEFAULT_ENTITY": "bob-bobson"
+        },
+        "private": {
+            "WANDB_API_KEY": "abc123"
+        }
+    }
+    ```
 
 6. Run the `test_vanilla()` function that will calculate the POWER for each state in the [MDP](https://en.wikipedia.org/wiki/Markov_decision_process) below, plot the results, and post them to your Weights & Biases account.
 
