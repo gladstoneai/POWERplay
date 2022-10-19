@@ -34,17 +34,19 @@ We've used POWERplay to investigate a few topics already:
 - [How agents often compete for power even if their goals are unrelated](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems)
 - [How physical interactions between agents affect power-seeking](https://www.alignmentforum.org/posts/nisaAr7wMDiMLc2so/instrumental-convergence-scale-and-physical-interactions)
 
-In case you're wondering, the results we've seen so far seem to tentatively support the instrumental convergence thesis. But more research is needed before we can say anything conclusive. In fact, accelerating that research is the main reason we decided to open-source POWERplay.
+POWERplay can scale to handle MDPs with thousands of states. This scalability has enabled us to [discover emergent competitive interactions](https://www.alignmentforum.org/posts/nisaAr7wMDiMLc2so/instrumental-convergence-scale-and-physical-interactions#3_3_2_The_no_overlap_rule_increases_misalignment_between_far_sighted_agents) between RL agents that only seem to arise in fairly complicated settings.
+
+In case you're wondering, the results we've seen so far seem to tentatively support the instrumental convergence thesis overall. But more research is needed before we can say anything conclusive. Accelerating this research is actually the main reason we've decided to open-source POWERplay.
 
 ### Where can I learn more?
 
-If you'd like to better understand the theory behind POWERplay, you can check out the definitions POWERplay uses to calculate instrumental value. [Here's the definition it uses](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#2__Single_agent_POWER) in single-agent settings, and [here's the one it uses](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2__Multi_agent_POWER__human_AI_scenario) in multi-agent setings. And if you really like math, [here's an appendix](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#Appendix_A__Detailed_definitions_of_multi_agent_POWER) with all the juicy details.
+If you'd like to better understand the theory behind POWERplay, you can check out the definitions POWERplay uses to calculate instrumental value. [Here's the definition it uses](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#2__Single_agent_POWER) in the single-agent case, and [here's the one it uses](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2__Multi_agent_POWER__human_AI_scenario) in the multi-agent case. And if you really like math, [here's an appendix](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#Appendix_A__Detailed_definitions_of_multi_agent_POWER) with all the juicy details.
 
 ## Installation, setup, and testing
 
 👉 _These installation instructions have been tested with Python 3.8.9 on MacOS. If you have a different system, you may need to change some of these steps._
 
-1. Clone this repo and `cd` into the repo directory:
+1. Clone this repo and `cd` into the POWERplay directory:
     ```
     % git clone https://github.com/gladstoneai/POWERplay.git
     ```
