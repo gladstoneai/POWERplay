@@ -63,6 +63,24 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     % brew install graphviz
     ```
 
+    **Note:** When you attempt to install graphviz, you may encounter the following error:
+    
+    ```
+    Error: graphviz: Invalid bottle tag symbol
+    ```
+
+    If this happens, you may be able to fix it by running the following command:
+
+    ```
+    % brew update-reset
+    ```
+
+    and _then_ installing graphviz afterwards:
+
+    ```
+    % brew install graphviz
+    ```
+
 3. Activate `virtualenv`. Run:
 
     ```
