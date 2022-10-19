@@ -114,7 +114,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     To run `test_vanilla()`, do the following:
 
     ```
-    % python -i main.py
+    % python3 -i main.py
     ```
 
     Then:
