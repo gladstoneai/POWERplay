@@ -1,5 +1,4 @@
 import pathlib as path
-import multiprocessing as mps
 
 from .lib.utils import misc
 from .lib import data
@@ -8,6 +7,7 @@ from . import launch
 def test_vanilla():
     launch.launch_sweep(
         'test_vanilla.yaml',
+        sweep_local_id=misc.generate_sweep_id(),
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         plot_distributions=True,
         plot_correlations=True,
@@ -19,6 +19,7 @@ def test_vanilla():
 def test_gridworld():
     launch.launch_sweep(
         'test_gridworld.yaml',
+        sweep_local_id=misc.generate_sweep_id(),
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         project='uncategorized',
         plot_distributions=True,
@@ -30,6 +31,7 @@ def test_gridworld():
 def test_stochastic():
     launch.launch_sweep(
         'test_stochastic.yaml',
+        sweep_local_id=misc.generate_sweep_id(),
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         plot_distributions=True,
         plot_correlations=True,
@@ -61,6 +63,7 @@ def test_multiagent():
 def test_reward_correlation():
     launch.launch_sweep(
         'test_reward_correlation.yaml',
+        sweep_local_id=misc.generate_sweep_id(),
         entity=data.get_settings_value('public.WANDB_DEFAULT_ENTITY'),
         project='uncategorized',
         plot_as_gridworld=True,
