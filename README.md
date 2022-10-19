@@ -215,6 +215,26 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
 
 ## Quickstart
 
+To run your first sweep in POWERplay, first run the `main.py` file:
+
+```
+% python3 -i main.py
+```
+
+If you open the `configs/` folder in the POWERplay repo, you'll see a file there called `my_first_sweep.yaml`. This is the sweep we're going to run. In `main.py`, run the following command:
+
+```
+>>> base.launch_sweep('my_first_sweep.yaml', plot_as_gridworld=True)
+```
+
+This sweep will probably take a few minutes to run.
+
+Once the sweep has finished, you'll be able to see the results, including pre-rendered figures and plots, in the `expts/` folder. The figures will appear inside a new folder called `<sweep_id>-my_first_sweep`.
+
+Look for files with the prefix `POWER_means`. These are plots of the POWERs (i.e., instrumental values) of each state for an agent on a simple maze gridworld. You'll notice these look different depending on the discount factor of the agent. To see an explanation of this difference, [check out this write-up](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#3__Results).
+
+## Testing and replication
+
 ## Basic usage
 
 ### Running an experiment
