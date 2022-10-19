@@ -83,7 +83,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     {
         "public": {
           "WANDB_DEFAULT_ENTITY": $YOUR_WANDB_USERNAME,
-        }
+        },
         "private": {
             "WANDB_API_KEY": $YOUR_WANDB_KEY
         }
