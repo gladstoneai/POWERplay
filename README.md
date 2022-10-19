@@ -90,9 +90,9 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     }
     ```
 
-    You can find `$YOUR_WANDB_USERNAME` in your Weights & Biases profile. Log into Weights & Biases, click your picture in the upper-right, and click "Profile". Your wandb username is underneath your enlarged profile picture on the left-hand side.
+    You can find `$YOUR_WANDB_USERNAME` in your Weights & Biases Settings. Log into Weights & Biases and [go to your settings page](https://wandb.ai/settings). Your username will be listed under "USERNAME" in the "Profile" section of your settings.
 
-    You can find `$YOUR_WANDB_KEY` by logging into Weights & Biases and [going to your settings](https://wandb.ai/settings). Scroll down to "Danger Zone". Under "API keys", either copy your existing key if you have one, or click "New key" and copy that one.
+    You can also find `$YOUR_WANDB_KEY` in your Weights & Biases [Settings page](https://wandb.ai/settings). Scroll down to "Danger Zone" in the Settings page. Under "API keys", either copy your existing key if you have one, or click "New key" and copy it.
 
 6. Run the `test_vanilla()` function that will calculate the POWER for each state in the [MDP](https://en.wikipedia.org/wiki/Markov_decision_process) below, plot the results, and post them to your Weights & Biases account.
 
