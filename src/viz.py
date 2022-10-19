@@ -235,7 +235,7 @@ def plot_all_outputs(
             'POWER samples over states{}'.format(
                 ', Agent A at {}'.format(fig.agent_A_state) if hasattr(fig, 'agent_A_state') else ''
             ): fig for fig in plot_sample_distributions(
-                reward_samples,
+                power_samples,
                 state_list,
                 sample_quantity='POWER',
                 sample_units='reward units',

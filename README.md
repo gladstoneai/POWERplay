@@ -231,11 +231,127 @@ If you open the `configs/` folder in the POWERplay repo, you'll see a file there
 
 This sweep will probably take a few minutes to run.
 
-Once the sweep has finished, you'll be able to see the results, including pre-rendered figures and plots, in the `expts/` folder. The figures will appear inside a new folder called `<sweep_id>-my_first_sweep`.
+Once the sweep has finished, you'll be able to see the results, including pre-rendered figures and plots, in the `expts/` folder. The figures will appear inside a new folder called `{SWEEP_ID}-my_first_sweep`.
 
 Look for files with the prefix `POWER_means`. These are plots of the POWERs (i.e., instrumental values) of each state for an agent on a simple maze gridworld. You'll notice these look different depending on the discount factor of the agent. To see an explanation of this difference, [check out this write-up](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#3__Results).
 
 ## Testing and replication
+
+### Testing
+
+POWERplay includes five test functions in its core module `base`. You may have already run these as part of your [installation and setup](#installation-setup-and-testing). POWERplay also includes a wrapper function, `run_all_tests()`, that runs all these tests in sequence.
+
+#### Basic test
+
+🟣 If you want to test POWERplay's basic functionality, use `base.test_vanilla()`. Basic functionality means things like ingesting config files, multiprocessing to compute POWER values, generating output figures, connecting and uploading results to your [wandb](https://wandb.ai/site) account, and saving results and figures locally.
+
+For example:
+
+```
+>>> base.test_vanilla()
+```
+
+This function executes the sweep defined in the config file `config/test/test_vanilla.yaml`. The outputs of the sweep, incluing figures, get saved locally under `expts/{SWEEP_ID}-test_vanilla`. (And get separately uploaded to wandb.)
+
+#### Gridworld test
+
+🟣 If you want to test POWERplay's ability to plot POWERs on gridworlds, use `base.test_gridworld()`. Instead of displaying POWERs in a bar plot, this function displays them as a heat map on a gridworld.
+
+For example:
+
+```
+>>> base.test_gridworld()
+```
+
+This function executes the sweep defined in the config file `config/test/test_gridworld.yaml`. The agent's environment is a simple 3x3 gridworld.
+
+The outputs of the sweep get uploaded to wandb and separately get saved locally under `expts/{SWEEP_ID}-test_gridworld`. Files with the prefix `POWER_means-agent_H` are figures that display POWERs as gridworld heatmaps.
+
+#### Stochastic test
+
+🟣 If you want to test POWERplay's ability to compute POWERs on _stochastic_ MDPs, use `base.test_stochastic()`.
+
+For example:
+
+```
+>>> base.test_stochastic()
+```
+
+This function executes the sweep defined in the config file `config/test/test_stochastic.yaml`. The agent's environment is a 4-state MDP with stochastic transitions.
+
+The outputs of the sweep get uploaded to wandb and separately get saved locally under `expts/{SWEEP_ID}-test_stochastic`.
+
+#### Fixed-policy multi-agent test
+
+🟣 If you want to test POWERplay's ability to compute POWERs on multi-agent MDPs, use `base.test_multiagent()`. Note that this computes Agent H POWERs assuming a _fixed policy_ for Agent A. So this test isn't "truly" multi-agent, because we can just _simulate_ Agent A's presence by incorporating its dynamics into Agent H's perceived transition function.
+
+For example:
+
+```
+>>> base.test_multiagent()
+```
+
+This function executes two sweeps. The first, defined in the config file `config/test/test_multiagent_simulated.yaml`, _simulates_ the presence of Agent A, but does not execute any multi-agent code. The second sweep, defined in the config file `config/test/test_multiagent_actual.yaml`, runs Agent A using a defined fixed policy and multi-agent code. If POWERplay is functioning correctly, the outputs of these two sweeps should be exactly identical.
+
+The outputs of these sweep get uploaded to wandb and separately get saved locally under `expts/{SWEEP_ID}-test_multiagent_simulated` and `expts/{SWEEP_ID}-test_multiagent_actual`.
+
+#### Reward-correlation multi-agent test
+
+🟣 To test POWERplay's ability to compute POWERs on multi-agent MDPs [where each agent may have a different reward function](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#3_1_Multi_agent_reward_function_distributions), use `base.test_reward_correlation()`. This test function uses a [novel definition of POWER](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2__Multi_agent_POWER__human_AI_scenario) (i.e., [instrumental value](#what-can-i-do-with-it)) that applies to certain important kinds of multi-agent systems.
+
+For example:
+
+```
+>>> base.test_reward_correlation()
+```
+
+This function executes the sweep defined in the config file `config/test/test_reward_correlation.yaml`. The agents' environment is a 3x3 gridworld with joint states over the positions of the two agents — so 81 states in total, since either agent can occupy any of 9 positions on the 3x3 grid.
+
+The outputs of the sweep get uploaded to wandb and separately get saved locally under `expts/{SWEEP_ID}-test_reward_correlation`. Files with the prefix `POWER_means-agent_H` show the POWERs of Agent H, and files with the prefix `POWER_means-agent_A` show the POWERs of Agent A. This test may take a few minutes to run.
+
+#### Run all tests
+
+🟣 You can run all of the above tests in succession using:
+
+```
+>>> base.run_all_tests()
+```
+
+### Replicating figures
+
+🟣 You can use POWERplay to easily reproduce all the figures from our [first sequence](https://www.alignmentforum.org/s/HBMLmW9WsgsdZWg4R) of published experiments. We've included a function called `base.reproduce_figure()` which lets you input which figure you'd like to reproduce, and automatically runs a script to generate that figure for you.
+
+For example:
+
+```
+>>> base.reproduce_figure(1, 2)
+```
+
+will reproduce Figures 2, 3, and 4 from [Part 1](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems) of our experiment series. Those three figures are all based on data from the same experiment sweep, so `reproduce_figure()` runs one sweep and reproduces all of these figures together to save time.
+
+This function runs sweeps defined by the config files located in `configs/replication`.
+
+Once it's finished rendering your figure, `reproduce_figure()` will print a message telling you the filename under which it's saved the figure. For example:
+
+```
+Figure available in temp/POWER_means-PART_1-FIGURE_1.png
+```
+
+This function saves figures in the `temp/` folder of the POWERplay repo.
+
+🔵 Here are the inputs to `base.reproduce_figure()`.
+
+(Listed as `name [type] (default): description`.)
+
+- `post_number [int, required]`: A number that corresponds to the blog post whose figure you want to reproduce. [This post](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems) corresponds to `1`, [this post](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems) to `2`, and [this post](https://www.alignmentforum.org/posts/nisaAr7wMDiMLc2so/instrumental-convergence-scale-and-physical-interactions) to `3`.
+
+  Typical value: `1`
+
+- `fig_number [int, required]`: The number of the figure you'd like to reproduce in the post labeled by `post_number`. If multiple figures use the data from the same experiment sweep, a single run of `reproduce_figure()` will reproduce all those figures. For example, Figs 2, 3, and 4 in Part 1 all use the same sweep data. So if you run `reproduce_figure(1, 2)`, you'll generate all three figures.
+
+  Note that `reproduce_figure(3, 1)` isn't supported, since Fig 1 in Part 3 is a copy of Fig 2 in Part 1. Keep in mind that some of the sweeps triggered by `reproduce_figure()` may take a few hours to run, especially those for `post_number=3`.
+
+  Typical value: `1`
 
 ## Basic usage
 
