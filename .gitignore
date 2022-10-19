@@ -2,12 +2,15 @@
 settings.json
 
 /venv
-/expts
 /wandb
-/temp
+
+expts/*
+!expts/.gitkeep
+
+temp/*
+!temp/.gitkeep
 
 configs/*
-
 !configs/replication
 !configs/test
 
