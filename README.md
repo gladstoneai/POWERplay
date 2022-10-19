@@ -144,7 +144,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
 7. Confirm that the output you get is consistent. You should see something like:
 
     ```
-    wandb: Currently logged in as: bob-bobson (use `wandb login --relogin` to force relogin)
+    wandb: Appending key for api.wandb.ai to your netrc file: /Users/bobbobson/.netrc
     wandb: Starting wandb agent 🕵️
     2022-10-18 10:24:26,174 - wandb.wandb_agent - INFO - Running runs: []
     2022-10-18 10:24:26,688 - wandb.wandb_agent - INFO - Agent received command: run
@@ -200,16 +200,18 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
 
 8. Repeat steps 5 and 6 for the four other available test functions:
 
-    - `test_gridworld()`, which tests the ability to run and visualize gridworlds
-    - `test_stochastic()`, which tests the simulation loop with stochastic MDPs
-    - `test_multiagent()`, which tests the simulation loop in multi-agent settings
-    - `test_reward_correlation()`, which tests the ability to simulate multi-agent settings with agents [whose reward functions are partially correlated](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#3_1_Multi_agent_reward_function_distributions)
+    - `base.test_gridworld()`, which tests the ability to run and visualize gridworlds
+    - `base.test_stochastic()`, which tests the simulation loop with stochastic MDPs
+    - `base.test_multiagent()`, which tests the simulation loop in multi-agent settings
+    - `base.test_reward_correlation()`, which tests the ability to simulate multi-agent settings with agents [whose reward functions are partially correlated](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#3_1_Multi_agent_reward_function_distributions)
 
     You can also run all these test functions in succession with the following command:
 
     ```
     >>> base.run_all_tests()
     ```
+
+    The results from all these runs, including plots, will appear in the `/expts` folder of this repo's root directory.
 
 ## Quickstart
 
