@@ -8,6 +8,8 @@ from . import policy
 def update_mdp_graph_interface(input_mdp):
     output_mdp_ = cp.deepcopy(input_mdp)
 
+    print()
+
     if graph.is_graph_multiagent(input_mdp):
         delete_overlapping = input(
             'Do you want to delete overlapping states in this MDP? (y/n) '\
@@ -93,8 +95,8 @@ def update_mdp_graph_interface(input_mdp):
     
     return output_mdp_
 
-def construct_multiagent_policy_interface(stochastic_graph):
-    policy_A_ = policy.quick_mdp_to_policy(stochastic_graph)
+def update_multiagent_policy_interface(policy_graph):
+    policy_A_ = cp.deepcopy(policy_graph)
 
     print('Now updating policy for Agent A.')
     print('State update example: { \'stay\': 0, \'up\': 1, \'down\': 0, \'left\': 0, \'right\': 0 }')

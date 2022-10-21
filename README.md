@@ -355,6 +355,126 @@ This function saves figures in the `temp/` folder of the POWERplay repo.
 
 ## Basic usage
 
+To execute a complete experiment in POWERplay, you need to follow three steps:
+
+1. Set up the environment for the experiment
+2. Launch and run the experiment
+3. Visualize the results of the experiment
+
+Each of these steps is supported in the `base` module. We'll look at each one in turn.
+
+### Setting up the environment
+
+POWERplay supports both single-agent and multi-agent environments. In its multi-agent mode, POWERplay simulates two agents: a human agent (**"Agent H"**) and an AI agent (**"Agent A"**). POWERplay assumes that Agent A is dominant in this multi-agent setting, in the sense that Agent A learns much faster than Agent H. This assumption makes it possible to run experiments that are [relevant to long-term AI safety](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#1__Introduction), while still remaining computationally tractable. See [this write-up](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2__Multi_agent_POWER__human_AI_scenario) for a full description of our multi-agent setting, and [this appendix](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#Appendix_A__Detailed_definitions_of_multi_agent_POWER) for full mathematical details.
+
+In POWERplay, **setting up the environment** for an experiment means creating, at most, two objects:
+
+1. **An MDP graph:** This is a graph that describes the [Markov decision process](https://en.wikipedia.org/wiki/Markov_decision_process) (MDP) your agent(s) operate in. The MDP graph defines the physics of the world your agent(s) live in. When an agent takes an action, your MDP graph describes how the world around it reacts to its action.
+
+    MDP graphs get saved in the `mdps/` folder. When saving a multi-agent gridworld, best practice is to prefix the filename with `'joint_'`. For example, `'3x3_gridworld'` in the single-agent case, and `'joint_3x3_gridworld'` in the multi-agent case.
+
+2. **A policy graph:** This is a graph that describes the [policy](https://stackoverflow.com/questions/46260775/what-is-a-policy-in-reinforcement-learning) that **Agent A** either a) follows at all times, or b) starts off with. We never have to define a policy graph for Agent H, because POWERplay runs its experiments from Agent H's "perspective" — meaning Agent H always _learns_ its policies during the experiment, rather than having them predefined. When we run a single-agent experiment, we're only running Agent H, so we don't need to define a policy graph.
+
+    Policy graphs get saved in the `policies/` folder. When saving a policy graph, we **highly recommend** prefixing it with the name of the MDP it's associated with. For example, a uniform random policy acting on the `'joint_3x3_gridworld'` MDP might have the name `'joint_3x3_gridworld_agent_A_uniform_random'`.
+
+#### Construct a single-agent gridworld MDP
+
+🟣 To create a single-agent gridworld MDP, use `base.construct_single_agent_gridworld_mdp()`. You can quickly construct simple gridworlds with this function. For example, here's how to create and visualize a basic 3x4 gridworld:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4)
+>>> base.view_gridworld(gridworld)
+```
+
+![3x4 gridworld example](img/3x4-gridworld-example.png)
+
+You can also create more interesting gridworlds by "cutting out" squares from a bigger gridworld. For example, here's how to create (and visualize) a tiny maze from the 3x4 gridworld above:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> base.view_gridworld(gridworld)
+```
+
+![3x4 gridworld maze example](img/3x4-gridworld-maze-example.png)
+
+We'll look at how to visualize gridworlds in more detail below, but for now we'll quickly note that you can also visualize this gridworld in its "raw" format as an MDP:
+
+```
+>>> base.plot_mdp_or_policy(gridworld)
+```
+
+![3x4 gridworld maze MDP example](img/3x4-gridworld-maze-example-mdp.png)
+
+This is the same gridworld MDP as above, but with the state transitions and probabilities explicitly mapped out. This visualization contains _all_ the information POWERplay knows about an MDP, so it's the best one to use for deep troubleshooting.
+
+The last thing you can do with `base.construct_single_agent_gridworld_mdp()` is inject **stochastic noise** into a gridworld MDP. Normally, when an agent takes an action on a gridworld, it moves deterministically in the direction that's consistent with its action. You can see this in the MDP graph above: if the agent starts from the `'(2, 0)'` state (bottom left of the grid) and takes the `'right'` action, it ends up in the `'(2, 1)'` state with probability 1.
+
+But you can add noise to the MDP that makes this outcome non-deterministic. With noise, when the agent takes an action, it's no longer guaranteed to end up in the state that corresponds to the action it took. The more noise you add, the less influence the agent's action has over its next state. For example, here's how adding a moderate amount of noise changes the dynamics of our tiny maze gridworld above:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']], stochastic_noise_level=0.5)
+>>> base.plot_mdp_or_policy(gridworld)
+```
+
+![3x4 gridworld maze MDP example with noise](img/3x4-gridworld-maze-noise-example-mdp.png)
+
+Notice that the transitions look much more complicated than before. A `stochastic_noise_level` of 0.5 means that 0.5 units of probability are "spread out" equally over all the allowed next-states of our MDP. So this time, when our agent starts from the `'(2, 0)'` state and takes the `'right'` action, it ends up in the `'(2, 1)'` state with only probability 0.75, but ends up in the `'(2, 0)'` state with probability 0.25. (Those are the two states it's allowed to access from `'(2, 0)'`, and the stochastic noise level of 0.5 is divided equally between them.)
+
+Finally, you can **bias** your gridworld MDP's stochastic noise in a particular direction. For example:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']], stochastic_noise_level=0.5, noise_bias={ 'left': 0.2 })
+>>> base.plot_mdp_or_policy(gridworld)
+```
+
+![3x4 gridworld maze MDP example with biased noise](img/3x4-gridworld-maze-biased-noise-example-mdp.png)
+
+The best way to build up an intuition for all these options is to try them out, and then visualize the resulting MDPs with `base.plot_mdp_or_policy()`.
+
+🔵 Here are the input arguments to `base.construct_single_agent_gridworld_mdp()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `num_rows [int, required]`: The maximum number of rows in your gridworld.
+
+  Typical value: `4`
+
+- `num_cols [int, required]`: The maximum number of columns in your gridworld.
+
+  Typical value: `4`
+
+- `squares_to_delete [list] ([])`: A list of 2-tuples, where each 2-tuple is a pair of coordinates (in **string** format) that represent the edges of a square you want to delete from your gridworld. For example, if you want to delete the square with the top-left corner at (0, 0) and the bottom-right corner at (2, 2), then you would use `squares_to_delete=[['(0, 0)', '(2, 2)']]`. This format allows us to quickly construct gridworlds with interesting structures.
+
+  Typical value: `[['(0, 0)', '(3, 2)'], ['(6, 4)', '(8, 7)']]`
+
+- `stochastic_noise_level [float] (0)`: The level of stochastic noise you want to inject into your MDP graph. Setting this to `0` (the default) means no noise: when the agent takes an action, it will always end up in the state consistent with that action. So if an agent on a gridworld takes the `'right'` action, it will always move one cell to the right.
+
+    Setting this to `1` means the agent's movement is fully determined by noise: the agent has no control at all over its movements, and its next state is completely random. So if an agent is at the upper left-hand corner of a gridworld — meaning it's allowed to take the `'down'`, `'right'` or `'stay'` actions — whatever action it takes, it will have a 1/3 probability each of moving down, moving right, or staying where it is.
+
+    Setting stochastic noise to an intermediate value between `0` and `1` allocates that amount of probability to be divided equally between allowed actions, and allocates the rest to the action the agent actually takes. For example, suppose an agent is at the upper left-hand corner of a gridworld and `stochastic_noise_level=0.3`. Then if the agent takes the `'down'` action, it will have probability `0.3` allocated equally between the `'down'`, `'right'` and `'stay'` actions (`0.3 / 3 = 0.1` each), and the rest, `1 - 0.3 = 0.7`, allocated to the `'down'` action. So the final probabilities will be `'down'` with `0.7 + 0.1 = 0.8`, `'right'` with `0.1`, and `'stay'` with `0.1`.
+
+    Typical value: `0.3`
+
+- `noise_bias [dict] ({})`: A dict that defines the the direction and magnitude of the bias in the stochastic noise for your MDP. If empty, (i.e., `{}`) then `stochastic_noise_level` divides its probability equally between allowed next states. For example, suppose an agent is at the upper left-hand corner of a gridworld, and we have `stochastic_noise_level=0.3` with `noise_bias={}`. Then if the agent takes the `'down'` action, it will have probability `0.3` allocated equally between the `'down'`, `'right'` and `'stay'` actions (`0.3 / 3 = 0.1` each), and the rest, `1 - 0.3 = 0.7`, allocated to the `'down'` action. So the final probabilities will be `'down'` with `0.7 + 0.1 = 0.8`, `'right'` with `0.1`, and `'stay'` with `0.1`.
+
+    If `noise_bias` includes a direction and magnitude, then the probability mass that corresponds with that magnitude gets allocated along the indicated direction. For example, if `stochastic_noise_level=0.3` and `noise_bias={ 'right': 0.3 }`, then the entire amount of stochastic noise gets allocated to the `'right'` action, rather than being divided equally among all legal actions. So if an agent is at the upper left-hand corner of a gridworld and takes the `'down'` action, it will have probability `0.3` allocated to the `'right'` action, and the rest, `1 - 0.3 = 0.7`, allocated to the `'down'` action. So the final probabilities will be `'down'` with `0.7`, and `'right'` with `0.3`.
+
+    Typical value: `{ 'right': 0.3 }`
+
+- `description [str] ('single-agent gridworld')`: A string that describes your gridworld.
+
+    Typical value: `'3x3 single-agent gridworld with stochastic noise of 0.3'`
+
+🟢 Here is the output to `base.construct_single_agent_gridworld_mdp()`:
+
+- `mdp_graph [networkx.DiGraph]`: An MDP graph representing the gridworld you created. Each square has a self-loop, and connections to the squares above, beneath, to the left, and to the right of it (if they exist).
+
+  The states of the gridworld MDP are strings that indicate the coordinates of each cell in the gridworld. For example, the state `'(0, 0)'` represents the cell at the top-left corner of the gridworld.
+
+  You can save your `mdp_graph` with `base.save_mdp_graph()`, view it as a gridworld with `base.view_gridworld()`, and view its full MDP with `base.plot_mdp_or_policy()`.
+
+
+
 ### Running an experiment
 
 🟣 To run an experiment, use the `launch.launch_sweep()` function. This function takes a config filename as its only required argument. The config file is a YAML file that contains the parameters for the experiment.
@@ -620,39 +740,6 @@ For full documentation on the NetworkX `DiGraph()` API, see [here](https://netwo
 
 ### Creating a gridworld MDP graph
 
-🟣 To create a gridworld MDP, use `mdp.construct_gridworld()`. For example, the following code creates the gridworld pictured below:
-
-```
->>> gridworld = mdp.construct_gridworld(10, 10, squares_to_delete=[['(0, 0)', '(3, 2)'], ['(6, 4)', '(8, 7)']])
-```
-
-![gridworld-example](img/gridworld_example.png)
-
-🔵 Here are the input arguments to `mdp.construct_gridworld()` and what they mean:
-
-(Listed as `name [type] (default): description`.)
-
-- `num_rows [int, required]`: The maximum number of rows in your gridworld.
-
-  Typical value: `5`
-
-- `num_cols [int, required]`: The maximum number of columns in your gridworld.
-
-  Typical value: `5`
-
-- `name [str] ('custom gridworld')`: The name you want to give your gridworld.
-
-  Typical value: `'3x3 gridworld'`
-
-- `squares_to_delete [list] ([])`: A list of 2-tuples, where each 2-tuple is a pair of coordinates (in **string** format) for the edges of a square you want to delete from your gridworld. For example, if you want to delete the square with the top-left corner at (0, 0) and the bottom-right corner at (2, 2), then you would use `squares_to_delete=[['(0, 0)', '(2, 2)']]`. This format allows us to quickly construct gridworlds with interesting structures.
-
-  Typical value: `[['(0, 0)', '(3, 2)'], ['(6, 4)', '(8, 7)']]`
-
-🟢 Here is the output to `mdp.construct_gridworld()`:
-
-- `gridworld_graph [networkx.DiGraph]`: An MDP graph representing the gridworld you created. Each square has a self-loop, and connections to the squares above, beneath, to the left, and to the right of it (if they exist).
-
-  The states of the gridworld MDP are strings indicating the coordinates of each cell in the gridworld. For example, the state `'(0, 0)'` represents the cell at the top-left corner of the gridworld.
 
 ### Creating a stochastic MDP graph
 

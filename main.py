@@ -16,8 +16,6 @@ from src import base
 # -- base.build_quick_random_policy
 # -- base.visualize_all_correlated_reward_samples
 # -- base.test_vanilla, base.test_gridworld, base.test_stochastic, base.test_multiagent, base.test_reward_correlation (runs those from test)
-# -- base.run_all_tests (runs full suite of tests)
-# -- base.reproduce_figure (runs code in test to reproduce figures from the AF post, with figure as an argument)
 # -- base.generate_sweep_animations (wrapper for anim.generate_sweep_animations)
 # -- base.launch_sweep (wrapper for launch.launch_sweep)
 # -- base.generate_noised_gridworlds (wrapper for mdp.generate_noised_gridworlds)
@@ -41,6 +39,7 @@ from src import base
 # ---- mdp.update_state_action
 # ---- mdp.remove_state_action
 # ---- mdp.remove_state_completely
+# ---- mdp.generate_noised_gridworlds
 # --- multi: creates and updates multi-agent graphs
 # ---- multi.remove_states_with_overlapping_agents
 # ---- multi.create_joint_multiagent_graph
