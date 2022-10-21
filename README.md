@@ -757,6 +757,75 @@ Here's an example of using this workflow to define a multi-agent policy that cho
 
   You can save your `multiagent_policy_graph` with `base.save_policy_graph()`, and view it with `base.plot_mdp_or_policy()`.
 
+#### View a gridworld
+
+ 🟣 You can view a gridworld MDP by using the `base.view_gridworld()` function. Here's what a tiny single-agent gridworld maze looks like, for example:
+
+ ```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> base.view_gridworld(gridworld)
+```
+
+![3x4 gridworld maze example](img/3x4-gridworld-maze-example.png)
+
+For a single-agent gridworld, `base.view_gridworld()` shows a single plot with the coordinates of each gridworld cell on the x- and y-axes of the plot. The caption of this plot, and the numbers inside the cells, are meaningless. The `base.view_gridworld()` function is best used for quick visualizations and troubleshooting.
+
+You can use `base.view_gridworld()` to view multi-agent gridworlds as well. Because multi-agent gridworlds are defined on a **joint state space** (i.e., over the positions of both Agent H and Agent A), the visualization is more complicated. Here's an example of the same gridworld as above, but in multi-agent format:
+
+```
+>>> multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> base.view_gridworld(multiagent_gridworld)
+```
+
+![3x4 multi-agent gridworld maze example](img/3x4-multiagent-gridworld-maze-example.png)
+
+This time, `base.view_gridworld()` produces many plots, one for each position of Agent A. Within each plot, each cell corresponds to a position of Agent H, and the red open square shows the position of Agent A within that block.
+
+🔵 Here are the input arguments to `base.view_gridworld()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `gridworld_mdp_graph [networkx.DiGraph, required]`: A gridworld MDP graph. Can be either a single-agent MDP or a joint multi-agent MDP, but it has to be formatted as a gridworld.
+
+  Typical value: `base.construct_multiagent_gridworld_mdp(3, 4)`
+
+#### Plot an MDP or policy
+
+🟣 You can plot any kind of MDP or policy — single-agent or multi-agent — using `base.plot_mdp_or_policy()`. For example, here's how to plot a single-agent random policy on a tiny maze gridworld:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> random_policy = base.construct_policy_from_mdp(gridworld)
+>>> base.plot_mdp_or_policy(random_policy)
+```
+
+![3x4 gridworld maze policy example](img/3x4-gridworld-maze-policy-example.png)
+
+And here's how to plot the multi-agent MDP that corresponds to the same gridworld:
+
+```
+>>> multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> base.plot_mdp_or_policy(multiagent_gridworld)
+```
+
+![3x4 multi-agent gridworld maze MDP example](img/3x4-multiagent-gridworld-maze-example-mdp.png)
+
+The `base.plot_mdp_or_policy()` function plots 4 "state trees" per row by default, as you can see from the two graphs above. Sometimes joint multi-agent MDPs have so many states that it's impractical to plot all of them in a single figure. POWERplay can chunk these big plots over multiple different figures if that happens.
+
+🔵 Here are the input arguments to `base.view_gridworld()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `mdp_or_policy_graph [networkx.DiGraph, required]`: An MDP or policy graph. Can be either a single-agent or multi-agent in either case.
+
+  Typical value: `base.construct_multiagent_gridworld_mdp(3, 4)`
+
+- `subgraphs_per_row [int] (4)`: The number of state subgraphs to plot per row of the final figure.
+
+  Typical value: `4`
+
+- `subgraphs_per_figure [int] (128)`: The number of state subgraphs to plot per figure. If the graph you're plotting has more states than this, the state subgraphs will get chunked over multiple figures. For example, if you're plotting an MDP with 300 states and `subgraphs_per_figure=128`, POWERplay will plot your MDP as two figures with 128 subgraphs, and one figure with (300 - 2 x 128) = 44 subgraphs.
+
 ### Running an experiment
 
 🟣 To run an experiment, use the `launch.launch_sweep()` function. This function takes a config filename as its only required argument. The config file is a YAML file that contains the parameters for the experiment.
