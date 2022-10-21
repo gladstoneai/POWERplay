@@ -146,11 +146,11 @@ def plot_mdp_or_policy(
 def save_mdp_graph(mdp_graph, mdp_filename):
     data.save_graph_to_dot_file(mdp_graph, mdp_filename, folder=data.MDPS_FOLDER)
 
-def save_policy_graph(policy_graph, policy_filename):
-    data.save_graph_to_dot_file(policy_graph, policy_filename, folder=data.POLICIES_FOLDER)
-
 def load_mdp_graph(mdp_filename):
     data.load_graph_from_dot_file(mdp_filename, folder=data.MDPS_FOLDER)
+
+def save_policy_graph(policy_graph, policy_filename):
+    data.save_graph_to_dot_file(policy_graph, policy_filename, folder=data.POLICIES_FOLDER)
 
 def load_policy_graph(policy_filename):
     data.load_graph_from_dot_file(policy_filename, folder=data.POLICIES_FOLDER)

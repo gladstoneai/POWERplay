@@ -826,6 +826,94 @@ The `base.plot_mdp_or_policy()` function plots 4 "state trees" per row by defaul
 
 - `subgraphs_per_figure [int] (128)`: The number of state subgraphs to plot per figure. If the graph you're plotting has more states than this, the state subgraphs will get chunked over multiple figures. For example, if you're plotting an MDP with 300 states and `subgraphs_per_figure=128`, POWERplay will plot your MDP as two figures with 128 subgraphs, and one figure with (300 - 2 x 128) = 44 subgraphs.
 
+#### Save an MDP graph
+
+🟣 To save an MDP graph you've created or edited, use `base.save_mdp_graph()`. For example:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> base.save_mdp_graph(gridworld, '3x4_gridworld_maze')
+```
+
+This will save your MDP in the `mdps/` folder of the POWERplay directory. If you're saving a multi-agent MDP graph, **best practice** is to prefix `'joint_'` to the filename, e.g.,
+
+```
+>>> multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> base.save_mdp_graph(multiagent_gridworld, 'joint_3x4_gridworld_maze')
+```
+
+🔵 Here are the input arguments to `base.save_mdp_graph()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `mdp_graph [networkx.DiGraph, required]`: The MDP graph you want to save.
+
+  Typical value: `base.construct_multiagent_gridworld_mdp(3, 4)`
+
+- `mdp_filename [str, required]`: The filename under which to save the MDP graph in the `mdps/` folder. If you're saving a multi-agent MDP graph, prefix the filename with `'joint_'`.
+
+  Typical value: `'joint_3x4_gridworld_maze'`
+
+#### Load an MDP graph
+
+🟣 To load an MDP graph into memory, use `base.load_mdp_graph()`. For example:
+
+```
+>>> multiagent_gridworld = base.load_mdp_graph('joint_3x3_gridworld')
+```
+
+You can then edit the MDP graph just like any other.
+
+🔵 Here are the input arguments to `base.load_mdp_graph()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `mdp_filename [str, required]`: The filename of the MDP graph you want to load, not including the extension. You'll find existing MDP graphs in the `mdps/` folder.
+
+  Typical value: `'joint_3x3_gridworld'`
+
+#### Save a policy graph
+
+🟣 To save a policy graph you've created or edited, use `base.save_policy_graph()`. For example:
+
+```
+>>> multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> random_policy_agent_A = base.construct_policy_from_mdp(gridworld, acting_agent_is_H=False)
+>>> base.save_policy_graph(random_policy_agent_A, 'joint_3x4_gridworld_maze_agent_A_uniform_random')
+```
+
+This will save your policy in the `policies/` folder of the POWERplay directory. When saving a policy, **best practice** is to prefix the policy filename with the _entire filename_ of the MDP it's associated with, then the agent the policy is for, and finally a description of what the policy does. In the example above, `'joint_3x4_gridworld_maze'` is the filename of the MDP the policy is defined on; `'agent_A'` is the agent the policy is for, and `'uniform_random'` says that the policy is a uniform random policy.
+
+🔵 Here are the input arguments to `base.save_policy_graph()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `policy_graph [networkx.DiGraph, required]`: The policy graph you want to save.
+
+  Typical value: `base.construct_multiagent_gridworld_mdp(3, 4)`
+
+- `policy_filename [str, required]`: The filename under which to save the policy graph in the `policies/` folder. Always prefix the policy filename with the _entire filename_ of the MDP it's associated with, then the agent the policy is for (H or A), and finally a description of what the policy does.
+
+  Typical value: `'joint_3x4_gridworld_maze_agent_A_uniform_random'`
+
+#### Load a policy graph
+
+🟣 To load a policy graph into memory, use `base.load_policy_graph()`. For example:
+
+```
+>>> random_policy = base.load_policy_graph('joint_3x3_gridworld_agent_A_uniform_random')
+```
+
+You can then edit the policy graph just like any other.
+
+🔵 Here are the input arguments to `base.load_policy_graph()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `policy_filename [str, required]`: The filename of the policy graph you want to load, not including the extension. You'll find existing MDP graphs in the `policies/` folder.
+
+  Typical value: `'joint_3x3_gridworld_agent_A_uniform_random'`
+
 ### Running an experiment
 
 🟣 To run an experiment, use the `launch.launch_sweep()` function. This function takes a config filename as its only required argument. The config file is a YAML file that contains the parameters for the experiment.
