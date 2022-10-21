@@ -123,27 +123,23 @@ def single_agent_to_multiagent_policy(single_agent_policy_graph, acting_agent_is
         single_agent_policy_graph, acting_agent_is_H=acting_agent_is_H
     )
 
-def view_gridworld(gridworld_mdp):
-    view.view_gridworld(gridworld_mdp)
+def view_gridworld(gridworld_mdp_graph):
+    view.view_gridworld(gridworld_mdp_graph)
 
 def plot_mdp_or_policy(
     mdp_or_policy_graph,
-    show=True,
     subgraphs_per_row=4,
-    number_of_states_per_figure=128,
-    save_handle='temp',
-    graph_name='graph',
-    save_folder=data.TEMP_FOLDER,
+    subgraphs_per_figure=128
 ):
     viz.plot_mdp_or_policy(
         mdp_or_policy_graph,
-        show=show,
+        show=True,
         subgraphs_per_row=subgraphs_per_row,
-        number_of_states_per_figure=number_of_states_per_figure,
+        number_of_states_per_figure=subgraphs_per_figure,
         reward_to_plot=None,
-        save_handle=save_handle,
-        graph_name=graph_name,
-        save_folder=save_folder,
+        save_handle='temp',
+        graph_name='graph',
+        save_folder=data.TEMP_FOLDER,
         temp_folder=data.TEMP_FOLDER
     )
 
