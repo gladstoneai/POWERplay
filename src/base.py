@@ -112,11 +112,16 @@ def construct_multiagent_gridworld_mdp(
 def edit_gridworld_mdp(mdp_graph):
     return ui.update_mdp_graph_interface(mdp_graph)
 
-def construct_policy_from_mdp(mdp_graph):
-    return policy.quick_mdp_to_policy(mdp_graph)
+def construct_policy_from_mdp(mdp_graph, acting_agent_is_H=False):
+    return policy.quick_mdp_to_policy(mdp_graph, acting_agent_is_H=acting_agent_is_H)
 
 def edit_gridworld_policy(policy_graph):
     return ui.update_multiagent_policy_interface(policy_graph)
+
+def single_agent_to_multiagent_policy(single_agent_policy_graph, acting_agent_is_H=False):
+    return policy.single_agent_to_multiagent_policy_graph(
+        single_agent_policy_graph, acting_agent_is_H=acting_agent_is_H
+    )
 
 def view_gridworld(gridworld_mdp):
     view.view_gridworld(gridworld_mdp)

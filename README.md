@@ -445,7 +445,7 @@ The best way to build up an intuition for all these options is to try them out, 
 
 - `squares_to_delete [list] ([])`: A list of 2-tuples, where each 2-tuple is a pair of coordinates (in **string** format) that represent the edges of a square you want to delete from your gridworld. For example, if you want to delete the square with the top-left corner at (0, 0) and the bottom-right corner at (2, 2), then you would use `squares_to_delete=[['(0, 0)', '(2, 2)']]`. This format allows us to quickly construct gridworlds with interesting structures.
 
-  Typical value: `[['(0, 0)', '(3, 2)'], ['(6, 4)', '(8, 7)']]`
+  Typical value: `[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']]`
 
 - `stochastic_noise_level [float] (0)`: The level of stochastic noise you want to inject into your MDP graph. Setting this to `0` (the default) means no noise: when the agent takes an action, it will always end up in the state consistent with that action. So if an agent on a gridworld takes the `'right'` action, it will always move one cell to the right.
 
@@ -467,13 +467,295 @@ The best way to build up an intuition for all these options is to try them out, 
 
 🟢 Here is the output to `base.construct_single_agent_gridworld_mdp()`:
 
-- `mdp_graph [networkx.DiGraph]`: An MDP graph representing the gridworld you created. Each square has a self-loop, and connections to the squares above, beneath, to the left, and to the right of it (if they exist).
+- `mdp_graph [networkx.DiGraph]`: An MDP graph representing the gridworld you created.
 
-  The states of the gridworld MDP are strings that indicate the coordinates of each cell in the gridworld. For example, the state `'(0, 0)'` represents the cell at the top-left corner of the gridworld.
+  The states of single-agent gridworld MDP are strings that indicate where the agent is in the gridworld. For example, the state `'(0, 0)'` means that the agent is located at the top-left corner of the gridworld.
+
+  The actions of a single-agent gridworld MDP are strings that indicate the allowed actions the agent can take from each state. Possible allowed actions are `'left'`, `'right'`, `'up'`, `'down'`, and `'stay'`. If a state is at the edge or corner of a gridworld, some of these actions will be forbidden.
 
   You can save your `mdp_graph` with `base.save_mdp_graph()`, view it as a gridworld with `base.view_gridworld()`, and view its full MDP with `base.plot_mdp_or_policy()`.
 
+#### Construct a multi-agent gridworld MDP
 
+🟣 To create a multi-agent gridworld MDP, use `base.construct_multiagent_gridworld_mdp()`. You can quickly construct simple multi-agent gridworlds with this function. For example, here's how to create and visualize a basic 3x4 multi-agent gridworld:
+
+```
+>>> multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4)
+>>> base.view_gridworld(multiagent_gridworld)
+```
+
+![3x4 multi-agent gridworld example](img/3x4-multiagent-gridworld-example.png)
+
+Notice that while the single-agent version of this gridworld has 3 x 4 = 12 states, the basic multi-agent version has 12 x 12 = 144 states. This is because each agent (Agent H and Agent A) can occupy any cell in the gridworld, including overlapping cells. In the visualization above, the red square represents the position of Agent A in each block.
+
+You can also use `base.construct_multiagent_gridworld_mdp()` to create multi-agent gridworlds that have interesting shapes. You do this by "cutting out" squares of cells from the grid, using the same API as in the [single-agent case](#construct-a-single-agent-gridworld-mdp). For example, here's how to make a tiny multi-agent maze:
+
+```
+>>> multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> base.view_gridworld(multiagent_gridworld)
+```
+
+![3x4 multi-agent gridworld maze example](img/3x4-multiagent-gridworld-maze-example.png)
+
+You can always visualize any multi-agent MDP in full, with all its transitions. For example:
+
+```
+>>> base.plot_mdp_or_policy(multiagent_gridworld)
+```
+
+![3x4 multi-agent gridworld maze MDP example](img/3x4-multiagent-gridworld-maze-example-mdp.png)
+
+(You may need to open the image above separately to view it in full.)
+
+In POWERplay, multi-agent MDPs are called **joint MDPs** because they assume a **joint state space** and a **joint action space** between the two agents.
+
+A **state** in a joint MDP describes the joint positions of Agent H and Agent A. For example, `'(1, 3)_H^(0, 2)_A'`, at the bottom left of the MDP graph above, means that Agent H is at position `(1, 3)` on the grid, and Agent A is at position `(0, 2)` on the grid.
+
+An **action** in a joint MDP describes a pair of actions Agent H and Agent A can jointly take from a given state. For example, from the `'(1, 3)_H^(0, 2)_A'` state at the bottom left of the MDP graph above, one of the actions is `'left_H^down_A'`. This means that Agent H takes the `'left'` action from this state, while Agent A simultaneously takes the `'down'` action.
+
+As you might imagine, multi-agent MDPs can quickly get large and complicated. Because the joint state space of a multi-agent MDP is the outer product of its single-agent state space, it grows quadratically with the number of single-agent states. So a gridworld with 30 cells has 30 x 30 = 900 multi-agent states. (And the same reasoning holds for the joint action space.)
+
+POWERplay can scale to support about 1600 joint states on a modern laptop (e.g., M1 MacBook Pro), which enables experiments on multi-agent gridworlds with about 40 cells. This is big enough to let you investigate a number of non-trivial multi-agent behaviors and interaction types.
+
+🔵 Here are the input arguments to `base.construct_multiagent_gridworld_mdp()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `num_rows [int, required]`: The maximum number of rows in your gridworld.
+
+- `num_cols [int, required]`: The maximum number of columns in your gridworld.
+
+  Typical value: `4`
+
+- `squares_to_delete [list] ([])`: A list of 2-tuples, where each 2-tuple is a pair of coordinates (in **string** format) that represent the edges of a square you want to delete from your gridworld. For example, if you want to delete the square with the top-left corner at (0, 0) and the bottom-right corner at (2, 2), then you would use `squares_to_delete=[['(0, 0)', '(2, 2)']]`. This format allows us to quickly construct gridworlds with interesting structures.
+
+  Typical value: `[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']]`
+
+🟢 Here is the output to `base.construct_multiagent_gridworld_mdp()`:
+
+- `mdp_graph [networkx.DiGraph]`: An MDP graph representing the multi-agent gridworld you created. Each square has a self-loop, and connections to the squares above, beneath, to the left, and to the right of it (if they exist).
+
+  The states of a multi-agent gridworld MDP are strings that indicate where Agent H and Agent A are located in the gridworld. For example, the state `'(0, 0)_H^(0, 1)_A'` means that Agent H is located at position `(0, 0)` (top left), and Agent A is located at position `(0, 1)` (top, one cell from the left).
+
+  The actions of a multi-agent gridworld MDP are strings that indicate the allowed actions that Agent H and Agent A can jointly take from each state. For example, `'left_H^stay_A'` means the action where Agent H moves left and Agent A stays where it is. If one or both of the agents are located at an edge or corner of the gridworld, some of these joint actions will be forbidden.
+
+  You can save your `mdp_graph` with `base.save_mdp_graph()`, view it as a gridworld with `base.view_gridworld()`, and view its full MDP with `base.plot_mdp_or_policy()`.
+
+#### Edit a gridworld MDP
+
+MDPs can get complicated, and multi-agent MDPs can get complicated especially quickly. It's possible to edit your MDPs manually using functions in the `mdp` and `multi` modules, but this can often be tedious and error-prone unless you write your own wrapper functions to accelerate the process.
+
+POWERplay comes with a text-based MDP editor that lets you edit single-agent and multi-agent MDPs you've created. Its capabilities are limited, but it makes it slightly easier to get started if you want to define complicated dynamics for your agents.
+
+🟣 To access the editor, first define an MDP you want to edit, then call `base.edit_gridworld_mdp()`. For example, for a single-agent MDP:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> edited_gridworld = base.edit_gridworld_mdp(gridworld)
+```
+
+Follow the instructions as you're prompted in the command line. For each state, the prompt will tell you which actions are currently allowed from that state (e.g., `'down'`, `'stay'`). It will ask you to input new allowed actions from that state (so if, e.g., you input `'down'`, only the `'down'` action will be allowed and the `'stay'` action will be forbidden from that state). If you skip one of these prompts, the set of actions is unchanged.
+
+If you input actions, you'll be asked to input the states that those actions lead to. Again, if you skip one of these prompts, the set of actions is unchanged.
+
+Here's an example of using the MDP editor to delete the `'stay'` action from the `'(0, 2)'` state of the 3x4 gridworld maze MDP:
+
+```
+>>> base.plot_mdp_or_policy(edited_gridworld)
+```
+
+![3x4 gridworld maze MDP example with 'stay' action deleted from (0, 2) state](img/3x4-gridworld-maze-02-stay-deleted-example-mdp.png)
+
+Notice that only the `'down'` action remains from that state, so the agent is forced to move down whenever it lands on the `'(0, 2)'` state.
+
+The MDP editor also works on multi-agent gridworlds. For example:
+
+```
+>>> multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> edited_multiagent_gridworld = base.edit_gridworld_mdp(multiagent_gridworld)
+```
+
+With a multi-agent gridworld, you have the option of deleting overlapping states in the MDP. This is equivalent to forbidding your agents from occupying the same cell on the gridworld. It's a kind of [physical interaction](https://www.alignmentforum.org/posts/nisaAr7wMDiMLc2so/instrumental-convergence-scale-and-physical-interactions#3_2_Physically_interacting_agents) you can impose on your agents.
+
+The rest of the interface works similarly in the multi-agent case as it does in the single-agent case. The only difference is that the state and action spaces are now **joint** state and action spaces. So instead of states like `'(0, 2)'`, you'll see states like `'(0, 2)_H^(1, 2)_A'` since both agents' positions need to be defined by the state. (And similarly for the actions.)
+
+Here's an example of using the MDP editor to delete all the overlapping states from the 3x4 gridworld maze MDP:
+
+```
+>>> base.plot_mdp_or_policy(edited_multiagent_gridworld)
+```
+
+![3x4 multi-agent gridworld maze example with overlapping states deleted](img/3x4-multiagent-gridworld-maze-overlapping-states-deleted-example-mdp.png)
+
+You'll notice that there are no states like `'(0, 2)_H^(0, 2)_A'` in this MDP; i.e., Agent H and Agent A have been forbidden from occupying the same positions.
+
+🔵 Here are the input arguments to `base.edit_gridworld_mdp()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `mdp_graph [networkx.DiGraph, required]`: An MDP graph. This can be a single-agent MDP graph (if it's the output of `base.construct_single_agent_gridworld_mdp()`) or a multi-agent MDP graph (if it's the output of `base.construct_multiagent_gridworld_mdp()`).
+
+  Typical value: `base.construct_single_agent_gridworld_mdp(3, 4)`
+
+🟢 Here is the output to `base.edit_gridworld_mdp()`:
+
+- `output_mdp_graph [networkx.DiGraph]`: An edited MDP graph. This can be a single-agent or multi-agent MDP graph, depending on which kind of graph you used as input.
+
+  You can save your `output_mdp_graph` with `base.save_mdp_graph()`, view it as a gridworld with `base.view_gridworld()`, and view its full MDP with `base.plot_mdp_or_policy()`.
+
+#### Construct a policy graph
+
+If you're running a multi-agent experiment in POWERplay, you'll need to define a policy graph for **Agent A**. This will either be a policy graph that Agent A always follows, or a ["seed policy"](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#A_1_Initial_optimal_policies_of_Agent_H) that Agent A is initialized at before learning different policies.
+
+We encode policy graphs in the same format as MDP graphs. Importantly, **a policy graph is always tied to a _specific_ MDP graph**. This is because a policy defines all the actions an agent can take from every state in an MDP graph. So a policy always has to exactly reflect the names of the states and actions, and the topology, of the MDP graph it's associated with.
+
+🟣 For this reason, you always create a policy _from_ an MDP graph, using `base.construct_policy_from_mdp()`. For example:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> random_policy = base.construct_policy_from_mdp(gridworld)
+>>> base.plot_mdp_or_policy(random_policy)
+```
+
+![3x4 gridworld maze policy example](img/3x4-gridworld-maze-policy-example.png)
+
+The function `base.construct_policy_from_mdp()` will always generate a uniform random policy, meaning that at each state in its MDP, the policy has an equal probability of taking each legal action.
+
+The above example creates a policy on a single-agent MDP, which is something you'll rarely need to do. More often, you'll be creating a policy for Agent A from a joint multi-agent MDP. For example:
+
+```
+>>> multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> random_policy_agent_A = base.construct_policy_from_mdp(multiagent_gridworld, acting_agent_is_H=False)
+>>> base.plot_mdp_or_policy(random_policy_agent_A)
+```
+
+![3x4 multi-agent gridworld maze policy example](img/3x4-multiagent-gridworld-maze-policy-example.png)
+
+Notice in the above that while the policy has a **joint state space** (i.e., its states are of the form `'(2, 0)_H^(1, 2)_A'`), its **action space** consists of only the actions Agent A can take. This is because we set `acting_agent_is_H=False`, which makes Agent A (not Agent H) the agent that acts out the policy.
+
+🔵 Here are the input arguments to `base.construct_policy_from_mdp()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `mdp_graph [networkx.DiGraph, required]`: The MDP graph you want to construct the policy on. Can by either a single-agent or joint multi-agent MDP graph.
+
+  Typical value: `base.construct_multiagent_gridworld_mdp(3, 4)`
+
+- `acting_agent_is_H [bool] (False)`: A Boolean flag that indicates which agent you want to define the policy for. If `mdp_graph` is a single-agent MDP, this flag has no effect. If `mdp_graph` is a joint multi-agent MDP, setting this to `True` will output a policy for Agent H. Keeping this `False` will output a policy for Agent A, which is the more common case.
+
+  Typical value: `False`
+
+🟢 Here is the output to `base.construct_policy_from_mdp()`:
+
+- `policy_graph [networkx.DiGraph]`: A policy graph that's compatible with the MDP `mdp_graph`. This will always be a uniform random policy, meaning that an agent that follows the policy will always select its action randomly at every state, with equal probability over all the actions that are allowed at that state.
+
+  If `mdp_graph` is a single-agent MDP, `policy_graph` will represent the policy of Agent H (the only agent). If `mdp_graph` is a joint multi-agent MDP, `policy_graph` will represent the policy of Agent H if `acting_agent_is_H=True`, and the policy of Agent A if `acting_agent_is_H=False`.
+
+  You can save your `policy_graph` with `base.save_policy_graph()`, and view it with `base.plot_mdp_or_policy()`.
+
+#### Edit a gridworld policy graph
+
+🟣 Just like for MDPs, POWERplay includes a text based interface you can use to edit gridworld policy graphs. To use it, first create a policy, and then call `base.edit_gridworld_policy()`:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> random_policy = base.construct_policy_from_mdp(gridworld)
+>>> edited_policy = base.edit_gridworld_policy(random_policy)
+```
+
+Follow the instructions as you're prompted in the command line. For each state, the prompt will ask you which action you want your policy to take at that state. You have to pick an action that's currently allowed at that state (e.g., if the state is in the top-left of the grid, you won't be allowed to pick `'up'`). If you skip the prompt for one of the states, the set of action probabilities for that state is unchanged.
+
+Here's an example of using the policy editor to create a policy that always stays where it is on the 3x4 gridworld maze MDP:
+
+```
+>>> base.plot_mdp_or_policy(edited_policy)
+```
+
+![3x4 gridworld maze stay policy example](img/3x4-gridworld-maze-policy-stay-example.png)
+
+In the above, the agent chooses the `'stay'` action with probability 1 at every state.
+
+You can also use `base.edit_gridworld_policy()` to edit policies defined on joint multi-agent MDPs:
+
+```
+>>> multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> random_policy_agent_A = base.construct_policy_from_mdp(multiagent_gridworld, acting_agent_is_H=False)
+>>> edited_policy_agent_A = base.edit_gridworld_policy(random_policy_agent_A)
+```
+
+Here's an example of using the policy editor to create an Agent A policy that chooses the `'stay'` action at state `'(0, 2)_H^(0, 2)_A'`, but is otherwise random:
+
+```
+>>> base.plot_mdp_or_policy(edited_policy_agent_A)
+```
+
+![3x4 multi-agent gridworld maze policy that stays at state '(0, 2)_H^(0, 2)_A' and otherwise moves randomly](img/3x4-gridworld-maze-policy-02-02-stay-example.png)
+
+🔵 Here are the input arguments to `base.edit_gridworld_policy()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `policy_graph [networkx.DiGraph, required]`: A policy graph. This can represent a policy defined on either a single-agent or a joint multi-agent MDP.
+
+  Typical value: `base.construct_policy_from_mdp(base.construct_single_agent_gridworld_mdp(3, 4))`
+
+🟢 Here is the output to `base.edit_gridworld_policy()`:
+
+- `output_policy_graph [networkx.DiGraph]`: An edited policy graph. This can represent a policy defined on either a single-agent or a joint multi-agent MDP, depending on which kind you used as input.
+
+  You can save your `output_policy_graph` with `base.save_policy_graph()`, and view it with `base.plot_mdp_or_policy()`.
+
+#### Convert a single-agent policy to a multi-agent policy
+
+One big challenge with manually editing multi-agent policies is that it can take a very long time, because multi-agent MDPs have a lot of joint states to define actions on. A good workflow to speed this up is to:
+
+1. Define a single-agent policy (with few states)
+2. Edit that single-agent policy manually
+3. **Convert** your edited single-agent policy to a multi-agent policy
+4. Make final edits to the multi-agent policy manually
+
+🟣 You can do step 3 using `base.single_agent_to_multiagent_policy()`. The whole workflow might look like this:
+
+```
+>>> gridworld = base.construct_single_agent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+>>> random_policy = base.construct_policy_from_mdp(gridworld)
+>>> edited_policy = base.edit_gridworld_policy(random_policy)
+
+[... edits ...]
+
+>>> multiagent_policy = base.single_agent_to_multiagent_policy(edited_policy, acting_agent_is_H=False)
+>>> edited_multiagent_policy = base.edit_gridworld_policy(multiagent_policy)
+```
+
+If you don't need to construct a policy that has actions conditional on the other agent's state, you can skip step 4 of this workflow. But in either case, you'll need to manually define a multi-agent MDP that will be **paired** with your edited multi-agent policy:
+
+```
+multiagent_gridworld = base.construct_multiagent_gridworld_mdp(3, 4, squares_to_delete=[['(0, 0)', '(1, 1)'], ['(0, 3)', '(0, 3)'], ['(2, 3)', '(2, 3)']])
+```
+
+Here's an example of using this workflow to define a multi-agent policy that chooses the `'stay'` action everywhere, except at state `'(0, 2)_H^(0, 2)_A'`, where it chooses the `'down'` action:
+
+```
+>>> base.plot_mdp_or_policy(edited_multiagent_policy)
+```
+
+![3x4 multi-agent gridworld maze policy that moves down at state '(0, 2)_H^(0, 2)_A' and otherwise stays where it is](img/3x4-multiagent-gridworld-maze-policy-02-02-down-else-stay-example.png)
+
+🔵 Here are the input arguments to `base.single_agent_to_multiagent_policy()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `single_agent_policy_graph [networkx.DiGraph, required]`: A policy graph defined on a single-agent MDP.
+
+  Typical value: `base.construct_policy_from_mdp(base.construct_single_agent_gridworld_mdp(3, 4))`
+
+- `acting_agent_is_H [bool] (False)`: A Boolean flag that indicates which agent you want to define the output multi-agent policy for. Setting this to `True` will output a policy for Agent H. Keeping this `False` will output a policy for Agent A, which is the more common case.
+
+🟢 Here is the output to `base.single_agent_to_multiagent_policy()`:
+
+- `multiagent_policy_graph [networkx.DiGraph]`: A multi-agent policy graph based on the input `single_agent_policy_graph`. If `acting_agent_is_H=False`, this will be a policy graph for Agent A that takes the actions consistent with `single_agent_policy_graph`. For example, if `single_agent_policy_graph` takes the action `'stay'` from state `'(0, 0)'`, then `multiagent_policy_graph` will take the action `'stay'` from states `'(0, 0)_H^(0, 0)_A'`, `'(0, 1)_H^(0, 0)_A'`, and any other state in which Agent A is located at `(0, 0)`. (And similarly for `acting_agent_is_H=True` in the Agent H case.)
+
+  You can save your `multiagent_policy_graph` with `base.save_policy_graph()`, and view it with `base.plot_mdp_or_policy()`.
 
 ### Running an experiment
 
@@ -695,101 +977,7 @@ Here are the entries of the sweep YAML file:
 
 - `output_graph [networkx.DiGraph]`: The loaded NetworkX graph. This may be either an MDP or a policy graph.
 
-### Creating a simple MDP graph
-
-🟣 You can create any kind of simple MDP graph manually by directly calling the NetworkX `DiGraph()` API. For example, the following code creates the MDP graph from Figure 1 of _Optimal policies tend to seek power_:
-
-```
->>> import networkx as nx
->>> new_mdp = nx.DiGraph([
-        ('★', '∅'), ('★', 'ℓ_◁'), ('★', 'r_▷'),
-        ('∅', '∅'),
-        ('ℓ_◁', 'ℓ_↖'), ('ℓ_◁', 'ℓ_↙'),
-        ('ℓ_↙', 'ℓ_↖'), ('ℓ_↙', 'ℓ_↙'),
-        ('r_▷', 'r_↗'), ('r_▷', 'r_↘'),
-        ('r_↘', 'r_↘'), ('r_↘', 'r_↗'),
-        ('r_↗', 'r_↗'), ('r_↗', 'r_↘'),
-        ('ℓ_↖', 'ℓ_↙'))
-    ], name='POWER paper MDP')
-```
-
-For full documentation on the NetworkX `DiGraph()` API, see [here](https://networkx.org/documentation/stable/reference/classes/digraph.html).
-
-🟣 For quick tests, you can use one of the [prepackaged NetworkX graph topologies](https://networkx.org/documentation/stable/tutorial.html?highlight=petersen_graph#graph-generators-and-graph-operations) (such as the Petersen graph), and convert these to a compatible directed graph using `mdp.quick_graph_to_mdp()`:
-
-  ```
-  >>> import networkx as nx
-  >>> petersen_mdp = mdp.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')
-  ```
-
-🔵 Here are the input arguments to `mdp.quick_graph_to_mdp()` and what they mean:
-
-(Listed as `name [type] (default): description`.)
-
-- `mdp_graph [networkx.Graph OR networkx.DiGraph, required]`: The NetworkX graph you want to convert. This can be either a `Graph` or a `DiGraph`. In either case, it will be converted to a `DiGraph`. You'll often want to use some of the pre-packaged NetworkX graphs as input for quick testing.
-
-  Typical value: `nx.petersen_graph()`
-
-- `name [str] ('')`: The name you want to give the output graph.
-
-  Typical value: `'Petersen graph'`
-
-🟢 Here is the output to `mdp.quick_graph_to_mdp()`:
-
-- `output_graph [networkx.DiGraph]`: The output NetworkX `DiGraph`. Note that using `quick_graph_to_mdp()` on an undirected graph makes the resulting output graph not just _directed_, but also _acyclic_. It also makes sure that every non-terminal node has at least one outbound edge or self-loop.
-
 ### Creating a gridworld MDP graph
-
-
-### Creating a stochastic MDP graph
-
-🟣 To create a stochastic MDP, start from an existing MDP graph and use `mdp.mdp_to_stochastic_graph()`. For example, the following code changes the simple `gridworld_selfloop_3x3` graph to a stochastic format:
-
-``` 
->>> stochastic_mdp = mdp.mdp_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3'))
-```
-
-🔵 Here are the input arguments to `mdp.mdp_to_stochastic_graph()` and what they mean:
-
-(Listed as `name [type] (default): description`.)
-
-- `mdp_graph [networkx.DiGraph, required]`: The NetworkX [DiGraph](https://networkx.org/documentation/stable/reference/classes/digraph.html) you want to convert into stochastic format. It should have a graph structure like this:
-
-  ![simple-mdp-example](img/simple_mdp_example.png)
-  
-  Here the ovals represent states and the arrows represent transitions. The states are labeled with their names; the MDP above is a representation of the 3x3 gridworld. Note that all of the states have self-loops.
-
-  Typical value: `data.load_graph_from_dot_file('gridworld_selfloop_3x3')`
-
-🟢 Here is the output to `mdp.mdp_to_stochastic_graph()`:
-
-- `stochastic_graph [networkx.DiGraph]`: A NetworkX graph representing the new MDP, in stochastic format. This format explicitly represents the transition probabilities from one state to another in the graph. Here is an example:
-
-  ![stochastic-mdp-gridworld](img/stochastic_mdp_gridworld.png)
-
-  Here the squares represent states, the circles represent actions, and the arrows represent transitions. The numbers on each arrow represent the probability of that action-state transition.
-
-🟣 To convert a **gridworld** specifically to a stochastic graph, you'll typically want to use `mdp.gridworld_to_stochastic_graph()`. This is a more powerful function than `mdp.mdp_to_stochastic_graph()`, because it includes options for adding stochastic noise to some of the gridworld state transitions — but it's limited to taking gridworlds as inputs, rather than general MDPs. For example, the following code takes the simple `gridworld_selfloop_3x3` gridworld MDP, and converts it into a gridworld with left-facing stochastic "wind" in all cells:
-
-``` 
->>> stochastic_gw_with_left_wind = mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3'), stochastic_noise_level=0.2, noise_bias={ 'left': 0.2 })
-```
-
-🔵 Here are the input arguments to `mdp.gridworld_to_stochastic_graph()` and what they mean:
-
-(Listed as `name [type] (default): description`.)
-
-- `mdp_graph [networkx.DiGraph, required]`: The NetworkX gridworld [DiGraph](https://networkx.org/documentation/stable/reference/classes/digraph.html) you want to convert into stochastic format.
-
-  Typical value: `data.load_graph_from_dot_file('gridworld_selfloop_3x3')`
-
-🟢 Here is the output to `mdp.mdp_to_stochastic_graph()`:
-
-- `stochastic_graph [networkx.DiGraph]`: A NetworkX graph representing the new gridworld MDP, in stochastic format. This format explicitly represents the transition probabilities from one state to another in the graph. Here is an example:
-
-  ![stochastic-mdp-gridworld](img/stochastic_mdp_gridworld.png)
-
-  Here the squares represent states, the circles represent actions, and the arrows represent transitions. The numbers on each arrow represent the probability of that action-state transition.
 
 🟣 To add a state (and its downstream actions) to a stochastic MDP, start from an existing stochastic MDP, and use use `mdp.add_state_action()`. For example, the following code adds a state with actions `'L'`, `'H'`, and `'R'` to the MDP graph:
 
@@ -834,86 +1022,6 @@ For full documentation on the NetworkX `DiGraph()` API, see [here](https://netwo
 
 - `new_mdp_graph [networkx.DiGraph]`: An MDP graph representing the new MDP, with the new state, actions, and outgoing transitions added to it.
 
-### Creating a multiagent MDP graph
-
-🟣 You can create a two-agent MDP graph from the perspective of either agent by starting from a "naive" single-agent MDP graph and applying `multi.create_multiagent_graph()` to it. This function takes the state set of the input MDP graph, and takes the outer product of those states by assuming that both Agent H and Agent A are moving on the same state set. So if the original graph was a 1x2 gridworld with cells `'(0, 0)'` and `'(0, 1)'`, the output graph would have states `'(0_H, 0_A)'`, `'(0_H, 1_A)'`, `'(1_H, 0_A)'`, and `'(1_H, 1_A)'`. For example, the following code creates a multiagent MDP graph from the perspective of Agent H, out of a 3x3 gridworld graph in stochastic format:
-
-``` 
->>> mdp_graph_H = multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_H=True)
-```
-
-🔵 Here are the input arguments to `mdp.create_multiagent_graph()` and what they mean:
-
-(Listed as `name [type] (default): description`.)
-
-- `single_agent_graph [networkx.DiGraph, required]`: The single-agent MDP graph that you want to convert into multiagent format. **This graph should already be in stochastic format,** so if it isn't, you should apply either `mdp.mdp_to_stochastic_graph()` or `mdp.gridworld_to_stochastic_graph()` to it first (depending on whether the original is a gridworld or not).
-
-  Typical value: `mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3'))`
-
-- `acting_agent_is_H [bool] (True)`: Set this to `True` if you want the output multiagent graph to be from the perspective of Agent H, and `False` if you want it from the perspective of Agent A. The agent you pick will be the one whose actions will affect the states; so if you choose the perspective of Agent H, your output graph will have transitions like `'(0_H, 0_A)' == 'right' ==> '(1_H, 0_A)'`, but will _not_ have transitions like `'(0_H, 0_A)' == 'right' ==> '(0_H, 1_A)'`.
-
-  Typical value: `True`
-
-🟢 Here is the output to `mdp.create_multiagent_graph()`:
-
-- `multiagent_graph [networkx.DiGraph]`: A NetworkX graph representing the multiagent MDP from the perspective of the agent you selected in `acting_agent_is_H`. This MDP is in stochastic format, and its states are the outer product of Agent H and Agent A positional states. Here is an example of a multiagent MDP from the perspective of Agent H:
-
-  ![multiagent-mdp-H](img/joint_multiagent_mdp_example.png)
-
-  These MDPs represent two agents on the same underlying state set: a 2x2 gridworld. Notice that the joint states of H and A are labelled as, e.g., `(0, 0)_H^(0, 0)_A`. This is the standard notation that's used under the hood to label joint states in a multiagent system.
-
-### Creating a fixed policy graph
-
-🟣 To run a multiagent experiment, you need to create a fixed policy for Agent A — otherwise the state transitions from the perspective of Agent H won't be fully defined. You can quickly create a random policy for Agent A using the `base.build_quick_random_policy()` function. (You have to apply this function to an MDP **over joint states** that's **from the perspective of the agent you want the policy to be for** — in practice, that means you apply this to the output of the `multi.create_multiagent_graph()` function.) For example, the following code creates a random Agent A policy over the 3x3 gridworld graph:
-
-``` 
->>> policy_A = base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_H=False))
-```
-
-Notice that `acting_agent_is_H` is set to `False`, which is what defines this policy as being as belonging to Agent A.
-
-🔵 Here are the input arguments to `base.build_quick_random_policy()` and what they mean:
-
-(Listed as `name [type] (default): description`.)
-
-- `mdp_graph [networkx.DiGraph, required]`: The MDP graph over joint states, from the perspective of the agent whose policy you want as output. Normally this will be the output of a call to the `multi.create_multiagent_graph()` function.
-
-  Typical value: `multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_H=False)`
-
-🟢 Here is the output to `base.build_quick_random_policy()`:
-
-- `policy_graph [networkx.DiGraph]`: A NetworkX graph representing the policy of the agent whose perspective the input MDP graph was from. The policy graph format is pretty similar to the MDP graph format. Here's an example, for an Agent A policy:
-
-  ![policy-graph-A](img/policy_graph_example_A.png)
-
-  As you'd expect, the rectangles represent joint states, the circles represent actions, and the arrows represent transitions. The numbers on each arrow represent the probability of taking a given action from a given state, under that policy. (Note that the output of `base.build_quick_random_policy()` will be a _random_ policy, with equal probabilities of each action from a given state, while the example shown above is deterministic.)
-
-🟣 The `base.build_quick_random_policy()` function returns a random policy. But in general, we want to test all sorts of different policies in our multiagent runs. The way to do this is to start from a random policy, and run `policy.update_state_actions()` on it until you end up with the policy you want. For example, the following code updates the Agent A random policy on a 3x3 gridworld to deterministically move to the right when H and A are both at cell `(0, 0)`:
-
-``` 
->>> policy_A_right = policy.update_state_actions(base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_H=False)), '(0 ,0)_H^(0, 0)_A', { 'right': 1, 'down': 0, 'stay': 0 })
-```
-
-🔵 Here are the input arguments to `policy.update_state_actions()` and what they mean:
-
-(Listed as `name [type] (default): description`.)
-
-- `policy_graph [networkx.DiGraph, required]`: The policy graph you want to update.
-
-  Typical value: `base.build_quick_random_policy(multi.create_multiagent_graph(mdp.gridworld_to_stochastic_graph(data.load_graph_from_dot_file('gridworld_selfloop_3x3')), acting_agent_is_H=False))`
-
-- `state [str, required]`: The state whose action probabilities you want to update in your new policy.
-
-  Typical value: `'(0, 0)_H^(0, 0)_A'`
-
-- `new_policy_actions [dict, required]`: A dictionary listing all the allowed actions from `state`, along with the probabilities you want to assign to them under the new policy. You need to list _all_ the allowed actions from `state`, and assign them _all_ new probabilities that, of course total to 1.
-
-  Typical value: `{ 'right': 1, 'down': 0, 'stay': 0 }`
-
-🟢 Here is the output to `policy.update_state_actions()`:
-
-- `policy_graph [networkx.DiGraph]`: The NetworkX graph representing the new policy after the update. This will have exactly the same format (and the same state set) as the input policy graph, just with the action probabilities from the target state modified according to the `new_policy_actions` dict you assigned.
-
 ## Advanced wordflows
 
 ### Launching a real sweep
@@ -929,36 +1037,6 @@ launch.launch_sweep(
       plot_correlations=False,
       announce_when_done=True
   )
-```
-
-### Creating multiagent policies at scale
-
-Multiagent policies are defined on the _joint_ MDP state space of Agent H and Agent A. That means if the base MDP has `N` states, the joint MDP will have `N^2` states. Because you have to manually define a multiagent policy on each state that can make it pretty painful to scale to big systems.
-
-You can get around this problem by defining a single-agent policy first, _and only then_ using `multi.create_multiagent_graph()` on that policy to take the outer product of the state space the policy is defined on. This will work for any multiagent policy where the action sets of the two agents are orthogonal.
-
-For example, here's how you'd define an Agent A policy on a 2x3 gridworld. Normally you'd have to define this policy on 36 states (H at (0, 0) + A at (0,0), H at (0,0) + A at (0, 1), etc.). But this shortcut lets us define the policy for A on just 6 states, then take the outer product to get the whole multiagent policy in one line.
-
-```
-gw = mdp.construct_gridworld(2, 3, name='2x3 gridworld')
-st_gw = mdp.gridworld_to_stochastic_graph(gw)
-pol = base.build_quick_random_policy(st_gw)
-
-pol = policy.update_state_actions(pol, '(0, 0)', { 'stay': 0, 'right': 1, 'down': 0 })
-pol = policy.update_state_actions(pol, '(0, 1)', { 'stay': 0, 'right': 1, 'down': 0, 'left': 0 })
-pol = policy.update_state_actions(pol, '(0, 2)', { 'stay': 0, 'down': 1, 'left': 0 })
-pol = policy.update_state_actions(pol, '(1, 0)', { 'stay': 0, 'up': 1, 'right': 0 })
-pol = policy.update_state_actions(pol, '(1, 1)', { 'stay': 0, 'right': 0, 'up': 0, 'left': 1 })
-pol = policy.update_state_actions(pol, '(1, 2)', { 'stay': 0, 'up': 0, 'left': 1 })
-
-pol_A = multi.create_multiagent_graph(pol, acting_agent_is_H=False)
-```
-
-You can then create the multiagent MDPs as usual from the basic stochastic gridworld above:
-
-```
-mdp_H = multi.create_multiagent_graph(st_gw, acting_agent_is_H=True)
-mdp_A = multi.create_multiagent_graph(st_gw, acting_agent_is_H=False)
 ```
 
 ### Plotting a policy sample

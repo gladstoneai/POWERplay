@@ -96,45 +96,28 @@ def update_mdp_graph_interface(input_mdp):
     return output_mdp_
 
 def update_multiagent_policy_interface(policy_graph):
-    policy_A_ = cp.deepcopy(policy_graph)
+    output_policy_ = cp.deepcopy(policy_graph)
 
-    print('Now updating policy for Agent A.')
+    print()
+    print('Now updating your policy.')
     print('State update example: { \'stay\': 0, \'up\': 1, \'down\': 0, \'left\': 0, \'right\': 0 }')
     print('The action you type (stay/up/down/left/right) gets set to 1, all others to 0.')
     print()
 
-    for state in graph.get_states_from_graph(policy_A_):
-        action_to_take = input('Enter action for individual state \'{}\': '.format(state)).replace('\'', '"')
+    for state in graph.get_states_from_graph(output_policy_):
+        action_to_take = input('Enter action for state \'{}\': '.format(state)).replace('\'', '"')
 
         if action_to_take:
-            policy_A_ = policy.update_state_actions(
-                policy_A_,
+            output_policy_ = policy.update_state_actions(
+                output_policy_,
                 state,
                 {
                     action: (
                         1 if action == action_to_take else 0
-                    ) for action in graph.get_available_actions_from_graph_state(policy_A_, state)
+                    ) for action in graph.get_available_actions_from_graph_state(output_policy_, state)
                 }
             )
     
-    policy_A_multi_ = policy.single_agent_to_multiagent_policy_graph(policy_A_, acting_agent_is_H=False)
-
     print()
 
-    for multi_state in graph.get_states_from_graph(policy_A_multi_):
-        action_to_take = input('Enter action for multi-agent state \'{}\': '.format(multi_state)).replace('\'', '"')
-
-        if action_to_take:
-            policy_A_multi_ = policy.update_state_actions(
-                policy_A_multi_,
-                multi_state,
-                {
-                    action: (
-                        1 if action == action_to_take else 0
-                    ) for action in graph.get_available_actions_from_graph_state(policy_A_multi_, multi_state)
-                }
-            )
-
-    print()
-
-    return policy_A_multi_
+    return output_policy_
