@@ -13,6 +13,7 @@ from . import test
 from . import launch
 from . import rep
 from . import ui
+from . import viz
 
 # 1) TESTING & REPLICATION
 
@@ -73,82 +74,85 @@ def reproduce_figure(post_number, fig_number):
     else:
         print('Invalid post_number and fig_number combination.')
 
-# 2) CREATING GRAPHS
+# 2) SETTING UP THE ENVIRONMENT
 
 def construct_single_agent_gridworld_mdp(
     num_rows,
     num_cols,
+    squares_to_delete=[],
     stochastic_noise_level=0,
     noise_bias={},
-    mdp_save_name=None,
-    squares_to_delete=[]
+    description='single-agent gridworld'
 ):
-    stochastic_graph = mdp.gridworld_to_stochastic_graph(
+    return mdp.gridworld_to_stochastic_graph(
             mdp.construct_gridworld(
-                num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols), squares_to_delete=squares_to_delete
+                num_rows, num_cols, name=description, squares_to_delete=squares_to_delete
             ),
             stochastic_noise_level=stochastic_noise_level,
             noise_bias=noise_bias
         )
-    
-    if mdp_save_name is not None:
-        data.save_graph_to_dot_file(stochastic_graph, mdp_save_name, folder=data.MDPS_FOLDER)
-    
-    return stochastic_graph
 
-def generate_noised_gridworlds(gridworld_mdp, noise_level_list=[], noise_bias_list=[]):
-    mdp.generate_noised_gridworlds(
-        gridworld_mdp,
-        noise_level_list=noise_level_list,
-        noise_bias_list=noise_bias_list
-    )
-
-def update_mdp_graph(input_mdp):
-    return ui.update_mdp_graph_interface(input_mdp)
-
-def construct_multiagent_gridworld_policy_and_mdps(num_rows, num_cols, mdp_save_name=None, policy_save_name=None):
-    stochastic_graph = mdp.gridworld_to_stochastic_graph(
-        mdp.construct_gridworld(
-            num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
-        )
-    )
-    
-    multiagent_graph = multi.create_joint_multiagent_graph(stochastic_graph)
-    policy_A_multi = ui.construct_multiagent_policy_interface(stochastic_graph)
-
-    if mdp_save_name is not None:
-        data.save_graph_to_dot_file(
-            multiagent_graph, mdp_save_name, folder=data.MDPS_FOLDER
-        )
-    
-    if policy_save_name is not None:
-        data.save_graph_to_dot_file(
-            policy_A_multi,
-            '{0}_agent_A_{1}'.format(mdp_save_name, policy_save_name),
-            folder=data.POLICIES_FOLDER
-        )
-
-    return [
-        multiagent_graph,
-        policy_A_multi
-    ]
-
-def construct_multiagent_gridworld_mdps_with_interactions(num_rows, num_cols, mdp_save_name=None):
-    stochastic_graph = mdp.gridworld_to_stochastic_graph(
-        mdp.construct_gridworld(
-            num_rows, num_cols, name='{0}x{1} gridworld'.format(num_rows, num_cols)
+def construct_multiagent_gridworld_mdp(
+    num_rows,
+    num_cols,
+    squares_to_delete=[],
+    description='multi-agent gridworld'
+):
+    return multi.create_joint_multiagent_graph(
+        construct_single_agent_gridworld_mdp(
+            num_rows,
+            num_cols,
+            squares_to_delete=squares_to_delete,
+            stochastic_noise_level=0,
+            noise_bias={},
+            description=description
         )
     )
 
-    joint_mdp_graph = update_mdp_graph(multi.create_joint_multiagent_graph(stochastic_graph))
+def edit_gridworld_mdp(mdp_graph):
+    return ui.update_mdp_graph_interface(mdp_graph)
 
-    if mdp_save_name is not None:
-        data.save_graph_to_dot_file(joint_mdp_graph, mdp_save_name, folder=data.MDPS_FOLDER)
-    
-    return joint_mdp_graph
-
-def build_quick_random_policy(mdp_graph):
+def construct_policy_from_mdp(mdp_graph):
     return policy.quick_mdp_to_policy(mdp_graph)
+
+def edit_gridworld_policy(policy_graph):
+    return ui.update_multiagent_policy_interface(policy_graph)
+
+def view_gridworld(gridworld_mdp):
+    view.view_gridworld(gridworld_mdp)
+
+def plot_mdp_or_policy(
+    mdp_or_policy_graph,
+    show=True,
+    subgraphs_per_row=4,
+    number_of_states_per_figure=128,
+    save_handle='temp',
+    graph_name='graph',
+    save_folder=data.TEMP_FOLDER,
+):
+    viz.plot_mdp_or_policy(
+        mdp_or_policy_graph,
+        show=show,
+        subgraphs_per_row=subgraphs_per_row,
+        number_of_states_per_figure=number_of_states_per_figure,
+        reward_to_plot=None,
+        save_handle=save_handle,
+        graph_name=graph_name,
+        save_folder=save_folder,
+        temp_folder=data.TEMP_FOLDER
+    )
+
+def save_mdp_graph(mdp_graph, mdp_filename):
+    data.save_graph_to_dot_file(mdp_graph, mdp_filename, folder=data.MDPS_FOLDER)
+
+def save_policy_graph(policy_graph, policy_filename):
+    data.save_graph_to_dot_file(policy_graph, policy_filename, folder=data.POLICIES_FOLDER)
+
+def load_mdp_graph(mdp_filename):
+    data.load_graph_from_dot_file(mdp_filename, folder=data.MDPS_FOLDER)
+
+def load_policy_graph(policy_filename):
+    data.load_graph_from_dot_file(policy_filename, folder=data.POLICIES_FOLDER)
 
 # 3) RUNNING EXPERIMENTS
 
@@ -436,6 +440,3 @@ def generate_sweep_animations(
         frames_at_end=frames_at_end,
         experiment_folder=experiment_folder
     )
-
-def view_gridworld(gridworld_mdp):
-    view.view_gridworld(gridworld_mdp)
