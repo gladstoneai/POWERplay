@@ -3,22 +3,15 @@ from src import base
 # TODO final:
 # - Document all base functions
 # -- We're using an M1 Mac with 10 cores; may need to change this
-# -- base.update_mdp_graph_with_interface
-# -- base.construct_single_agent_gridworld_mdp
-# -- base.construct_multiagent_gridworld_policy_and_mdps
-# -- base.construct_multiagent_gridworld_mdps_with_interactions
 # -- base.visualize_alignment_curves
 # -- base.visualize_all_alignment_curves
 # -- base.visualize_specific_power_alignments
 # -- base.visualize_full_gridworld_rollout
 # -- base.visualize_correlated_reward_samples
 # -- base.visualize_power_relationship_over_multiple_sweeps
-# -- base.build_quick_random_policy
 # -- base.visualize_all_correlated_reward_samples
-# -- base.test_vanilla, base.test_gridworld, base.test_stochastic, base.test_multiagent, base.test_reward_correlation (runs those from test)
 # -- base.generate_sweep_animations (wrapper for anim.generate_sweep_animations)
 # -- base.launch_sweep (wrapper for launch.launch_sweep)
-# -- base.generate_noised_gridworlds (wrapper for mdp.generate_noised_gridworlds)
 # -- base.plot_policy_sample (wrapper for view.plot_policy_sample)
 # -- base.view_gridworld (wrapper for view.view_gridworld)
 # - Document all non-base functions

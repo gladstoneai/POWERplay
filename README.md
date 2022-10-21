@@ -226,7 +226,7 @@ To run your first sweep in POWERplay, first run the `main.py` file:
 If you open the `configs/` folder in the POWERplay repo, you'll see a file there called `my_first_sweep.yaml`. This is the sweep we're going to run. In `main.py`, run the following command:
 
 ```
->>> base.launch_sweep('my_first_sweep.yaml', plot_as_gridworld=True)
+>>> base.launch_experiment('my_first_sweep.yaml', plot_as_gridworld=True)
 ```
 
 This sweep will probably take a few minutes to run.
@@ -922,61 +922,67 @@ You can then edit the policy graph just like any other.
 
 - `policy_graph [networkx.DiGraph]`: The policy graph you've loaded. Can be single-agent or multi-agent.
 
-### Running an experiment
+### Launching an experiment
 
-🟣 To run an experiment, use the `launch.launch_sweep()` function. This function takes a config filename as its only required argument. The config file is a YAML file that contains the parameters for the experiment.
+🟣 To launch an experiment, use the `base.launch_experiment()` function. This function takes a config filename as its only required argument. The config file is a YAML file that contains all the parameters for the experiment. For example:
 
-For example:
+```
+>>> base.launch_experiment('my_first_sweep.yaml', plot_as_gridworld=True)
+```
 
-  ```
-  >>> launch.launch_sweep('test_vanilla.yaml')
-  ```
+Config files should be located in the `configs/` directory. There are also some example config files in `configs/test/` and `configs/replication/`.
 
-The YAML file is the canonical description of the sweep for your experiment, and YAML files corresponding to individual runs of your sweep are saved in the `expts` and `wandb` directories.
+The config file is the canonical description of your whole experiment. It usually defines a **sweep** over parameters that is made up of individual **runs**. During an experiment, the YAML files that correspond to each run of your sweep are saved in the `expts/` and `wandb/` directories. This ensures that even if you edit the YAML file in `configs/`, you'll always know what parameters you used for every run. This ensures your experiments will always be reproducible.
 
 🔵 Here are the input arguments to `launch_sweep()` and what they mean (the YAML API is described afterwards):
 
 (Listed as `name [type] (default): description`.)
 
-- `sweep_config_filename [str, required]`: The name of the YAML file that contains the configuration for your sweep. This file should be located in the `configs` directory, but you don't need to include the `configs/` prefix in the filename.
+- `config_filename [str, required]`: The name of the YAML file that contains the configuration for your experiment sweep, including the `'.yaml'` extension. This file should be located in the `configs/` directory.
 
-  Typical value: `'test_vanilla.yaml'`
+  Typical value: `'my_first_sweep.yaml'`
 
-- `sweep_local_id [str] (time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())))`: A unique identifier for your sweep. This is used to name the directory in which the sweep and its runs are saved. This id will also show up in the names of your runs in the W&B UI.
-
-  Typical value: `20211123111452`
-
-- `entity [str] (data.get_settings_value(data.WANDB_ENTITY_PATH, settings_filename=data.SETTINGS_FILENAME))`: The W&B entity that is running the sweep. This is used to properly save your sweep in W&B.
+- `wandb_entity [str] (data.get_settings_value(data.WANDB_ENTITY_PATH, settings_filename=data.SETTINGS_FILENAME))`: The wandb entity that is running the sweep. This is usually your wandb username, but it can sometimes be a team if you're collaborating with someone else. This is used to properly save your sweep in wandb.
 
   Typical value: `'bob-bobson'`
 
-- `project [str] ('uncategorized')`: The W&B project that is running the sweep. This is used to properly save your sweep in W&B. If a project of that name is not owned by the same `entity` that is running the sweep, a new project will be created.
+- `wandb_project [str] ('uncategorized')`: The  project that's running your experiment sweep. This is used to properly save your sweep in wandb. If a project of that name is _not_ owned by the same `wandb_entity` that is running the sweep, a new project will be created.
 
   Typical value: `'uncategorized'`
 
-- `sweep_config_folder [str] (data.SWEEP_CONFIGS_FOLDER)`: The folder in which the sweep config file is located. This is used to find the config file.
+- `number_of_workers [int | None] (None)`: The number of CPU workers to run your experiment on. Since the POWER calculation is embarrassingly parallel, POWERplay is designed to scale it gracefully across processes using [Python multiprocessing](https://docs.python.org/3/library/multiprocessing.html). POWERplay isn't configured to run on the cloud, but it should at least be able to make full use of all your local CPU resources.
 
-  Typical value: `'configs'`
+  If `number_of_workers=None`, POWERplay automatically sets it to the maximum number of available CPU workers on your machine using `multiprocessing.cpu_count()`. This is fine in the vast majority of cases.
 
-- `output_folder_local [str] (data.EXPERIMENT_FOLDER)`: The folder in which the experiment and its runs will be saved.
+  Typical value: `10`
 
-  Typical value: `'expts'`
+- `plot_as_gridworld [bool] (False)`: POWERplay automatically generates figures of your results during a sweep, and saves them to the `expts/` folder and to wandb. If the MDP in your experiment is a gridworld, setting `plot_as_gridworld=True` will format these output plots in a way that's especially convenient to visualize. If you're working with gridworlds, you should always manually set this to `True`.
 
-- `plot_as_gridworld [bool] (False)`: Whether to visualize the POWER plots on a gridworld. Note that if you aren't running a gridworld MDP, setting this to `True` will crash the run.
+  If the MDP in your experiment _isn't_ a gridworld, setting this to `plot_as_gridworld=True` will crash the run. This is why its default value is `False`.
+
+  Typical value: `True`
+
+- `plot_distributions [bool] (False)`: POWERplay calculates POWERs by sampling a large number of reward functions (typically 10,000 or more) from a reward distribution. It then computes the [average optimal value](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#2_1_Definition) at each state, for each of those sampled reward functions, and then averages them together to get its final estimate of the POWER value. Each of the average optimal values POWERplay calculates is called a **"POWER sample"**. So the POWER value is the average of all the POWER samples.
+
+  If you set `plot_distributions=True`, POWERplay will automatically generate histograms of the reward values and POWER samples at every state in your MDP. This is extremely useful for troubleshooting, debugging, or understanding complicated or unexpected behaviors. But because this option generates one histogram for every state of your MDP, it can quickly get unwieldy for a non-trivial multi-agent MDP with hundreds or thousands of states.
+
+  Generally best practice is to leave `plot_distributions=False` if you're working with a multi-agent system. You can set `plot_distributions=True` at small scale for testing and debugging, or if there's a simple system that you're trying to understand very deeply.
 
   Typical value: `False`
 
-- `plot_correlations [bool] (False)`: Whether to visualize the correlation plots. Sometimes you have so many states that all the correlation plots don't render in reasonable time during the sweep (because if there are `N` states, there are `N^2` correlation plots).
+- `plot_correlations [bool] (False)`: If you set `plot_correlations=True`, POWERplay will automatically generate 2D histograms showing how the POWER samples at each state of your MDP correlates with the POWER samples at every other state of your MDP. This is even more informative than setting `plot_distributions=True`, because it can reveal deep relationships between the instrumental values of different states.
+
+  Unfortunately, plotting correlations is even more intensive than plotting distributions, because it generates a histogram for every possible _pair_ of states in your MDP. So if your MDP has `N` states, setting `plot_distributions=True` will generate `N**2` histograms. This is hugely impractical for any MDP with more than a couple dozen states, which in practice rules out multi-agent systems completely. Still, this option is occasionally worth using when troubleshooting small single-agent systems.
 
   Typical value: `False`
 
-- `announce_when_done [bool] (False)`: Exactly what it sounds like.
+- `diagnostic_mode [bool] (False)`: Only used for experiments of type `'multiagent_with_reward'` (see below), that use [joint reward function distributions](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#3_1_Multi_agent_reward_function_distributions). If `True`, this will plot the POWERs of the [Agent A seed policy](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#A_1_Initial_optimal_policies_of_Agent_H), _and_ plot the POWERs of Agent H against the Agent A seed policy. The latter, in particular, is often interesting to visualize because it shows [how well Agent H does against "nature"](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2__Multi_agent_POWER__human_AI_scenario) in the absence of optimization from Agent A. This makes it possible to investigate questions like, "at what point should the human agent _prefer_ an AI-dominated world, to a world without a powerful AI?"
 
-  Typical value: `False`
+  We generally recommend leaving this set to `True` for `'multiagent_with_reward'` experiments. For other experiment types, this setting has no effect.
 
-- `environ [environ] (os.environ)`: The complete shell environment of the run; includes the environment variables that will be used to run the experiment. In general you shouldn't need to change this.
+  Typical value: `True`
 
-  Typical value: `environ({ 'USER': 'bob_bobson', ... })`
+#### Experiment config files
 
 You can find examples of sweep configuration files in the `configs` folder. The file `test_vanilla.yaml` defines a sweep for the single-agent case, with a single Agent H MDP graph given by the parameter `mdp_graph` (see below). The file `test_run_multi_actual.yaml` defines a single run for the multi-agent case, with an Agent H MDP graph given by `mdp_graph_agent_H`, and Agent A MDP graph given by `mdp_graph_agent_A`, and an Agent A fixed policy graph given by `policy_graph_agent_A`.
 
