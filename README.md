@@ -872,6 +872,10 @@ You can then edit the MDP graph just like any other.
 
   Typical value: `'joint_3x3_gridworld'`
 
+🟢 Here is the output to `base.load_mdp_graph()`:
+
+- `mdp_graph [networkx.DiGraph]`: The MDP graph you've loaded. Can be single-agent or multi-agent.
+
 #### Save a policy graph
 
 🟣 To save a policy graph you've created or edited, use `base.save_policy_graph()`. For example:
@@ -913,6 +917,10 @@ You can then edit the policy graph just like any other.
 - `policy_filename [str, required]`: The filename of the policy graph you want to load, not including the extension. You'll find existing MDP graphs in the `policies/` folder.
 
   Typical value: `'joint_3x3_gridworld_agent_A_uniform_random'`
+
+🟢 Here is the output to `base.load_policy_graph()`:
+
+- `policy_graph [networkx.DiGraph]`: The policy graph you've loaded. Can be single-agent or multi-agent.
 
 ### Running an experiment
 
