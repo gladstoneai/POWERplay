@@ -1,3 +1,5 @@
+from src.lib.utils import dist
+
 from src import base
 
 # TODO final:
@@ -11,7 +13,6 @@ from src import base
 # -- base.visualize_power_relationship_over_multiple_sweeps
 # -- base.visualize_all_correlated_reward_samples
 # -- base.generate_sweep_animations (wrapper for anim.generate_sweep_animations)
-# -- base.launch_sweep (wrapper for launch.launch_sweep)
 # -- base.plot_policy_sample (wrapper for view.plot_policy_sample)
 # -- base.view_gridworld (wrapper for view.view_gridworld)
 # - Document all non-base functions
