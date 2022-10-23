@@ -29,9 +29,9 @@ parameters:
             [-1, 1]
         "ℓ_◁":
           dist_name:
-            "uniform"
+            "beta"
           params:
-            [-2, 0]
+            [1, 2]
       allow_all_equal_rewards:
         True
   num_reward_samples:

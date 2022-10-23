@@ -196,7 +196,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
 
     Navigating to your Sweeps view (using the link above under "View sweep at") should show the following:
 
-    ![power-example-sweep-wandb](img/power_example_sweep_wandb.png)
+    ![Example of wandb sweep data](img/wandb-sweep-data-example.png)
 
     This sweep iterates over three discount rate values: 0.1, 0.3, and 0.5. The config YAML file for the test sweep is located at `configs/test/test_vanilla.yaml`.
 
@@ -251,7 +251,7 @@ For example:
 >>> base.test_vanilla()
 ```
 
-This function executes the sweep defined in the config file `config/test/test_vanilla.yaml`. The outputs of the sweep, incluing figures, get saved locally under `expts/{SWEEP_ID}-test_vanilla`. (And get separately uploaded to wandb.)
+This function executes the sweep defined in the config file `configs/test/test_vanilla.yaml`. The outputs of the sweep, incluing figures, get saved locally under `expts/{SWEEP_ID}-test_vanilla`. (And get separately uploaded to wandb.)
 
 #### Gridworld test
 
@@ -263,7 +263,7 @@ For example:
 >>> base.test_gridworld()
 ```
 
-This function executes the sweep defined in the config file `config/test/test_gridworld.yaml`. The agent's environment is a simple 3x3 gridworld.
+This function executes the sweep defined in the config file `configs/test/test_gridworld.yaml`. The agent's environment is a simple 3x3 gridworld.
 
 The outputs of the sweep get uploaded to wandb and separately get saved locally under `expts/{SWEEP_ID}-test_gridworld`. Files with the prefix `POWER_means-agent_H` are figures that display POWERs as gridworld heatmaps.
 
@@ -277,7 +277,7 @@ For example:
 >>> base.test_stochastic()
 ```
 
-This function executes the sweep defined in the config file `config/test/test_stochastic.yaml`. The agent's environment is a 4-state MDP with stochastic transitions.
+This function executes the sweep defined in the config file `configs/test/test_stochastic.yaml`. The agent's environment is a 4-state MDP with stochastic transitions.
 
 The outputs of the sweep get uploaded to wandb and separately get saved locally under `expts/{SWEEP_ID}-test_stochastic`.
 
@@ -291,7 +291,7 @@ For example:
 >>> base.test_multiagent()
 ```
 
-This function executes two sweeps. The first, defined in the config file `config/test/test_multiagent_simulated.yaml`, _simulates_ the presence of Agent A, but does not execute any multi-agent code. The second sweep, defined in the config file `config/test/test_multiagent_actual.yaml`, runs Agent A using a defined fixed policy and multi-agent code. If POWERplay is functioning correctly, the outputs of these two sweeps should be exactly identical.
+This function executes two sweeps. The first, defined in the config file `configs/test/test_multiagent_simulated.yaml`, _simulates_ the presence of Agent A, but does not execute any multi-agent code. The second sweep, defined in the config file `configs/test/test_multiagent_actual.yaml`, runs Agent A using a defined fixed policy and multi-agent code. If POWERplay is functioning correctly, the outputs of these two sweeps should be exactly identical.
 
 The outputs of these sweep get uploaded to wandb and separately get saved locally under `expts/{SWEEP_ID}-test_multiagent_simulated` and `expts/{SWEEP_ID}-test_multiagent_actual`.
 
@@ -305,7 +305,7 @@ For example:
 >>> base.test_reward_correlation()
 ```
 
-This function executes the sweep defined in the config file `config/test/test_reward_correlation.yaml`. The agents' environment is a 3x3 gridworld with joint states over the positions of the two agents — so 81 states in total, since either agent can occupy any of 9 positions on the 3x3 grid.
+This function executes the sweep defined in the config file `configs/test/test_reward_correlation.yaml`. The agents' environment is a 3x3 gridworld with joint states over the positions of the two agents — so 81 states in total, since either agent can occupy any of 9 positions on the 3x3 grid.
 
 The outputs of the sweep get uploaded to wandb and separately get saved locally under `expts/{SWEEP_ID}-test_reward_correlation`. Files with the prefix `POWER_means-agent_H` show the POWERs of Agent H, and files with the prefix `POWER_means-agent_A` show the POWERs of Agent A. This test may take a few minutes to run.
 
@@ -927,14 +927,14 @@ You can then edit the policy graph just like any other.
 🟣 To launch an experiment, use the `base.launch_experiment()` function. This function takes a config filename as its only required argument. The config file is a YAML file that contains all the parameters for the experiment. For example:
 
 ```
->>> base.launch_experiment('my_first_sweep.yaml', plot_as_gridworld=True)
+>>> base.launch_experiment('my_first_sweep.yaml', plot_as_gridworld=True, plot_distributions=True, plot_correlations=True)
 ```
 
 Config files should be located in the `configs/` directory. There are also some example config files in `configs/test/` and `configs/replication/`.
 
 The config file is the canonical description of your whole experiment. It usually defines a **sweep** over parameters that is made up of individual **runs**. During an experiment, the YAML files that correspond to each run of your sweep are saved in the `expts/` and `wandb/` directories. This ensures that even if you edit the YAML file in `configs/`, you'll always know what parameters you used for every run. This ensures your experiments will always be reproducible.
 
-🔵 Here are the input arguments to `launch_sweep()` and what they mean (the YAML API is described afterwards):
+🔵 Here are the input arguments to `launch_experiment()` and what they mean (the YAML API is described afterwards):
 
 (Listed as `name [type] (default): description`.)
 
@@ -984,46 +984,74 @@ The config file is the canonical description of your whole experiment. It usuall
 
 #### Experiment config files
 
-You can find examples of sweep configuration files in the `configs` folder. The file `test_vanilla.yaml` defines a sweep for the single-agent case, with a single Agent H MDP graph given by the parameter `mdp_graph` (see below). The file `test_run_multi_actual.yaml` defines a single run for the multi-agent case, with an Agent H MDP graph given by `mdp_graph_agent_H`, and Agent A MDP graph given by `mdp_graph_agent_A`, and an Agent A fixed policy graph given by `policy_graph_agent_A`.
+You can find examples of experiment configuration files in the `configs/test/` and `configs/replication/` folders. There are three types of experiment that POWERplay recognizes:
 
-Here are the entries of the sweep YAML file:
+1. `'single_agent'`: A single-agent MDP from the perspective of Agent H. POWER calculations are based on the [single-agent definition](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#2_1_Definition). Example config file: `configs/test/test_stochastic.yaml`.
 
-- `name [str]`: The name of your sweep, typically separated by underscores.
+2. `'multiagent_fixed_policy'`: A multi-agent MDP from the perspective of Agent H, where Agent A runs a fixed policy. This is conceptually identical to the `'single_agent'` type, since from Agent H's perspective, Agent A can be thought of as part of a fixed MDP. In fact, POWER calculations are based on the [single-agent definition](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#2_1_Definition) here as well. But explicitly defining a fixed Agent A policy can make this situation easier to reason about. Example config file: `configs/test/test_multiagent_actual.yaml`.
 
-  Typical value: `'test_sweep'`
+3. `'multiagent_with_reward'`: A multi-agent MDP in which Agent H learns optimal policies against a fixed environment, and Agent A then learns optimal policies against fixed Agent H policies. POWER calculations are based on the [multi-agent definitions described here](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2__Multi_agent_POWER__human_AI_scenario). Example config file: `configs/test/test_reward_correlation.yaml`.
 
-- `description [str]`: A description of your sweep.
+POWERplay auto-detects the experiment type based on which `parameters` are defined in the config file.
 
-  Typical value: `'This is a test sweep.'`
+Here are the entries you need in your experiment config file:
 
-- `program`: The Python script that runs your sweep. This should always be set to `'sweep.py'`.
+- `name [str]`: The name of your experiment, typically separated by underscores. This should be the same as the name of the YAML config file.
+
+  Typical value: `'test_vanilla'`
+
+- `description [str]`: A description of your experiment.
+
+  Typical value: `'Sweeping over discount rates on the MDP from Figure 1 in Optimal Policies Tend to Seek Power, https://arxiv.org/abs/1912.01683'`
+
+- `program`: The Python script that runs your experiment. This should always be `'sweep.py'`.
 
   Typical value: `'sweep.py'`
 
-- `parameters`: A series of entries and values that define the sweep. Includes fixed values and values that vary over the sweep. Below are the parameters and their syntax **for fixed values**:
+- `parameters`: A series of entries and values that define the sweep. Includes fixed values and values that vary over the sweep. Below are the parameters and their syntax **for fixed values** (i.e., values that stay constant over a sweep):
 
-  - (Single-agent only) `mdp_graph`: The name of the file in the `mdps` folder that corresponds to the MDP graph you want to use. This name should not include the `.gv` extension. **Do not include this parameter if you are running a multi-agent sweep.**
+  - `discount_rate`: The discount rate for Agent H. If the experiment type is `'single_agent'`, this is the discount rate for the single agent. Should be a number between 0 and 1.
 
-    Typical value: `'mdp_from_paper'`
+    Typical value: `0.6`
   
-  - (Multi-agent only) `mdp_graph_agent_H`: The name of the file in the `mdps` folder that corresponds to the MDP graph you want to use for Agent H. This name should not include the `.gv` extension. **Do not include this parameter if you are running a single-agent sweep.**
+  - `reward_distribution`: A distribution of reward functions for Agent H over which POWERplay will calculate POWER. POWERplay only supports reward functions distributions with rewards that are [iid](https://en.wikipedia.org/wiki/Independent_and_identically_distributed_random_variables) over MDP states. In other words, for each reward function sample, the reward value at one state is independent of the reward value at all the other states of the MDP.
+  
+      This simplification makes reward function distributions in POWERplay a bit easier to define.
+      
+      - We first define a `default_dist`, which is a reward distribution that applies over all the states of the MDP. So for example, if we defined the `default_dist` as a Uniform(0, 1) distribution, then POWERplay would sample a reward function by sampling reward values from Uniform(0, 1), independently at every state. The `default_dist` entry for a Uniform(0, 1) distribution looks like this:
 
-    Typical value: `'stoch_gridworld_1x3_agent_H'`
-  
-  - (Multi-agent only) `mdp_graph_agent_A`: The name of the file in the `mdps` folder that corresponds to the MDP graph you want to use for Agent A. This name should not include the `.gv` extension. **Do not include this parameter if you are running a single-agent sweep.**
-  
-    Typical value: `'stoch_gridworld_1x3_agent_A'`
-  
-  - (Multi-agent only) `policy_graph_agent_A`: The name of the file in the `policies` folder that corresponds to the policy graph you want to use for Agent A. This name should not include the `.gv` extension. **Do not include this parameter if you are running a single-agent sweep.**
+        ```
+        default_dist:
+          dist_name:
+            "uniform"
+          params:
+            [0, 1]
+        ```
+
+        As you can see, to define a reward distribution on a state, we need two things. First is the `dist_name`, which in this case is `"uniform"` for the uniform distribution. You can find the list of supported `dist_name`s in the module `src/lib/utils/dist.py` under the `DISTRIBUTION_DICT` variable. These are typically `torch.distribution` objects, but POWERplay also supports manually defining arbitrary reward distributions.
+
+        The second thing you need to define a distribution is the distribution's `params`. These are the parameters of the distribution, and they're different for each distribution. In the `"uniform"` example above, we're using the `torch.distributions.Uniform` distribution, so the two parameters define the [support](https://en.wikipedia.org/wiki/Support_(mathematics)) of the uniform distribution. In other words, `params: [0, 1]` in this case means a uniform distribution from 0 to 1. But if we had `dist_name: "beta"`, then `params` would refer to the [alpha and beta parameters of the beta distribution](https://en.wikipedia.org/wiki/Beta_distribution).
+      
+      - The second thing we define is a list of `state_dists`, which is alloweds to be empty. The entry `state_dists` is a _list_ of distributions that apply to specific states of the MDP, and that override the `default_dist` on the states they're associated with. If we want to have a "special" state whose rewards are, say, always fixed at zero over the reward function distribution, we can get that using `state_dists`. In POWERplay, every state in an MDP is labeled with a unique string, and `state_dists` lets you assign reward distributions to individual states using their string labels. Here's an example of a `state_dists` entry that defines special distributions for two MDP states labeled `"∅"` and `"ℓ_◁"`:
+
+        ```
+        state_dists:
+        "∅":
+          dist_name:
+            "uniform"
+          params:
+            [-1, 1]
+        "ℓ_◁":
+          dist_name:
+            "beta"
+          params:
+            [1, 2]
+        ```
     
-    Typical value: `'joint_1x3_gridworld_agent_A_move_left'`
-  
-  - `discount_rate`: The discount rate for the MDP.
+      - Finally, we define an `allow_all_equal_rewards` Boolean parameter. If set to `False`, POWERplay will re-sample a reward function if it encounters a reward function whose rewards are exactly equal everywhere. This sometimes happens when using discrete reward function distributions (e.g., `dist_name: "bernoulli"`, on which a state's reward is always exactly 0 or 1). If a sampled reward function is 0 everywhere, for example, then the agent's optimal policy will be arbitrary and this can affect the results of a POWER calculation.
 
-    Typical value: `0.1`
-  
-  - `reward_distribution`: A list of distributions for the reward of each state. We have one `default_dist`, which defines the default reward distribution and is assumed to be iid over all states, and we also have a list of `state_dists`, which define state-specific reward distributions for all states that do not have the default distribution. Each distribution is defined by a `dist_name`, which is the name of that base distribution as found in `DISTRIBUTION_DICT` in `utils/dist.py`; and a `params` list, which is a list of parameters for that distribution.
-
+        On continuous reward function distributions, this almost never happens, so you can set `allow_all_equal_rewards: True`. This is the typical case.
+    
     Typical value:
 
     ```
@@ -1040,113 +1068,104 @@ Here are the entries of the sweep YAML file:
           [-1, 1]
       "ℓ_◁":
         dist_name:
-          "uniform"
+          "beta"
         params:
-          [-2, 0]
+          [1, 2]
     allow_all_equal_rewards:
       True
     ```
   
-  - `num_reward_samples`: The number of samples to draw from the reward distribution for each state in the POWER calculations.
+  - `num_reward_samples`: The number of samples to draw from the `reward_distribution` when calculating POWERs. POWERplay parallelizes its calculation across `num_reward_samples`, so if you have lots of CPUs available you can run more reward samples.
+
+    Setting this to a high value (e.g., `100000`) makes POWER calculations more accurate at the expense of taking longer to do. For big multi-agent systems, anything between `10000` and `20000` is pretty typical.
+
+    **NOTE:** `num_reward_samples` should be divisible by `number_of_workers` (the input to `base.launch_experiment()`) for perfectly reproducible results. Otherwise, POWERplay will truncate your reward samples until they can be divided evenly between all your workers. So if you have 3 workers and want to run 100 reward samples, POWERplay will only actually run 99 reward samples (giving each worker 33 samples to run).
 
     Typical value: `10000`
   
-  - `convergence_threshold`: The convergence threshold for the value iteration algorithm.
+  - `convergence_threshold`: The convergence threshold for the value iteration algorithm. You generally never need to change this from the default value.
 
     Typical value: `0.0001`
   
-  - `num_workers`: The number of workers to use in multiprocessing.
-
-    Typical value: `10`
-  
-  - `random_seed`: The random seed to use for the experiment. If `null`, then the random seed is not fixed. Normally set to a number, to make it easier to reproduce the experiment later.
+  - `random_seed`: The random seed to use for the experiment. If `null`, then the random seed is not fixed. We recommend setting this to a number, to make it easier to reproduce your experiment later if you need to.
 
     Typical value: `0`
 
-  Note that the above parameter values are set with different syntax depending on whether the value is **fixed**, or whether it **varies** over the course of the sweep. If the value is **fixed**, then the syntax puts the actual value of the parameter _under a `value` key_ in the parameter dictionary, like so:
+  The `parameters` above need to be defined for all experiment types. But some `parameters` are specific to particular experiment types. POWERplay auto-detects the experiment type based on which `parameters` are defined in the experiment config file, and throws an error if the set of `parameters` you've defined is insconsistent with any known experiment type.
 
-  ```
-  discount_rate:
-    value:
-      0.1
-  ```
+  Below are the `parameters` you need to define for the `'single_agent'` experiment type. You can find an example config file for the `'single_agent'` experiment type under `configs/test/test_stochastic.yaml`.
 
-  If the value **varies**, then the parameter takes on multiple values over the course of a sweep. The way to specify this is to create a `values` key under which you list each value of the parameter, _and also a `names` key_ under which you list the names of the corresponding values in order to allow each run of your sweep to be named according to the parameter values it corresponds to. For example:
+    - `mdp_graph`: The name of the file in the `mdps/` folder that corresponds to the MDP graph you want to use. This name should not include the `.gv` extension.
+    
+      This should be a **single-agent** MDP graph, not a joint multi-agent graph.
 
-  ```
-  discount_rate:
-    values:
-      - 0.1
-      - 0.2
-      - 0.3
-    names:
-      - "0p1"
-      - "0p2"
-      - "0p3"
-  ```
+      Typical value: `"3x3_gridworld"`
+  
+  Here are the `parameters` you need to define for the `'multiagent_fixed_policy'` experiment type. You can find an example config file for the `'multiagent_fixed_policy'` experiment type under `configs/test/test_multiagent_actual.yaml`.
 
-  (Note that it's best to use "p" instead of "." for decimals, since the parameter names are going to be used in filenames.)
+    - `joint_mdp_graph`: The name of the file in the `mdps/` folder that corresponds to the joint MDP graph you want to use for your two agents. This name should not include the `.gv` extension.
+    
+      This should be a **joint multi-agent** MDP graph, not a single-agent graph. Best practice is to add the prefix `'joint_'` to all joint MDP graph filenames when [saving them](#save-an-mdp-graph), so it should be easy to tell which type of graph you're working with.
 
-🟢 The `launch.launch_sweep()` function returns no output. Instead, it saves the results of the sweep to the `output_folder_local` folder, and to the `/wandb` folder. The rendered correlation plots associated with each run of the sweep are saved in a subfolder that corresponds to their run.
+      Typical value: `"joint_3x3_gridworld"`
 
-### Saving and loading MDP graphs
+    - `policy_graph_agent_A`: The name of the file in the `policies/` folder that corresponds to the policy graph you want to assign to Agent A. This name should not include the `.gv` extension. POWERplay will calculate the POWERs of Agent H assuming Agent A always follows this fixed policy.
 
-🟣 To save a new MDP graph for later experiments, use `data.save_graph_to_dot_file()` to save a NetworkX graph as a `dot` file in a target folder. For example, the following code creates and saves the MDP graph from Figure 1 of _Optimal policies tend to seek power_:
+      This policy graph should be **compatible** with `joint_mdp_graph` above, in the sense that its sets of states and actions should be the same as those of `joint_mdp_graph`. Best practice is to prefix a policy filename with the _entire filename_ of the MDP it's associated with when [saving a policy](#save-a-policy-graph). So it should be easy to tell from the filenames whether `policy_graph_agent_A` is compatible with `joint_mdp_graph`.
 
-```
->>> import networkx as nx
->>> new_mdp = nx.DiGraph([
-        ('★', '∅'), ('★', 'ℓ_◁'), ('★', 'r_▷'),
-        ('∅', '∅'),
-        ('ℓ_◁', 'ℓ_↖'), ('ℓ_◁', 'ℓ_↙'),
-        ('ℓ_↙', 'ℓ_↖'), ('ℓ_↙', 'ℓ_↙'),
-        ('r_▷', 'r_↗'), ('r_▷', 'r_↘'),
-        ('r_↘', 'r_↘'), ('r_↘', 'r_↗'),
-        ('r_↗', 'r_↗'), ('r_↗', 'r_↘'),
-        ('ℓ_↖', 'ℓ_↙'))
-    ], name='POWER paper MDP')
->>> data.save_graph_to_dot_file(new_mdp, 'mdp_from_paper')
-```
+      Typical value: `"joint_3x3_gridworld_agent_A_uniform_random"`
 
-🔵 Here are the input arguments to `data.save_graph_to_dot_file()` and what they mean:
+  Here are the `parameters` you need to define for the `'multiagent_with_reward'` experiment type. You can find an example config file for the `'multiagent_with_reward'` experiment type under `configs/test/test_reward_correlation.yaml`.
 
-(Listed as `name [type] (default): description`.)
+    - `joint_mdp_graph`: The name of the file in the `mdps/` folder that corresponds to the joint MDP graph you want to use for your two agents. This name should not include the `.gv` extension.
+    
+      This should be a **joint multi-agent** MDP graph, not a single-agent graph. Best practice is to add the prefix `'joint_'` to all joint MDP graph filenames when [saving them](#save-an-mdp-graph), so it should be easy to tell which type of graph you're working with.
 
-- `mdp_graph [networkx.DiGraph, required]`: The NetworkX [DiGraph](https://networkx.org/documentation/stable/reference/classes/digraph.html) you want to save as your MDP. This should be a directed graph, with nodes representing states and edges representing transitions. Every state must have at least one outgoing edge, even if the state points to itself (i.e., the state has a self-loop).
+      Typical value: `"joint_3x3_gridworld"`
 
-  Typical value: `mdp.quick_graph_to_mdp(nx.petersen_graph(), name='Petersen graph')`
+    - `seed_policy_graph_agent_A`: The name of the file in the `policies/` folder that corresponds to the [seed policy](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#A_1_Initial_optimal_policies_of_Agent_H) you want to assign to Agent A. This name should not include the `.gv` extension. POWERplay will train Agent H against this seed policy, and then train Agent A against the learned policies of Agent H. It will then use the multi-agent POWER formula to calculate [the POWERs of Agent H](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2_1_Multi_agent_POWER_for_Agent_H) and [the POWERs of Agent A](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#2_2_Multi_agent_POWER_for_Agent_A).
 
-- `mdp_filename [str, required]`: The name of the file to save the MDP graph as. This should be a filename without an extension, and should be unique among all MDP graphs you have saved. (If the name you save with is the same as the name of an existing file, this will overwrite the existing file without warning.)
+      This policy graph should be **compatible** with `joint_mdp_graph` above, in the sense that its sets of states and actions should be the same as those of `joint_mdp_graph`. Best practice is to prefix a policy filename with the _entire filename_ of the MDP it's associated with when [saving a policy](#save-a-policy-graph). So it should be easy to tell from the filenames whether `seed_policy_graph_agent_A` is compatible with `joint_mdp_graph`.
 
-  Typical value: `'petersen_graph'`
+      Typical value: `"joint_3x3_gridworld_agent_A_uniform_random"`
+    
+    - `discount_rate_agent_A`: The discount rate for Agent A. Should be a number betwee 0 and 1. Typically this will be the same as `discount_rate` (which is the discount rate for Agent H in a multi-agent setting), but you might sometimes want to do experiments where the two agents have different discount rates.
 
-- `folder [str] (data.MDPS_FOLDER)`: The folder to save the graph in. Note that you can save policy graphs in the same way as MDP graphs, and if so, you should generally save these in the `policies` folder.
+      Typical value: `0.6`
+    
+    - `reward_correlation`: The correlation coefficient between the reward functions for Agent H and the reward functions for Agent A. If this is set to 1, then Agent A will always have exactly the same reward function as Agent H. If it's set to 0, then Agent A's reward function will always be independent of Agent H's reward function.
 
-  Typical value: `'mdps'`
+      If this is set to a number between 0 and 1, POWERplay uses [the interpolation scheme described here](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#3_4_Overcoming_instrumental_misalignment) to sample Agent A's reward function based on Agent H's reward function.
 
-🟢 The `data.save_graph_to_dot_file()` function returns no output. Instead, it saves the MDP graph to the `data.MDPS_FOLDER` folder for future use.
+      It's also possible to set `reward_correlation` to a number between -1 and 0, if your reward function distribution is **symmetric**. Symmetric reward function distributions in `DISTRIBUTION_DICT` (`src/lib/utils/dist.py`) have a defined key called `'symmetric_interval'`, that defines the bounds over which the distribution is symmetric. But it's fairly rare in our experience investigate negative reward correlations, but qualitatively these correspond to [S-risk scenarios](https://longtermrisk.org/s-risks-talk-eag-boston-2017/) in our human-AI multi-agent setting.
 
-🟣 To load a previously saved NetworkX graph, use `data.load_graph_from_dot_file()`. For example, the following code loads the MDP graph that's used in the `test.test_vanilla()` integration test:
+      Typical value: `0`
+
+You set the `parameters` above with different syntax depending on whether that parameter's value is **fixed**, or whether it **varies** over the course of an experiment's parameter sweep. If the value is **fixed**, then the syntax puts the actual value of the parameter under a `value` key in the `parameters` dictionary, like so:
 
 ```
->>> new_mdp = data.load_graph_from_dot_file('mdp_from_paper')
+discount_rate:
+  value:
+    0.1
 ```
 
-🔵 Here are the input arguments to `data.load_graph_from_dot_file()` and what they mean:
+If the value **varies** over the experiment, that means the parameter takes on multiple values over the course of a sweep. The way to specify this is to create a `values` key under which you list each value of the parameter, and a `names` key under which you list the names of the corresponding values in order to allow each run of your sweep to be **named** according to the parameter values it corresponds to. For example:
 
-(Listed as `name [type] (default): description`.)
+```
+discount_rate:
+  values:
+    - 0.1
+    - 0.2
+    - 0.3
+  names:
+    - "0p1"
+    - "0p2"
+    - "0p3"
+```
 
-- `mdp_name [str, required]`: The file name of the graph you want to load. This **should not** include the `.gv` extension.
+(Note that it's best to use "p" instead of "." for decimals, since these parameter names are going to be used in filenames.)
 
-  Typical value: `'mdp_from_paper'`
-
-- `folder [str] (data.MDPS_FOLDER)`: The folder to load the graph from. Note that you can load policy graphs with this function too; if you're doing that, you should load them from the `policies` folder. 
-
-  Typical value: `'mdps'`
-
-🟢 Here is the output to `data.load_graph_from_dot_file()`:
-
-- `output_graph [networkx.DiGraph]`: The loaded NetworkX graph. This may be either an MDP or a policy graph.
+For examples of this, see the experiment config files under `configs/test/` and `configs/replication`.
 
 ### Creating a gridworld MDP graph
 
@@ -1194,21 +1213,6 @@ Here are the entries of the sweep YAML file:
 - `new_mdp_graph [networkx.DiGraph]`: An MDP graph representing the new MDP, with the new state, actions, and outgoing transitions added to it.
 
 ## Advanced wordflows
-
-### Launching a real sweep
-
-Here's an example of launching a real sweep, assuming you've got a project called `'power-project'` in your W&B profile. When you have lots of states in your MDP (>30 or so) it can be best to set `plot_correlations=False` because the correlation plots will otherwise take way too long to render.
-
-```
-launch.launch_sweep(
-      'sweep-2x3_GRIDWORLD_MULTIAGENT_CLOCKWISE_MOVING_POLICY_GAMMA_SWEEP-distribution_uniform_0t1-samples_40k.yaml',
-      entity=data.get_settings_value('public.WANDB_COLLAB_ENTITY'),
-      project='power-project',
-      plot_as_gridworld=False,
-      plot_correlations=False,
-      announce_when_done=True
-  )
-```
 
 ### Plotting a policy sample
 
