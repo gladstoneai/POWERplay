@@ -20,7 +20,7 @@ def check_project_exists(project, entity, wb_api):
         )
 
 def check_agent_label(agent_label):
-    if agent_label != 'A' and agent_label != 'B':
+    if agent_label != 'H' and agent_label != 'A':
         raise Exception('Agent label must be either \'H\' or \'A\', not {}.'.format(agent_label))
 
 def check_num_samples(num_samples, num_workers):

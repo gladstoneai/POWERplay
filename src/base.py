@@ -186,90 +186,13 @@ def launch_experiment(
 
 # 4) VISUALIZING RESULTS
 
-# y_axis_bounds is either None (and set the y-axis bounds by default based on the data) or a 2-element list
-# with the lower bound as the first element, and the upper bound as the second element.
-def visualize_alignment_curves(
-    sweep_id,
-    show=True,
-    plot_title='Alignment curves',
-    fig_name='',
-    include_baseline_power=True,
-    y_axis_bounds=None,
-    data_folder=data.EXPERIMENT_FOLDER,
-    save_folder=data.TEMP_FOLDER
-):
-    view.plot_alignment_curves(
-        sweep_id,
-        show=show,
-        plot_title=plot_title,
-        include_baseline_power=include_baseline_power,
-        fig_name=fig_name,
-        y_axis_bounds=y_axis_bounds,
-        data_folder=data_folder,
-        save_folder=save_folder
-    )
-
-def visualize_all_alignment_curves(
-    sweep_ids_list,
-    show=False,
-    plot_titles=None,
-    fig_names=None,
-    data_folder=data.EXPERIMENT_FOLDER,
-    save_folder=data.TEMP_FOLDER
-):
-    plot_titles_list = ['Alignment curves'] * len(sweep_ids_list) if plot_titles is None else plot_titles
-    fig_names_list = [None] * len(sweep_ids_list) if fig_names is None else fig_names
-
-    for sweep_id, plot_title, fig_name in zip(sweep_ids_list, plot_titles_list, fig_names_list):
-        view.plot_alignment_curves(
-            sweep_id,
-            show=show,
-            plot_title=plot_title,
-            include_baseline_power=False,
-            fig_name=fig_name,
-            y_axis_bounds=None,
-            data_folder=data_folder,
-            save_folder=save_folder
-        )
-
-def visualize_specific_power_alignments(
-    sweep_id,
-    show=True,
-    ms_per_frame=100,
-    graph_padding_x=0.05,
-    graph_padding_y=0.05,
-    frames_at_start=1,
-    frames_at_end=1,
-    include_zero_line=True,
-    fig_name=None,
-    include_baseline_powers=True,
-    data_folder=data.EXPERIMENT_FOLDER,
-    save_folder=data.TEMP_FOLDER
-):
-    view.plot_specific_power_alignments(
-        sweep_id,
-        show=show,
-        ms_per_frame=ms_per_frame,
-        graph_padding_x=graph_padding_x,
-        graph_padding_y=graph_padding_y,
-        frames_at_start=frames_at_start,
-        frames_at_end=frames_at_end,
-        fig_name=fig_name,
-        include_zero_line=include_zero_line,
-        include_baseline_powers=include_baseline_powers,
-        data_folder=data_folder,
-        save_folder=save_folder
-    )
-
 def visualize_correlated_reward_samples(
     num_samples,
     distribution_config={ 'dist_name': 'uniform', 'params': [0, 1] },
     correlation=0,
     symmetric_interval=None,
     random_seed=0,
-    show=True,
-    fig_name=None,
-    save_folder=data.TEMP_FOLDER
+    fig_name=None
 ):
     view.plot_correlated_reward_samples(
         num_samples,
@@ -278,9 +201,9 @@ def visualize_correlated_reward_samples(
         symmetric_interval=symmetric_interval,
         distribution_dict=dist.DISTRIBUTION_DICT,
         random_seed=random_seed,
-        show=show,
+        show=True,
         fig_name=fig_name,
-        save_folder=save_folder
+        save_folder=data.TEMP_FOLDER
     )
 
 def visualize_all_correlated_reward_samples(
@@ -289,13 +212,7 @@ def visualize_all_correlated_reward_samples(
     correlations_list=[],
     symmetric_interval=None,
     random_seed=0,
-    ms_per_frame=100,
-    frames_at_start=1,
-    frames_at_end=1,
-    xlim=None,
-    ylim=None,
-    fig_name='correlated_reward_animation',
-    save_folder=data.TEMP_FOLDER
+    fig_name='correlated_reward_animation'
 ):
     fig_filenames_ = []
 
@@ -309,8 +226,8 @@ def visualize_all_correlated_reward_samples(
             symmetric_interval=symmetric_interval,
             distribution_dict=dist.DISTRIBUTION_DICT,
             random_seed=random_seed,
-            xlim=xlim,
-            ylim=ylim,
+            xlim=None,
+            ylim=None,
             show=False,
             fig_name=fig_filename,
             save_folder=data.TEMP_FOLDER
@@ -321,14 +238,34 @@ def visualize_all_correlated_reward_samples(
     anim.animate_from_filenames(
         fig_filenames_,
         fig_name,
-        ms_per_frame=ms_per_frame,
-        frames_at_start=frames_at_start,
-        frames_at_end=frames_at_end,
+        ms_per_frame=100,
+        frames_at_start=8,
+        frames_at_end=4,
         input_folder_or_list=data.TEMP_FOLDER,
-        output_folder=save_folder
+        output_folder=data.TEMP_FOLDER
     )
 
-def visualize_power_relationship_over_multiple_sweeps(
+def visualize_alignment_plots(
+    sweep_id,
+    include_baseline_powers=True,
+    fig_name='alignment_plot_animation'
+):
+    view.plot_specific_power_alignments(
+        sweep_id,
+        show=False,
+        ms_per_frame=100,
+        graph_padding_x=0.05,
+        graph_padding_y=0.05,
+        frames_at_start=8,
+        frames_at_end=4,
+        fig_name=fig_name,
+        include_zero_line=False,
+        include_baseline_powers=include_baseline_powers,
+        data_folder=data.EXPERIMENT_FOLDER,
+        save_folder=data.TEMP_FOLDER
+    )
+
+def visualize_variable_vs_power_correlations(
     x_axis_values,
     sweep_ids_list,
     show=True,
@@ -359,27 +296,20 @@ def visualize_power_relationship_over_multiple_sweeps(
         save_folder=save_folder
     )
 
-def visualize_policy_sample(
-    policy_graph,
-    reward_function,
-    discount_rate,
-    show=True,
-    subgraphs_per_row=4,
-    number_of_states_per_figure=128,
-    save_handle='temp',
-    save_folder=data.TEMP_FOLDER,
-    temp_folder=data.TEMP_FOLDER
+def visualize_average_powers(
+    sweep_id,
+    include_baseline_power=True,
+    fig_name=None
 ):
-    view.plot_policy_sample(
-        policy_graph,
-        reward_function,
-        discount_rate,
-        show=show,
-        subgraphs_per_row=subgraphs_per_row,
-        number_of_states_per_figure=number_of_states_per_figure,
-        save_handle=save_handle,
-        save_folder=save_folder,
-        temp_folder=temp_folder
+    view.plot_alignment_curves(
+        sweep_id,
+        show=True,
+        plot_title='Mean POWERs',
+        include_baseline_power=include_baseline_power,
+        fig_name=fig_name,
+        y_axis_bounds=None,
+        data_folder=data.EXPERIMENT_FOLDER,
+        save_folder=data.TEMP_FOLDER
     )
 
 def visualize_full_gridworld_rollout(
@@ -388,11 +318,8 @@ def visualize_full_gridworld_rollout(
     initial_state='(0, 0)_H^(0, 0)_A',
     reward_sample_index=0,
     number_of_steps=20,
-    agent_whose_rewards_are_displayed='A',
-    ms_per_frame=400,
-    show=True,
-    save_handle='gridworld_rollout',
-    save_folder=data.TEMP_FOLDER
+    agent_whose_rewards_are_displayed='H',
+    fig_name='gridworld_rollout'
 ):
     check.check_agent_label(agent_whose_rewards_are_displayed)
 
@@ -410,28 +337,24 @@ def visualize_full_gridworld_rollout(
             random_seed=0
         ),
         reward_function=policy_data['reward_function_{}'.format(agent_whose_rewards_are_displayed)],
-        ms_per_frame=ms_per_frame,
-        show=show,
+        ms_per_frame=400,
+        show=False,
         agent_whose_rewards_are_displayed=agent_whose_rewards_are_displayed,
-        save_handle=save_handle,
-        save_folder=save_folder
+        save_handle=fig_name,
+        save_folder=data.TEMP_FOLDER
     )
 
-def generate_sweep_animations(
+def generate_sweep_animation(
     sweep_id,
     animation_param,
-    figure_prefix=None,
-    ms_per_frame=100,
-    frames_at_start=1,
-    frames_at_end=1,
-    experiment_folder=data.EXPERIMENT_FOLDER
+    figure_prefix=None
 ):
     anim.generate_sweep_animations(
         sweep_id,
         animation_param=animation_param,
         figure_prefix=figure_prefix,
-        ms_per_frame=ms_per_frame,
-        frames_at_start=frames_at_start,
-        frames_at_end=frames_at_end,
-        experiment_folder=experiment_folder
+        ms_per_frame=100,
+        frames_at_start=4,
+        frames_at_end=8,
+        experiment_folder=data.EXPERIMENT_FOLDER
     )

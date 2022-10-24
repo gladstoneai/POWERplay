@@ -97,7 +97,7 @@ def render_gridworld_rollout_snapshot(
     state_list,
     current_state,
     reward_function=None,
-    agent_whose_rewards_are_displayed='A'
+    agent_whose_rewards_are_displayed='H'
 ):
     agent_A_default_state = '(0, 0)'
     agent_H_color = 'blue'
@@ -108,11 +108,11 @@ def render_gridworld_rollout_snapshot(
         # When we want to visualize the Agent A rewards, we swap the state labels of the 2 agents (but we DON'T swap the
         # COLORS of the agents as they move around on the gridworld)
         agent_H_states, agent_A_states = both_agent_states if (
-            agent_whose_rewards_are_displayed == 'A'
+            agent_whose_rewards_are_displayed == 'H'
         ) else both_agent_states[::-1]
 
         agent_H_display_state, agent_A_display_state = graph.multiagent_state_to_single_agent_states(current_state)
-        agent_A_current_state = agent_A_display_state if agent_whose_rewards_are_displayed == 'A' else agent_H_display_state
+        agent_A_current_state = agent_A_display_state if agent_whose_rewards_are_displayed == 'H' else agent_H_display_state
         
     else:
         agent_H_states, agent_A_states = np.array(state_list), np.full(len(state_list), agent_A_default_state)
@@ -151,7 +151,7 @@ def render_gridworld_rollout_snapshot(
     axs_plot_[0][0].set_xticks(range(num_cols))
     axs_plot_[0][0].set_yticks(range(num_rows))
     axs_plot_[0][0].set_title('Rewards for agent {0} ({1})'.format(
-        agent_whose_rewards_are_displayed, agent_H_color if agent_whose_rewards_are_displayed == 'A' else agent_A_color)
+        agent_whose_rewards_are_displayed, agent_H_color if agent_whose_rewards_are_displayed == 'H' else agent_A_color)
     )
 
     if graph.are_gridworld_states_multiagent([current_state]):

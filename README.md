@@ -4,6 +4,8 @@
 
 **POWERplay**  is an open-source toolchain that makes it easy to study power-seeking behavior in reinforcement learning agents. POWERplay was developed by [Gladstone AI](https://www.gladstone.ai/), an AI safety company. It's primarily intended as a research tool.
 
+POWERplay comes "batteries included." All the code examples below should run out-of-the-box. Note that it may take a few minutes to clone this repo, since the example outputs we've included contain several large image files.
+
 ## FAQs:
 
 ### Why did you build this?
@@ -65,7 +67,7 @@ If you'd like to better understand the theory behind POWERplay, you can check ou
     % brew install graphviz
     ```
 
-    **Note:** When you attempt to install graphviz, you may encounter the following error:
+    **NOTE:** When you attempt to install graphviz, you may encounter the following error:
     
     ```
     Error: graphviz: Invalid bottle tag symbol
@@ -1168,6 +1170,238 @@ discount_rate:
 For examples of this, see the experiment config files under `configs/test/` and `configs/replication`.
 
 ### Visualizing experiment results
+
+POWERplay automatically creates visualizations for your experiments and saves them as PNG figures, both locally and on wandb. You can check out some examples of this under `expts/0001-PART_1-FIGURE_1` and `expts/0002-PART_2-FIGURES_2_3_4_6_7_8_9_10`.
+
+Beyond these automated visualizations, POWERplay includes functions to visualize experiment sweeps more holistically. You can see some of these in use in the `src/rep` module.
+
+#### Visualize correlated reward samples
+
+🟣 To visualize [correlated reward samples](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#3_2_The_perfect_alignment_regime), use `base.visualize_correlated_reward_samples()`. For example, to visualize 500 reward samples with a correlation of 0.5 and a marginal distribution that's uniform from 0 to 1, you can do
+
+```
+>>> base.visualize_correlated_reward_samples(500, distribution_config={ 'dist_name': 'uniform', 'params': [0, 1] }, correlation=0.5)
+```
+
+The output will look like this:
+
+![Reward sample image example](img/reward-sample-pic-example.png)
+
+🔵 Here are the input arguments to `base.visualize_correlated_reward_samples()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `num_samples [int, required]`: The number of reward samples you want to plot.
+
+  Typical value: `500`
+
+- `distribution_config [dict] ({ 'dist_name': 'uniform', 'params': [0, 1] })`: A `dict` that describes the reward function distribution you're plotting. The `'dist_name'` key should have a value given in `dist.DISTRIBUTION_DICT`, and the `'params'` key should be a list of parameters for that distribution, if any. For example, `{ 'dist_name': 'uniform', 'params': [0, 1] }` defines a uniform distribution over the interval from 0 to 1.
+
+  Typical value: `{ 'dist_name': 'uniform', 'params': [0, 1] }`
+
+- `correlation [float] (0)`: The correlation coefficient between the reward functions for Agent H and Agent A that you want to plot. Should be a number between 0 and 1. (It can be between -1 and 1 if `'dist_name'` in `distribution_config` corresponds to a distribution in `dist.DISTRIBUTION_DICT` for which the key `'symmetric_interval'` exists.)
+
+  Typical value: `0.5`
+
+- `symmetric_interval [list | None] (None)`: If `correlation` is a number between -1 and 0, this should be a 2-element list that defines the interval over which the distribution given by `distribution_config` is symmetric. If `distribution_config` isn't symmetric, you can't plot negatively correlated rewards. If you've set `correlation` to be greater than 0, leave this as `None`.
+
+  Typical value: `[0, 1]`
+
+- `random_seed [int] (0)`: Sets the random seed for the reward correlation plot. This is for reproducibility. You generally won't need to change the default value.
+
+  Typical value: `0`
+
+- `fig_name [str | None] (None)`: If not `None`, save the figure under this name in the `temp/` folder.
+
+  Typical value: `'reward_correlation_plot'`
+
+#### Visualize an animation of correlated reward samples
+
+🟣 To create an animation of [correlated reward samples over multiple correlation values](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#3_4_Overcoming_instrumental_misalignment), use `base.visualize_all_correlated_reward_samples()`. For example, to create an animation that sweeps from a correlation of -1 to a correlation of 1, you can do
+
+```
+>>> base.visualize_all_correlated_reward_samples(500, distribution_config={ 'dist_name': 'uniform', 'params': [0, 1] }, symmetric_interval=[0, 1], correlations_list=[i*0.1 for i in range(-10, 11)])
+```
+
+The output will look like this:
+
+![Reward sample animation example](img/correlated-reward-animation-example.gif)
+
+🔵 Here are the input arguments to `base.visualize_all_correlated_reward_samples()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `num_samples [int, required]`: The number of reward samples you want to plot.
+
+  Typical value: `500`
+
+- `distribution_config [dict] ({ 'dist_name': 'uniform', 'params': [0, 1] })`: A `dict` that describes the reward function distribution you're plotting. The `'dist_name'` key should have a value given in `dist.DISTRIBUTION_DICT`, and the `'params'` key should be a list of parameters for that distribution, if any. For example, `{ 'dist_name': 'uniform', 'params': [0, 1] }` defines a uniform distribution over the interval from 0 to 1.
+
+  Typical value: `{ 'dist_name': 'uniform', 'params': [0, 1] }`
+
+- `correlations_list [list] ([])`: A list of correlation coefficients between the reward functions for Agent H and Agent A that you want to plot in your animation. These should all be numbers between -1 and 1. (If even one correlation in your list is negative, you need to define the `symmetric_interval` argument. Also, `'dist_name'` in `distribution_config` must correspond to a distribution in `dist.DISTRIBUTION_DICT` for which the key `'symmetric_interval'` exists.)
+
+  Typical value: `[0, 0.2, 0.4, 0.6, 0.8, 1]`
+
+- `symmetric_interval [list | None] (None)`: If your `correlations_list` includes any number between -1 and 0, this should be a 2-element list that defines the interval over which the distribution given by `distribution_config` is symmetric. If `distribution_config` isn't symmetric, you can't plot negatively correlated rewards. If all numbers in your `correlations_list` are greater than 0, leave this as `None`.
+
+  Typical value: `[0, 1]`
+
+- `random_seed [int] (0)`: Sets the random seed for the reward correlation plot. This is for reproducibility. You generally won't need to change the default value.
+
+  Typical value: `0`
+
+- `fig_name [str] ('correlated_reward_animation')`: Save the animation gif under this name in the `temp/` folder.
+
+  Typical value: `'correlated_reward_animation'`
+
+#### Visualize an animation of alignment plots
+
+🟣 To create an animation of two agents' correlated POWER samples over multiple correlation values — in other words, an animation of [alignment plots](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#3_2_3_Perfect_goal_alignment_implies_perfect_instrumental_alignment) — use `base.visualize_alignment_plots()`. For example, to create an animation of the alignment plots for the sample sweep `0002-PART_2-FIGURES_2_3_4_6_7_8_9_10`, do the following:
+
+```
+>>> base.visualize_alignment_plots('0002')
+```
+
+The output will look like this:
+
+![Alignment plot animation example](img/alignment-plot-animation-example.gif)
+
+🔵 Here are the input arguments to `base.visualize_alignment_plots()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `sweep_id [str, required]`: The unique ID of the experiment sweep whose alignment plots you want to animate. Every experiment folder in `expts/` includes its sweep ID as a prefix to the folder name.
+
+  **NOTE:** For this to work, your experiment output has to be in the form of a sweep over `reward_correlation` values, rather than over other config variables (e.g., `discount_rate`, etc.).
+
+  Typical value: `'0002'`
+
+- `include_baseline_powers [bool] (True)`: If `True`, the function will also plot the POWERs Agent H perceives at each state when it's optimized against the **Agent A [seed policy](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#A_1_Initial_optimal_policies_of_Agent_H)**. This lets you see how the human agent's POWERs compare between cases when the AI agent is absent (i.e., the "human vs nature" setting) and when the AI agent is present and fully optimized.
+
+  Typical value: `False`
+
+- `fig_name [str] ('alignment_plot_animation')`: Save the animation gif under this name in the `temp/` folder.
+
+  Typical value: `'alignment_plot_animation'`
+
+#### Visualize both agents' average POWERs
+
+POWERplay lets you visualize the POWERs of Agent H and Agent A **averaged over all the states of your MDP**. This average gives a rough metric of how much instrumental value each agent can expect to get in a given setting if it was dropped into a random state of the MDP.
+
+🟣 To create this visualization, use `base.visualize_average_powers()`. For example:
+
+```
+>>> base.visualize_average_powers('0002')
+```
+
+The output will look like this:
+
+![Average POWERs visualization example](img/average-powers-example.png)
+
+🔵 Here are the input arguments to `base.visualize_average_powers()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `sweep_id [str, required]`: The unique ID of the experiment sweep whose average POWERs you want to plot. Every experiment folder in `expts/` includes its sweep ID as a prefix to the folder name.
+
+  **NOTE:** For this to work, your experiment output has to be in the form of a sweep over `reward_correlation` values, rather than over other config variables (e.g., `discount_rate`, etc.).
+
+  Typical value: `'0002'`
+
+- `include_baseline_power [bool] (True)`: If `True`, the function will also plot the average POWER Agent H perceives overall states, when it's optimized against the **Agent A [seed policy](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#A_1_Initial_optimal_policies_of_Agent_H)**. This lets you see how the human agent's average POWER compares between cases when the AI agent is absent (i.e., the "human vs nature" setting) and when the AI agent is present and fully optimized.
+
+  Typical value: `False`
+
+- `fig_name [str | None] (None)`: If not `None`, save the figure under this name in the `temp/` folder.
+
+  Typical value: `'average_powers_plot'`
+
+#### Visualize a policy rollout animation
+
+🟣 When debugging, it sometimes helps to be able to visualize individual rollouts of policies associated with particular sampled reward functions. You can create an animation of a policy rollout on a gridworld using `base.visualize_full_gridworld_rollout()`. For example:
+
+```
+>>> base.visualize_full_gridworld_rollout('0002', run_suffix='reward_correlation__0')
+```
+
+This function sometimes takes a few seconds to run. The output will look like this:
+
+![Gridworld rollout animation example](img/gridworld-rollout-animation-example.gif)
+
+What you're seeing in the above animation is the reward function over a 3x3 gridworld as perceived by Agent H. Our reward distribution assigns rewards randomly over **joint states** of our MDP, which means there's a different reward value for every **pair** of positions that Agent H and Agent A could take on. Therefore, as Agent A (red) moves around on the gridworld, the "landscape" of rewards that Agent H (blue) perceives changes.
+
+🔵 Here are the input arguments to `base.visualize_average_powers()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `sweep_id [str, required]`: The unique ID of the experiment sweep whose policy rollout you want to view. Every experiment folder in `expts/` includes its sweep ID as a prefix to the folder name.
+
+  Typical value: `'0002'`
+
+- `run_suffix [str] ('')`: The unique identifier of the sweep run whose policy rollout you want to view. The format for this is `'<sweep parameter name>__<sweep parameter value>'`. For example, if you want to view a policy rollout for a run with `reward_correlation=1`, this would be `'reward_correlation__1`. The `run_suffix` appears as a suffix in the name of a sweep's sub-folder that corresponds to that run.
+
+  (See the description of `get.get_sweep_run_suffixes_for_param()` for more details.)
+
+  Typical value: `'reward_correlation__1'`
+
+- `initial_state [str] ('(0, 0)_H^(0, 0)_A')`: A string that labels MDP state you want to start your rollout at. For single-agent gridworld MDPs, the format for this string will be `'(<row_number>, <col_number>)'`, indicating the row and column of the gridworld cell the state corresponds to. For example, `'(0, 0)'` labels the top-left column of a single-agent gridworld.
+
+  For a joint multi-agent MDP, you need to label the row and column numbers for both Agent H and Agent A to fully identify a state. The format for this is `'(row_number_H, col_number_H)_H^(row_number_A, col_number_A)_A'`. For example, `'(0, 0)_H^(1, 1)_A'` labels the state where Agent H is at position `(0, 0)` and Agent A is at position `(1, 1)` on the gridworld.
+
+  Typical value: `'(0, 0)_H^(0, 0)_A'`
+
+- `reward_sample_index [int] (0)`: The index of the reward function sample you want to plot the policy rollout for. Recall that POWER calculations involve taking the average over many reward functions drawn from a distribution, and that POWERplay saves every reward function sample it takes for reproducibility. These reward function samples are **indexed**, and in general an agent's optimal policy will be different depending on which reward function sample it's trained on.
+
+  This index lets you view policy rollouts that correspond to different reward samples, which is useful for debugging and understanding agent behaviors more deeply.
+
+  Typical value: `0`
+
+- `number_of_steps [int] (20)`: The number of steps to simulate in the rollout. It's rare to need more than 20 steps.
+
+  Typical value: `20`
+
+- `agent_whose_rewards_are_displayed [str] ['H']`: The label of the agent whose rewards you want to display in the animation. This should be either `'H'` (for the human Agent H) or `'A'` (for the AI agent A). Note that if the run you're viewing has a reward correlation of 1, then the reward functions for the two agents will be identical.
+
+  Typical value: `'H'`
+
+- `fig_name [str] ('gridworld_rollout')`: Save the animation gif under this name in the `temp/` folder.
+
+  Typical value: `'gridworld_rollout'`
+
+#### Visualize animations over sweeps
+
+POWERplay generates certain figures automatically over the course of an experiment sweep. But it's sometimes challenging to compare these figures visually across runs of a sweep, since they're all in different sub-folders.
+
+🟣 You can generate animations of a selected figure type as it changes over the course of a sweep, using `base.generate_sweep_animation()`, like this:
+
+```
+>>> base.generate_sweep_animation('0002', 'reward_correlation')
+```
+
+The output from this is below:
+
+![Agent H POWERs animation example for sweep '0002'](img/0002-sweep-agent-H-animation-example.gif)
+
+**NOTE:** unlike the other animation functions above (which save their animation gifs to the `temp/` folder), this function saves its output animation to the experiment sweep folder you're creating the animation for. So in the example above, the animation gif gets saved directly under `expts/0002-PART_2-FIGURES_2_3_4_6_7_8_9_10`.
+
+🔵 Here are the input arguments to `base.generate_sweep_animation()` and what they mean:
+
+(Listed as `name [type] (default): description`.)
+
+- `sweep_id [str, required]`: The unique ID of the experiment sweep whose you want to make an animation for. Every experiment folder in `expts/` includes its sweep ID as a prefix to the folder name. This experiment folder is also the place where the output animation gif will be saved.
+
+  Typical value: `'0002'`
+
+- `animation_param [str, required]`: The parameter over which you want to create the animation. For example, if you're animating a sweep over discount rates, this would be `'discout_rate'`; if you're animating a sweep over reward correlations, this would be `'reward_correlation'`. The parameter names are from the [experiment config files](#experiment-config-files).
+
+  Typical value: `'discount_rate'`
+
+- `figure_prefix [str | None] (None)`: The type of figure you want to animate. Inside each run sub-folder, you may see figures with prefixes like `'POWER_means'`, `'POWER_samples'`, `'POWER_means-agent_H'`, `'POWER_means-agent_A'`, and so on. If you set `figure_prefix` to one of these, `base.generate_sweep_animation()` will create an animation for _only_ that figure (assuming it exists).
+
+  If you leave `figure_prefix=None`, then `base.generate_sweep_animation()` will try to create animations for every possible figure, and print a non-fatal warning if there are some figure types it can't find.
+
+  Typical value: `None`
 
 ## Advanced usage
 
