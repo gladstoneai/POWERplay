@@ -261,41 +261,6 @@ def visualize_specific_power_alignments(
         save_folder=save_folder
     )
 
-def visualize_full_gridworld_rollout(
-    sweep_id,
-    run_suffix='',
-    initial_state='(0, 0)_H^(0, 0)_A',
-    reward_sample_index=0,
-    number_of_steps=20,
-    agent_whose_rewards_are_displayed='A',
-    ms_per_frame=400,
-    show=True,
-    save_handle='gridworld_rollout',
-    save_folder=data.TEMP_FOLDER
-):
-    check.check_agent_label(agent_whose_rewards_are_displayed)
-
-    run_properties = get.get_properties_from_run(sweep_id, run_suffix=run_suffix)
-    policy_data = policy.sample_optimal_policy_data_from_run(run_properties, reward_sample_index=reward_sample_index)
-
-    view.plot_gridworld_rollout(
-        graph.get_states_from_graph(policy_data['policy_graph_H']),
-        policy.simulate_policy_rollout(
-            initial_state,
-            policy_data['policy_graph_H'],
-            policy_data['mdp_graph'],
-            policy_graph_A=policy_data['policy_graph_A'],
-            number_of_steps=number_of_steps,
-            random_seed=0
-        ),
-        reward_function=policy_data['reward_function_{}'.format(agent_whose_rewards_are_displayed)],
-        ms_per_frame=ms_per_frame,
-        show=show,
-        agent_whose_rewards_are_displayed=agent_whose_rewards_are_displayed,
-        save_handle=save_handle,
-        save_folder=save_folder
-    )
-
 def visualize_correlated_reward_samples(
     num_samples,
     distribution_config={ 'dist_name': 'uniform', 'params': [0, 1] },
@@ -415,6 +380,41 @@ def visualize_policy_sample(
         save_handle=save_handle,
         save_folder=save_folder,
         temp_folder=temp_folder
+    )
+
+def visualize_full_gridworld_rollout(
+    sweep_id,
+    run_suffix='',
+    initial_state='(0, 0)_H^(0, 0)_A',
+    reward_sample_index=0,
+    number_of_steps=20,
+    agent_whose_rewards_are_displayed='A',
+    ms_per_frame=400,
+    show=True,
+    save_handle='gridworld_rollout',
+    save_folder=data.TEMP_FOLDER
+):
+    check.check_agent_label(agent_whose_rewards_are_displayed)
+
+    run_properties = get.get_properties_from_run(sweep_id, run_suffix=run_suffix)
+    policy_data = policy.sample_optimal_policy_data_from_run(run_properties, reward_sample_index=reward_sample_index)
+
+    view.plot_gridworld_rollout(
+        graph.get_states_from_graph(policy_data['policy_graph_H']),
+        policy.simulate_policy_rollout(
+            initial_state,
+            policy_data['policy_graph_H'],
+            policy_data['mdp_graph'],
+            policy_graph_A=policy_data['policy_graph_A'],
+            number_of_steps=number_of_steps,
+            random_seed=0
+        ),
+        reward_function=policy_data['reward_function_{}'.format(agent_whose_rewards_are_displayed)],
+        ms_per_frame=ms_per_frame,
+        show=show,
+        agent_whose_rewards_are_displayed=agent_whose_rewards_are_displayed,
+        save_handle=save_handle,
+        save_folder=save_folder
     )
 
 def generate_sweep_animations(

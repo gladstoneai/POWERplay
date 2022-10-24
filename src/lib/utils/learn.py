@@ -39,10 +39,6 @@ def value_iteration(
 
     return value_function
 
-# NOTE: This is from Sutton & Barto, Section 4.1 ("Iterative Policy Evaluation"). 
-# As usual, in our setting, the reward r depends only on the current state s, not directly on the action a.
-# This means at each iteration, the reward we actually capture always corresponds to the state we are on
-# (i.e. reward_function[state]).
 def policy_evaluation(
     reward_function,
     discount_rate,
@@ -79,15 +75,6 @@ def policy_evaluation(
     
     return value_function_
 
-# NOTE: in our setting, the reward r depends only on the current state s, not directly on the action a.
-# This means we can simplify the argmax expression for the policy (see the last line of the Value Iteration algorithm
-# in Section 4.4 of Sutton & Barto) to eliminate the r term and the gamma factor. i.e., we can find the optimal
-# policy from the optimal value function by simply taking \argmax_a \sum_{s'} p(s' | s, a) V(s').
-# NOTE: whenever two action-values are equal, we intentionally randomize the policy to avoid systematically
-# biasing our policies according to the canonical ordering of the states. This matters especially when we use a
-# reward function that's sparse (i.e., most states do not yield substantial reward but a few states yield big reward).
-# A "tiebreaker" policy between two equally unrewarding states that's very deterministic for e.g. Agent H, is also
-# very exploitable for Agent A.
 def compute_optimal_policy_tensor(optimal_values, transition_tensor):
     transition_tensor_sparse = misc.sparsify_tensor(transition_tensor)
     action_values = torch.sparse.sum(
