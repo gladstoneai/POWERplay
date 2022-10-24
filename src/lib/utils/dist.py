@@ -60,8 +60,6 @@ def check_identical_reward_sets(reward_dist_config):
                     )
                 )
 
-# A 1d pdf config has the form
-# { 'dist_name': <key for distribution in DISTRIBUTION_DICT>, 'params': <params input to that distribution> }
 def config_to_pdf_constructor(distribution_config, distribution_dict=DISTRIBUTION_DICT):
     raw_distribution = distribution_dict[distribution_config['dist_name']]['distribution'](
         *distribution_config.get('params')
@@ -135,13 +133,6 @@ def reward_distribution_constructor(
     
     return reward_distribution
 
-# A distribution config has the form
-# { 'default_dist': <1d pdf config applied iid to all states>, 'state_dists': { 
-#   <state label 1>: <1d pdf config applied to state 1 that overrides the default dist>
-#   <state label 2>: <1d pdf config applied to state 2 that overrides the default dist>
-#   ... etc.
-# }, 'allow_all_equal_rewards': True,
-# 'states_with_identical_rewards': [[<state label 1, <state label 2], [<state label 3, <state label 4>]] }
 def config_to_reward_distribution(
     state_list,
     reward_dist_config,
@@ -170,9 +161,6 @@ def sample_from_state_list(state_list, distribution_vector):
 # to correlation coefficients from 0 to 1. Note that similar logic can be used to calculate the correlated rewards
 # for correlations from -1 to 0, but negative correlations *only* make sense for pdfs that are symmetric over their
 # support.
-# single_agent_reward_dist: Output of reward_distribution_constructor(state_list)
-# agent_H_samples: Output of reward_distribution_constructor(state_list)(num_samples), a tensor of size
-# num_samples x len(state_list)
 def generate_correlated_reward_samples(
     single_agent_reward_dist,
     agent_H_samples,

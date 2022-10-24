@@ -5,7 +5,8 @@ settings.json
 /wandb
 
 expts/*
-!expts/.gitkeep
+!0001-PART_1-FIGURE_1
+!0002-PART_2-FIGURES_2_3_4_6_7_8_9_10
 
 temp/*
 !temp/.gitkeep

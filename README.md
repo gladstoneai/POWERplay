@@ -1167,65 +1167,123 @@ discount_rate:
 
 For examples of this, see the experiment config files under `configs/test/` and `configs/replication`.
 
-### Creating a gridworld MDP graph
+### Visualizing experiment results
 
-🟣 To add a state (and its downstream actions) to a stochastic MDP, start from an existing stochastic MDP, and use use `mdp.add_state_action()`. For example, the following code adds a state with actions `'L'`, `'H'`, and `'R'` to the MDP graph:
+## Advanced usage
 
-```
->>> stochastic_mdp = mdp.add_state_action(nx.DiGraph(), '2', {
-        'L': { '1': 1 },
-        'H': { '1': 0.5, '2': 0.5 },
-        'R': { '2': 0.2, '3': 0.8 }
-    })
-```
+Here we'll list some useful functions outside the `base` module. We haven't fully documented these, but they can serve as starting points.
 
-🔵 Here are the input arguments to `mdp.add_state_action()` and what they mean:
+These modules are all imported by `main.py`, so you can access them easily.
 
-(Listed as `name [type] (default): description`.)
+### `graph` module: queries MDP and policy graphs
 
-- `mdp_graph [networkx.DiGraph, required]`: The NetworkX [DiGraph](https://networkx.org/documentation/stable/reference/classes/digraph.html) you want to add the state to. This should be an MDP in stochastic format, i.e., formatted as in the picture below:
+- `graph.is_graph_multiagent()`: Check if a policy or MDP graph is multi-agent or not.
+- `graph.get_states_from_graph()`: Return the list of all the states in the input graph, in canonical order.
+- `graph.get_actions_from_graph()`: Return the list of all the actions in the input graph, in canonical order. If the input graph is a joint MDP graph, this will return joint actions rather than single-agent actions.
+- `graph.get_single_agent_actions_from_joint_mdp_graph()`: Return the lists _signle-agent_ actions that each agent (Agent H and Agent A) can take on a joint MDP graph.
+- `graph.get_available_actions_from_graph_state()`: Given an input graph (MDP or policy) and a state in that input graph, return allowed actions from that state.
+- `graph.get_available_states_and_probabilities_from_mdp_graph_state_and_action()`: Given an input MDP graph, a state, and an allowed action from that state, return the list of next-states from that action, and their probabilities.
+- `graph.graph_to_joint_transition_tensor()`: Transforms a joint multi-agent MDP graph into a rank-4 tensor used to calculate POWERs. Tensor dimensions: (current states, Agent H actions, Agent A actions, next-states).
+- `graph.graph_to_full_transition_tensor()`: Transforms a single-agent MDP graph into a rank-3 tensor used to calculate POWERs. Tensor dimensions: (current states, actions, next-states).
+- `graph.graph_to_policy_tensor()`: Transforms a policy graph into a rank-2 tensor used to calculate POWERs. Tensor dimensions: (states, actions).
+- `graph.any_graphs_to_full_transition_tensor()`: Combines graphs together to get a full transition tensor. If the input graph is a single-agent MDP, transforms it into a tensor. If the input graphs are a list of [joint multi-agent MDP graph, policy graph], combine them together to obtain the resulting single-agent MDP tensor.
 
-  ![stochastic-mdp-example](img/stochastic_mdp_example.png)
+### `mdp` module: creates and updates basic MDP graphs
 
-  Typical value: `nx.DiGraph()`
+- `mdp.add_state_action()`: Manually add a state-action-next-state subgraph to an MDP graph. The input `action_dict` is a dict of actions, next-states and their probabilities, and should look like this:
 
-- `state_to_add [str, required]`: The state whose outgoing transitions you want to add to the MDP graph.
+  ```
+  {
+      action_1: { state_1: prob_1 },
+      action_2: { state_2: prob_2, state_3: prob_3 },
+      action_3: { state_4: prob_4, state_5: prob_5 }
+  }
+  ```
+- `mdp.update_state_action()`: Same as `mdp.add_state_action()`, except that you are updating an existing state instead of adding a new one.
+- `mdp.remove_state_completely()`: Completely remove a state and its associated transition from an MDP graph.
+- `mdp.generate_noised_gridworlds()`: Convenience function to generate a list of gridworlds with different stochastic noise levels. This can be useful if you want to sweep over noise levels in an experiment.
 
-  Typical value: `'1'`
+### `multi` module: creates and updates multi-agent graphs
 
-- `action_dict [dict, required]`: A dictionary of actions and their corresponding transitions. The keys of this dictionary are actions, and the values are dictionaries of states and their corresponding probabilities.
+- `multi.remove_states_with_overlapping_agents()`: Given a joint multi-agent MDP graph, delete all states at which the agents are at overlapping positions.
+- `multi.create_joint_multiagent_graph()`: Given a single-agent graph (MDP or policy), transform that graph into a joint multi-agent graph.
 
-  Typical value:
+### `policy` module: creates and updates policy graphs, manages policy rollouts
+
+- `policy.update_state_actions()`: Manually update a state-action subgraph in a policy graph. The input `new_policy_actions` is a dict of actions and their probabilities, and should look like this:
+
+  ```
+  {
+      action_1: prob_1,
+      action_2: prob_2,
+      action_3: prob_3
+  }
+  ```
+- `policy.single_agent_to_multiagent_policy_graph()`: Given a single-agent policy graph, converts it to a joint multi-agent policy graph.
+- `policy.sample_optimal_policy_data_from_run()`: Given the properties of a run (the output of `get.get_properties_from_run()`) and the index of a reward function sample you're interested in, return a dict that includes the optimal policy (or policies) of your agent(s) on that reward function sample. This is useful for troubleshooting or developing intuitions for specific cases.
+- `policy.simulate_policy_rollout()`: Given an initial state, a policy, and an MDP graph, simulate a rollout of that policy starting from that state. The output is a list of states that define the rollout.
+- `policy.policy_tensor_to_graph()`: Given a policy tensor (rank-2) and the MDP graph associated with that policy, reconstitute the original policy graph.
+
+### `get` module: high-level functions for retrieving and preprocessing experimental results
+
+- `get.get_properties_from_run()`: Given a sweep id (the unique number that prefixes the saved name of an experiment in `expts/`) and a run suffix (the unique identifier for each run of the sweep, the output of `get.get_sweep_run_suffixes_for_param()`), return all the data on that run of the sweep. This includes all the inputs to the sweep, the associated MDP and policy graphs, and outputs like the reward and policy samples generated in the experiment.
+- `get.get_sweep_run_suffixes_for_param()`: Given a sweep id and the name of a parameter that varied over the sweep (named as it is in the [experiment config file](#experiment-config-files)), return the full list of run suffixes for that parameter. Useful for calling `get.get_properties_from_run()`.
+- `get.get_sweep_type()`: Given a sweep id, return the experiment type. This will be either `'single_agent'`, `'multiagent_fixed_policy'`, or `'multiagent_with_reward'`. (Or will raise an exception.)
+- `get.get_transition_graphs()`: Given the parameters of a run (i.e., the output of `get.get_sweep_run_results(sweep_id, run_suffix, results_type='inputs')`), return the MDP and policy graphs associated with a sweep. The flag `check_graph_compatibilities` runs a check to confirm that all the graphs are mutually compatible in terms of states and actions.
+- `get.get_sweep_state_list()`: This is a convenience function that lets you quickly retrieve the list of states for a sweep. This function assumes that all runs in the sweep have the same set of states, even though the MDP itself may change over the sweep. This seems sensible, since if you're sweeping across runs you'll generally only be changing the transition probabilities of the MDP as opposed to the list of states itself.
+
+### `viz` module: visualizations that get run automatically during experiments
+
+- `viz.plot_sample_aggregations()`: Given a list of samples (can be reward samples or POWER samples, typically part of the output to `get.get_properties_from_run()`) and the MDP states associated with them, plot an aggregation of the samples. Supported aggregations are 1) `'mean'`, which plots the sample means and which is used for POWER calculations, and 2) `'var'`, which plots the sample variances and can be useful for debugging.
+- `viz.plot_sample_distributions()`: Given a list of samples (can be reward samples or POWER samples, typically part of the output to `get.get_properties_from_run()`) and the MDP states associated with them, plot histograms showing the distributions of the samples on each state.
+- `viz.plot_sample_correlations()`: Given a list of samples (can be reward samples or POWER samples, typically part of the output to `get.get_properties_from_run()`) and the MDP states associated with them, plot 2-D histograms showing the correlations between the samples at each state and the samples at every other state.
+
+### `anim` module: creates & organizes animations from existing image files
+
+- `anim.animate_from_filenames()`: Given a list of image filenames, create an animation of those filenames and output the result as a gif file.
+
+### `learn` module: implementations of RL algorithms for value, policy, and POWER
+
+- `learn.value_iteration()`: Given a reward function, discount rate, and MDP transition tensor, return a rank-1 tensor that corresponds to the optimal value function calculated via value iteration.
+- `learn.policy_evaluation()`: Given a reward function, disount rate, MDP transition tensor, and policy tensor, return a rank-1 tensor that corresponds to the value function for the input policy tensor. This is from Sutton & Barto, Section 4.1 ("Iterative Policy Evaluation"). Note that in our setting, the reward `r` [depends only on the current state](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#fn3lmk7ctvj4z) `s`, not directly on the action `a`. This means at each iteration, the reward we actually capture always corresponds to the state we are on (i.e. `reward_function[state]`).
+- `learn.find_optimal_policy()`: Given a reward function, discount rate, and MDP transition tensor, return a rank-2 tensor that corresponds to the optimal policy on that MDP. In our setting, the reward `r` [depends only on the current state](https://www.alignmentforum.org/posts/cemhavELfHFHRaA7Q/misalignment-by-default-in-multi-agent-systems#fn3lmk7ctvj4z) `s`, not directly on the action `a`. This means we can simplify the argmax expression for the policy (see the last line of the Value Iteration algorithm in Section 4.4 of Sutton & Barto) to eliminate the `r` term and the `gamma` factor. i.e., we can find the optimal policy from the optimal value function by simply taking `\argmax_a \sum_{s'} p(s' | s, a) V(s')`.
+
+  **NOTE:** Whenever two action-values are equal, we intentionally **randomize** the policy over them to avoid systematically biasing our policies according to the canonical ordering of the states. This matters when we use a reward function distribution that's discrete rather than continuous (e.g., a Bernoulli distribution) because in this case there may be many states whose rewards are exactly identical. In cases like these, our choice of how to "break ties" between states with identical rewards can influence the POWER calculation significantly in the multi-agent setting. For example, we've observed that deterministic Agent H "tiebreaker" policies are very exploitable for Agent A, compared to stochastic Agent H "tiebreaker" policies.
+- `learn.compute_power_values()`: Given a reward function, optimal value function, and discount rate, compute the POWER sample associated with that reward function. An [actual POWER calculation](https://www.alignmentforum.org/posts/pGvM95EfNXwBzjNCJ/instrumental-convergence-in-single-agent-systems#2_1_Definition) involves taking the expectation value (i.e., the mean) over all those reward samples.
+
+### `runex` module: runs experiments
+
+- `runex.run_one_experiment()`: Runs a full experiment given a set of transition graphs, discount rate, and reward function sampler. You normally run experiments via the `base.launch_experiment()` or `launch.launch_sweep()` APIs, but this function is sometimes useful in debugging runs.
+
+### `dist` module: low-level functions for building & managing reward function distributions
+
+- `dist.DISTRIBUTION_DICT`: A `dict` that contains a few pre-defined reward function distributions. The high-level key is what you use to access that distribution from the `reward_distribution` parameter of the [experiment config API](#experiment-config-files). It's possible to add new types of reward function distributions fairly easily: you can either use the [`torch.distributions`](https://pytorch.org/docs/stable/distributions.html) API, or define a distribution manually using a Python `lambda` function and the `misc.pdf_sampler_constructor()` function.
+- `dist.config_to_pdf_constructor()`: Given a pdf `dict` of the form
+
+  ```
+  {
+    'dist_name': <key for distribution in DISTRIBUTION_DICT>,
+    'params': <params input to that distribution>
+  }
+  ```
+
+  return a function that samples from that distribution.
+- `dist.config_to_reward_distribution()`: Given a canonically ordered state list and a `reward_dist_config` of the form
+
   ```
     {
-        'L': { '1': 1 },
-        'H': { '1': 0.5, '2': 0.5 },
-        'R': { '2': 0.2, '3': 0.8 }
+      'default_dist': <1d pdf config applied iid to all states>,
+      'state_dists': { 
+        <state label 1>: <1d pdf config applied to state 1 that overrides the default dist>
+        <state label 2>: <1d pdf config applied to state 2 that overrides the default dist>
+        ... etc.
+      },
+      'allow_all_equal_rewards': True,
+      'states_with_identical_rewards': [
+        [<state label 1, <state label 2], [<state label 3, <state label 4>]
+      ]
     }
   ```
 
-- `check_closure [bool] (False)`: Whether or not to throw a warning if the MDP graph is not closed. "Not closed" means that the MDP incldues states that have no outgoing transitions. MDPs that aren't closed can't be used for experiments and will cause an error in POWER sweeps.
-
-  Typical value: `False`
-
-🟢 Here is the output to `mdp.add_state_action()`:
-
-- `new_mdp_graph [networkx.DiGraph]`: An MDP graph representing the new MDP, with the new state, actions, and outgoing transitions added to it.
-
-## Advanced wordflows
-
-### Plotting a policy sample
-
-Sometimes, you'll want to plot a particular optimal policy that corresponds to a particular reward function sample. You can do this by chaining together `policy.sample_optimal_policy_data_from_run()` (which takes in a run identifier and the index of the reward sample you're interested in) and `viz.plot_policy_sample()` (which plots the policy sample along with its reward function at each state).
-
-For example, here's how you might plot the optimal policy for the third reward sample of a run with `sweep_id` of `'20220525090545'` and `run_suffix` of `'discount_rate__0p1'`:
-
-  ```
-  sweep_id = '20220525090545'
-  run_suffix = 'discount_rate__0p1'
-
-  policy_graph, reward_function, discount_rate = policy.sample_optimal_policy_data_from_run(sweep_id, run_suffix)
-  viz.plot_policy_sample(policy_graph, reward_function, discount_rate)
-  ```
-
-Note that if you're investigating a single-agent run, this will plot the optimal policy of the single agent; but if you're investigating a multiagent run, this will plot the optimal policy for **Agent H**. (The Agent A policy in multiagent is already given, so you can feed that into `viz.plot_mdp_or_policy()` directly.)
+  return a `reward_sampler()` function you can call to sample sets of reward functions from the input distribution. For example, calling `reward_sampler(100)` would return a rank-2 tensor whose rows correspond to reward function samples, and whose columns correspond to states of the MDP in their canonical order.
+- `dist.generate_correlated_reward_samples()`: Inputs: a single-agent reward distribution (`single_agent_reward_dist`, the output of `dist.config_to_reward_distribution()`); a list of actual reward function samples for Agent H (the output of `reward_sampler()`, where `reward_sampler()` is itself the output of `dist.config_to_reward_distribution()`); and a correlation coefficient between the reward functions of Agent H and Agent A. Output: a list of reward function samples for Agent A that both 1) satisfies the input correlation coefficient, and 2) corresponds to the marginal reward function distribution given by the input single-agent reward distribution `single_agent_reward_dist`.
