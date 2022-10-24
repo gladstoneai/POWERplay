@@ -31,13 +31,6 @@ def get_sweep_type(sweep_id, folder=data.EXPERIMENT_FOLDER):
         data.load_full_sweep(data.get_full_sweep_name_from_id(sweep_id, folder=folder), folder=folder)['parameters']
     )
 
-# TODO: Document this function. This is a convenience function that lets you quickly retrieve
-# the state_list for a sweep. IMPORTANT: This assumes that the state_list will be the same for all
-# runs in the sweep, even though the MDP itself may change. This seems sensible, since if you're sweeping
-# across runs you'll generally only be changing the transition probabilities of the MDP as opposed to the
-# list of states itself, but I'm not 100% sure if this is true. Inputs are
-# the sweep_id (i.e., date & time hash, which should be unique) and the suffix for the run within
-# the experiment sweep.
 def get_sweep_state_list(sweep_id, folder=data.EXPERIMENT_FOLDER):
     parameters = data.load_full_sweep(
         data.get_full_sweep_name_from_id(sweep_id, folder=folder), folder=folder

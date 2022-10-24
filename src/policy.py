@@ -152,8 +152,6 @@ def policy_tensor_to_graph(policy_tensor, associated_mdp_graph, acting_agent_is_
     else:
         return single_agent_policy_tensor_to_graph(policy_tensor, associated_mdp_graph)
 
-# TODO: Document.
-# run_properties is the output of get.get_properties_from_run
 def sample_optimal_policy_data_from_run(run_properties, reward_sample_index=0):
 
     reward_function_H, discount_rate_H, transition_graphs, convergence_threshold, sweep_type = (

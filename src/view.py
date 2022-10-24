@@ -17,7 +17,7 @@ def plot_gridworld_rollout(
     reward_function=None,
     show=True,
     ms_per_frame=200,
-    agent_whose_rewards_are_displayed='A',
+    agent_whose_rewards_are_displayed='H',
     save_handle='gridworld_rollout',
     save_folder=data.TEMP_FOLDER
 ):
@@ -47,7 +47,6 @@ def plot_gridworld_rollout(
 
     return all_figs
 
-# TODO: Document.
 def plot_policy_sample(
     policy_graph,
     reward_function,
